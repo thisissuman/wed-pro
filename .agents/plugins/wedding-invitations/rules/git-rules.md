@@ -2,6 +2,11 @@
 
 This document outlines the Git workflows, branching strategies, and commit conventions for the Vivaha Studio (`wed-pro`) project. Following these rules ensures clean history, smooth collaboration, and stable MVP iteration.
 
+## Repository Details
+*   **GitHub Username:** `thisissuman`
+*   **Repository URL:** `https://github.com/thisissuman/wed-pro`
+*   **Clone URL:** `https://github.com/thisissuman/wed-pro.git`
+
 ## 1. Branching Strategy
 
 For this MVP phase, we use a simplified **GitHub Flow**:
