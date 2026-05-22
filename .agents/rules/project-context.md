@@ -411,3 +411,11 @@ Every time a new route or dynamic mapping is created, ensure that you explicitly
 The system should naturally connect related flows:
 - The template preview router (`/preview/[templateId]`) must be wired to the preview buttons on the frontend.
 - When creating any new feature that requires a new route, wire it correctly so that manual URL access is not the only way to trigger it.
+
+---
+
+# Additional Project Guidelines
+
+For detailed technical and workflow guidelines, please refer to the specific rule documents located in the `.agents/plugins/wedding-invitations/rules/` directory:
+- **[Future Architecture Validation](file:///Users/kira/wed-pro/.agents/plugins/wedding-invitations/rules/future-architecture.md)**: Guidelines on performance, rendering strategies, lazy loading, and avoiding premature abstractions.
+- **[Git Rules & Best Practices](file:///Users/kira/wed-pro/.agents/plugins/wedding-invitations/rules/git-rules.md)**: Our Git branching, conventional commits, and `.gitignore` policies.
