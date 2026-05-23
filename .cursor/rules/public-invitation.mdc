@@ -1,0 +1,47 @@
+---
+description: "Public invitation routes (/w/[slug]): RSC, generateMetadata, OG/WhatsApp previews, hydration-safe countdown."
+globs: "src/app/w/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Public Invitation Pages
+
+## Routing
+
+- Public URL: `/w/[slug]` (e.g. `/w/rahul-weds-ananya`) — clean slugs, no numeric IDs
+- Route: `src/app/w/[slug]/page.tsx`
+
+## Server Rendering (Required)
+
+WhatsApp/Instagram crawlers **do not run JavaScript**.
+
+- Page must be a **React Server Component**
+- Fetch invitation (`status = 'published'`) on the server from Supabase
+- Pass data to client `<TemplateRenderer />` as props
+
+## Metadata
+
+Use Next.js **`generateMetadata()`** for:
+
+- `title`, `description`
+- OpenGraph tags (`og:title`, `og:image`, `og:description`)
+- WhatsApp preview image from invitation content when available
+
+Inject metadata in `<head>` before client hydration.
+
+## Hydration
+
+Countdown and time-sensitive values: render placeholder on server; update in `useEffect` on client to prevent hydration mismatch.
+
+## Performance
+
+Guest opens link from WhatsApp on mobile data — prioritize fast LCP, minimal client JS, optimized hero image.
+
+## Access
+
+- Published invitations: public read via RLS
+- Drafts: never exposed on public route
+
+## SEO
+
+Dynamic metadata per couple; shareable premium preview — no spammy keyword stuffing.

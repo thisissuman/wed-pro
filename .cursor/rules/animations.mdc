@@ -1,0 +1,68 @@
+---
+description: "Framer Motion animation rules: durations, easing, scroll, modals, reduced motion, and performance limits."
+globs: "src/**/*.tsx"
+alwaysApply: false
+---
+
+# Animations
+
+## Library
+
+Use **Framer Motion** only. No GSAP-heavy architecture or duplicate animation libraries.
+
+## Philosophy
+
+Enhance UX and emotional storytelling; never reduce usability, hurt performance, distract, or block interaction. Subtle > flashy.
+
+## Style
+
+Soft, cinematic, elegant, lightweight, natural. Avoid aggressive motion, excessive bounce, exaggerated scale, chaotic transitions.
+
+## Durations
+
+| Use | Range |
+|-----|-------|
+| Fast interactions | 100–200ms |
+| Standard UI | 200–400ms |
+| Cinematic reveals | 400–700ms |
+| **Max** | 800ms |
+
+## Easing
+
+Prefer `ease-out` and smooth cubic-bezier. Avoid linear or over-bouncy easing.
+
+## Properties
+
+Animate **`transform`** and **`opacity`** only on mobile. Avoid heavy blur, large animated shadows, parallax spam.
+
+## Scroll
+
+Lightweight viewport reveals; no scroll-jacking, excessive parallax, or animation on every section.
+
+## Hover
+
+Subtle scale/opacity/elevation — remember mobile has no hover.
+
+## Loading
+
+Skeleton loaders, subtle shimmer, soft fades — not aggressive spinners.
+
+## Modals
+
+Fade + slight scale or slide; quick appearance; no dramatic zooms.
+
+## Editor
+
+Responsive and instant — no animation lag during typing/editing.
+
+## Public Invitations
+
+Cinematic reveals OK; performance still #1. Not an animation showcase.
+
+## Reduced Motion
+
+Respect `prefers-reduced-motion`; degrade gracefully on low-end devices.
+
+## Priority
+
+1. performance 2. usability 3. smoothness 4. elegance 5. subtlety

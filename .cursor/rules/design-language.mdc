@@ -1,0 +1,66 @@
+---
+description: "Visual design language: typography, spacing, color, buttons, cards, forms, and motion tone for premium wedding UX."
+globs: "src/**/*.{tsx,css}"
+alwaysApply: false
+---
+
+# Design Language
+
+## Tone
+
+Premium, elegant, emotional, cinematic, modern, lightweight, warm. Avoid cluttered UI, corporate SaaS dashboards, aggressive gradients, excessive glassmorphism.
+
+## Mobile-First
+
+Design small screens first; thumb-friendly; smooth scroll; low-end Android support. Desktop adapts from mobile.
+
+## Typography
+
+**Headings (serif):** Playfair Display, Cormorant Garamond, DM Serif Display  
+**Body (sans):** Inter, Poppins, Manrope  
+Max 2 font families. Headings: large, breathable, high line-height. Body: readable, minimal. No tiny sizes or decorative body fonts.
+
+## Spacing Scale
+
+Use consistently: 4, 8, 12, 16, 24, 32, 48, 64. Generous whitespace; avoid cramped layouts.
+
+## Color
+
+Luxurious, warm, romantic: ivory, champagne, gold, rose, beige, warm neutrals. One primary accent + neutral background system. Dark mode: cinematic, not cyberpunk. No neon or noisy gradients.
+
+## Buttons & Cards
+
+- Buttons: soft, premium, medium radius, subtle hover (desktop), clean padding
+- Cards: lightweight, soft shadows, subtle borders, generous spacing
+
+## Forms
+
+Clear labels, large touch targets, clean focus states. No tiny controls or multi-column mobile forms.
+
+## Dashboard
+
+Calm, focused, lightweight — not admin-panel aesthetics. Editor: left controls, right live preview when layout allows.
+
+## Public Invitations
+
+Cinematic storytelling via typography and hierarchy; avoid animation overload and laggy transitions.
+
+## Motion (UI)
+
+150–500ms; natural easing; fade, gentle slide, subtle scale. Performance over complexity.
+
+## Images & Icons
+
+Emotional, optimized, lazy-loaded, consistent aspect ratios. **Lucide** icons; thin outline; never dominate UI.
+
+## Loading & Empty States
+
+Skeleton loaders, subtle shimmer — no blank screens or aggressive spinners. Empty states: friendly and guiding.
+
+## Accessibility
+
+Readable contrast, scalable type, accessible touch targets (min 44×44px).
+
+## Inspiration
+
+Luxury wedding brands, editorial layouts, premium mobile apps — not enterprise dashboards or crypto landing pages.

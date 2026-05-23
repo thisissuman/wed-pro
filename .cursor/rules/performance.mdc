@@ -1,0 +1,67 @@
+---
+description: "Performance rules: RSC, bundles, images, motion, lazy loading, and mobile TTI. Performance is a product feature."
+globs: "*"
+alwaysApply: true
+---
+
+# Performance
+
+## Philosophy
+
+Fast, smooth, responsive, lightweight. Performance beats visual complexity. Prioritize low-end Android and slow mobile networks.
+
+## Rendering
+
+- Prefer **React Server Components** and server actions
+- Reduce client JS; use `next/dynamic` for below-the-fold: Gallery, RSVP, Maps
+- Avoid unnecessary `"use client"` boundaries
+
+## Bundles
+
+Check impact before new dependencies; prefer lightweight alternatives.
+
+## Images
+
+- **`next/image`** with correct `sizes` (e.g. `(max-width: 768px) 100vw, 50vw`)
+- WebP/AVIF; compress uploads; lazy load
+- No large `background-image` for photos — use positioned `next/image`
+
+## Motion
+
+- Animate only **`transform`** and **`opacity`** (Framer Motion)
+- No animating `height`, `box-shadow`, or layout properties
+- **`backdrop-filter: blur()`** — desktop breakpoints only
+- Ambient loops: CSS `@keyframes`, not infinite JS loops
+
+## Scroll
+
+Native browser scrolling only — no smooth-scroll / scroll-jacking libraries.
+
+## Hydration
+
+Time-sensitive UI (countdown): render generic/empty on server; compute delta in `useEffect` on client to avoid mismatch.
+
+## State & Data
+
+- Minimize rerenders; modular Zustand; selective subscriptions
+- Fetch only required fields; avoid duplicate requests and polling
+
+## Public Pages (`/w/[slug]`)
+
+Critical path: fast first paint from WhatsApp. Avoid heavy video backgrounds, oversized hero media, animation showcases.
+
+## Editor
+
+Instant typing; debounced autosave (500–1500ms); no blocking saves or iframe reload loops.
+
+## Fonts
+
+Max 2 families; limited weights; `font-display: swap`.
+
+## Lighthouse
+
+Target strong mobile scores without sacrificing usability.
+
+## Caching
+
+Cache static assets and templates; don't cache stale critical user draft data incorrectly.

@@ -1,0 +1,63 @@
+---
+description: "Zustand state rules: server vs UI vs persisted state, editor autosave, stores in src/stores, forms with RHF+Zod."
+globs: "src/stores/**/*.ts,src/features/**/*.{ts,tsx},src/app/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# State Management
+
+## Library
+
+**Zustand** only. No Redux, MobX, or complex state frameworks.
+
+## Separation
+
+| Layer | Examples | Where |
+|-------|----------|--------|
+| Server state | profiles, invitations, DB data | RSC, server actions — not giant Zustand blobs |
+| Persisted app | draft `WeddingData`, theme | Zustand + Supabase autosave |
+| UI state | modals, tabs, sidebars | Local or small `ui-store` |
+
+Do not persist modals, animation state, or transient toggles.
+
+## Store Layout (`src/stores/`)
+
+Modular files — e.g. `invitation-editor-store.ts`, `preview-store.ts`, `ui-store.ts`. No monolithic global store.
+
+## Editor
+
+- Live preview, autosave, fast typing
+- **Debounce autosave: 500–1500ms** — not every keystroke
+- Targeted preview updates; avoid full iframe reloads
+
+## Component State
+
+Use `useState` when isolated and not shared. Globalize only when shared across editor + preview.
+
+## Prop Drilling
+
+If data passes 3+ layers, use Zustand or composition refactor.
+
+## Context
+
+Sparingly: theme, auth provider. Not for large editor state.
+
+## Derived State
+
+Compute values; don't duplicate (e.g. `fullName` from `firstName` + `lastName`).
+
+## Forms
+
+React Hook Form + Zod for large forms — not manual `useState` for every field.
+
+## Optimistic UI
+
+OK for editor tweaks; **not** for payments, publish, or destructive ops.
+
+## Errors
+
+Handle loading/success/error/empty; never crash editor on stale state.
+
+## Performance
+
+Flat structures; selective subscriptions; avoid global rerenders.

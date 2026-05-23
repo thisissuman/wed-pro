@@ -1,0 +1,58 @@
+---
+description: "Mobile-first UX: touch targets, layouts, navigation, forms, scroll, and testing. Highest product priority."
+globs: "*"
+alwaysApply: true
+---
+
+# Mobile First
+
+## Philosophy
+
+Primary users discover via Instagram/WhatsApp, edit and view on phones. Desktop adapts from mobile, not the reverse.
+
+## Targets
+
+Optimize for low-end Android, mid-range Android, iPhone, tablets — small screens, slow networks, limited performance.
+
+## Layout
+
+- Start single-column, stacked sections, vertical scroll, touch-friendly spacing
+- Fluid layouts; no fixed widths, horizontal overflow, or desktop-first grids on mobile
+
+## Touch
+
+- Minimum touch target: **44×44px**
+- Easy to tap, clearly visible, properly spaced
+- No hover-only functionality
+
+## Navigation
+
+Simple, thumb-friendly: bottom actions, collapsible menus. Avoid deep nested sidebars on mobile.
+
+## Typography
+
+Body 14–16px minimum; generous line-height; readable on small screens.
+
+## Forms
+
+Proper `inputMode`/keyboard types, autofill, large inputs. No multi-column forms on mobile.
+
+## Scroll
+
+Native smooth scroll only — no scroll-jacking, excessive sticky elements, or nested scroll containers.
+
+## Performance
+
+Lazy-load media; reduce JS and animations on mobile; test on real devices, not only browser resize.
+
+## Dashboard & Editor
+
+Collapsible panels, stacked layouts, bottom actions. Editor: instant preview updates; no tiny controls.
+
+## Public Invitations
+
+Fast load from WhatsApp links; immersive but readable; guest experience is critical.
+
+## Priority
+
+1. usability 2. touch 3. performance 4. readability 5. smooth interaction

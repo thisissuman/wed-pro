@@ -1,0 +1,71 @@
+---
+description: "Template system: presentation-only, WeddingData schema, section structure, bespoke per-template UI, no DB in templates."
+globs: "src/templates/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Template Architecture
+
+## Core Rule
+
+Templates are **presentation only**. They render UI from `WeddingData`; they never fetch DB, auth, payments, or business logic.
+
+```tsx
+<TemplateRenderer template="royal" data={weddingData} />
+```
+
+## Folder Structure
+
+```
+src/templates/
+  TemplateRenderer.tsx
+  /<template-id>/
+    <Name>Template.tsx
+    sections/
+    theme/
+    config/
+```
+
+Example: `src/templates/royal/RoyalTemplate.tsx` + `sections/HeroSection.tsx`, etc.
+
+## Shared Data
+
+All templates consume **`WeddingData`** from `src/types/`. Same schema for editor, preview, DB `content` JSONB, and publish.
+
+## Reusability (Pragmatic)
+
+- **100% shared:** hooks (`useWeddingCountdown`), UI atoms (buttons, typography wrappers)
+- **Bespoke per template:** section components inside `src/templates/<id>/sections/` — template-specific Tailwind/colors OK for cinematic identity
+- Do not force identical section UI across all templates (anti-pattern for premium feel)
+
+## Section Flow (Storytelling)
+
+Optional intro → Hero → Couple reveal → Countdown → Blessing → Events → Story → Gallery → RSVP → Venue → Thank You. Pace emotionally; avoid content dumps.
+
+## Events
+
+Support Indian events (Mehendi, Haldi, Wedding, Reception, Sangeet). Event shape: title, icon, description, date, time, venue, `googleMapLink`.
+
+## Theme (Phase 2)
+
+`ThemeConfig` (colors, fonts) injected via `:root` CSS variables later. MVP: hardcoded template tokens OK; migrate to `var(--theme-primary)` when customizer ships. No section re-ordering in MVP — different layout = different template.
+
+## Animations
+
+Framer Motion; modular; viewport reveals; subtle parallax-lite only. No GSAP-heavy or scroll-jacking.
+
+## Performance
+
+`next/image` + `sizes`; lazy gallery/maps/RSVP; no unoptimized video heroes.
+
+## Editor Compatibility
+
+Editable fields map to future dashboard controls — don't couple copy into layout logic.
+
+## Mobile
+
+Mobile rendering and touch are primary; desktop secondary.
+
+## Priority
+
+1. emotional storytelling 2. mobile 3. smooth motion 4. scalable structure 5. performance

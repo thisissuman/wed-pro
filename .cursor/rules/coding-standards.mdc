@@ -1,0 +1,111 @@
+---
+description: "TypeScript/React coding standards: naming, folder structure, components, forms, errors, and imports for wed-pro."
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Coding Standards
+
+## Core Philosophy
+
+Prioritize simplicity, scalability, readability, maintainability, performance, and premium UX. Avoid overengineering, unnecessary abstractions, bloated dependencies, deeply nested logic, and massive components.
+
+## Tech Stack
+
+- Next.js 16 App Router, TypeScript, Tailwind, shadcn/ui, Framer Motion, Zustand
+- Supabase + PostgreSQL
+
+## Components
+
+- Single responsibility; reusable and modular
+- No mixed UI + business logic; split when complexity grows
+
+## Naming
+
+| Kind | Convention | Example |
+|------|------------|---------|
+| Components | PascalCase | `WeddingHero.tsx` |
+| Hooks | `use` + camelCase | `useWeddingData.ts` |
+| Utils | kebab-case | `generate-slug.ts` |
+| Routes | lowercase kebab | `/dashboard/create-invite`, `/w/rahul-weds-ananya` |
+
+## Folder Structure
+
+```
+/app  /components  /features  /templates  /hooks  /lib  /services  /store  /types  /utils
+```
+
+Actual project uses `src/` with the same logical layout.
+
+## State
+
+- Zustand for editor, UI, preview state
+- Separate persisted data from temporary UI state
+- Avoid unnecessary global state, excessive Context, prop drilling
+
+## Styling
+
+- Tailwind consistently; no inline styles or random spacing
+- Reuse design tokens and spacing scale
+
+## Responsive
+
+- Mobile-first; test small Android, iPhone, tablet
+- No fixed widths, hover-only interactions, desktop-only layouts
+
+## Performance
+
+- Lazy-load images; optimize media; minimize rerenders; dynamic imports when needed
+- Reduce client JS; avoid large bundles and heavy animations
+
+## Templates
+
+- Presentation-only; shared `WeddingData` schema; no direct DB access or business logic
+
+## Database (MVP)
+
+- Single `invitations` row with `content` JSONB mapped to `WeddingData` (see project-context)
+- Do not normalize into many tables for MVP autosave
+
+## Data Fetching
+
+- Prefer server components, server actions, minimal payloads
+- Avoid duplicate client fetches and over-fetching
+
+## Forms
+
+- React Hook Form + Zod; validate client and server; don't duplicate validation logic
+
+## Error Handling
+
+- Always handle loading, empty, and error states
+- Never silently fail or expose raw backend errors
+
+## Images
+
+- Compression, resizing, lazy loading, WebP, CDN; never render raw large uploads
+
+## SEO (public pages)
+
+- Dynamic metadata, OpenGraph, WhatsApp previews, clean slugs (`/w/rahul-weds-ananya`)
+
+## Imports (order)
+
+1. external 2. internal 3. components 4. styles 5. types
+
+## Dependencies
+
+- Check bundle size and maintenance before adding packages
+
+## Security
+
+- Never expose API secrets, service role keys, payment secrets
+- Validate permissions; use env vars correctly
+
+## Testing (MVP)
+
+- Manual + responsive testing on critical flows: auth, uploads, payment, publishing, public render
+
+## Priority
+
+1. UX 2. mobile 3. performance 4. maintainability 5. simplicity

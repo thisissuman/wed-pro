@@ -1,0 +1,50 @@
+---
+description: "Shared UI components: shadcn/ui, Tailwind, Lucide, accessibility, composability in src/components."
+globs: "src/components/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# UI Components
+
+## Philosophy
+
+Modular, lightweight, reusable, accessible, responsive. No one-off inconsistent patterns.
+
+## Structure
+
+- Single responsibility; composable; **no business logic** in presentational components
+- Clean props API; predictable behavior
+
+## Styling
+
+- **Tailwind** + **shadcn/ui** patterns from `src/components/ui/`
+- No inline styles; consistent spacing, radii, shadows
+- Shared design tokens (see design-language rule)
+
+## Icons
+
+**Lucide** — thin outline, minimal, support clarity without dominating UI
+
+## Responsive
+
+Mobile-first for every component; scale to tablet/desktop.
+
+## Accessibility
+
+Semantic HTML, labels, keyboard navigation, readable contrast, ARIA when needed.
+
+## Animation
+
+Subtle motion only; no performance-heavy effects in primitives.
+
+## Reusability
+
+Generic enough for dashboard and marketing — template-specific visuals belong in `src/templates/`, not shared UI.
+
+## Performance
+
+Avoid unnecessary rerenders; lazy-load heavy subcomponents when needed.
+
+## Priority
+
+Consistency → reusability → accessibility → responsiveness → performance

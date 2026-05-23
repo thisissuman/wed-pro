@@ -1,0 +1,45 @@
+---
+description: "Dashboard and editor UI: calm layout, live preview, mobile panels, loading/empty states, no admin-panel clutter."
+globs: "src/features/dashboard/**/*.{ts,tsx},src/app/dashboard/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Dashboard UI
+
+## Philosophy
+
+Creation workspace — calm, focused, lightweight, emotionally warm. **Not** enterprise admin aesthetics.
+
+## Layout
+
+- Simple navigation; clear hierarchy; lightweight controls
+- **Editor:** form controls + **live preview** (side-by-side desktop; stacked/collapsible on mobile)
+- Avoid overcrowded sidebars and deep nested menus
+
+## Mobile
+
+- Collapsible editor/preview panels
+- Bottom primary actions where appropriate
+- Usable on phone without desktop-only assumptions
+
+## States
+
+- **Loading:** skeleton loaders, smooth transitions — never blank screens
+- **Empty:** friendly, guiding copy — not generic placeholders
+- **Error:** clear user-facing messages
+
+## Interactions
+
+Immediate feedback; predictable; no delayed responses during edit.
+
+## Performance
+
+Lightweight during editing: minimize rerenders, avoid heavy animations, keep Zustand updates targeted.
+
+## Wiring Routes
+
+New dashboard features must link from UI (buttons/nav) — not only reachable by manual URL (see project-context routing).
+
+## Priority
+
+Clarity → responsiveness → ease of use → mobile usability → smooth editing

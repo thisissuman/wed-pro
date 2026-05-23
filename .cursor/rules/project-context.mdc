@@ -1,7 +1,8 @@
 ---
-trigger: always_on
+description: "Core product context, stack, architecture, database schema, and priorities for the wedding invitation SaaS platform. Apply for all work in this repository."
+globs: "*"
+alwaysApply: true
 ---
-
 # Project Context
 
 ## Product Overview
@@ -449,6 +450,6 @@ The system should naturally connect related flows:
 
 # Additional Project Guidelines
 
-For detailed technical and workflow guidelines, please refer to the specific rule documents located in the `.agents/plugins/wedding-invitations/rules/` directory:
-- **[Future Architecture Validation](file:///Users/kira/wed-pro/.agents/plugins/wedding-invitations/rules/future-architecture.md)**: Guidelines on performance, rendering strategies, lazy loading, and avoiding premature abstractions.
-- **[Git Rules & Best Practices](file:///Users/kira/wed-pro/.agents/plugins/wedding-invitations/rules/git-rules.md)**: Our Git branching, conventional commits, and `.gitignore` policies.
+For detailed technical and workflow guidelines, refer to Cursor project rules in `.cursor/rules/`:
+- **performance.mdc** + **template-architecture.mdc**: Rendering strategies, lazy loading, scalability, and avoiding premature abstractions.
+- **git-conventions.mdc**: Git branching, conventional commits, and `.gitignore` policies.

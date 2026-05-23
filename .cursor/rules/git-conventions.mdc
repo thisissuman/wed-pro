@@ -1,0 +1,56 @@
+---
+description: "Git workflow: GitHub Flow, Conventional Commits, branch naming, .gitignore, Supabase migrations in supabase/migrations."
+globs: "*"
+alwaysApply: true
+---
+
+# Git Conventions
+
+## Repository
+
+- GitHub: `thisissuman/wed-pro` — `https://github.com/thisissuman/wed-pro.git`
+
+## Branching (GitHub Flow)
+
+| Branch | Use |
+|--------|-----|
+| `main` | Production-ready; deployable to Vercel |
+| `feat/*` | New features |
+| `fix/*` | Bug fixes |
+| `chore/*` / `refactor/*` | Tooling, deps, refactors |
+
+**Never push directly to `main`.** Use PR or fast-forward merge when solo.
+
+## Commits (Conventional Commits)
+
+```
+<type>(<optional scope>): <description>
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
+
+- Imperative mood: "Add editor" not "Added editor"
+- Atomic commits — don't mix unrelated changes
+
+Examples:
+- `feat(templates): add royal template sections`
+- `fix(preview): resolve countdown hydration mismatch`
+- `chore(config): update next.config.ts`
+
+## `.gitignore` (must never commit)
+
+`node_modules/`, `.next/`, `.env`, `.env.local`, `.env.*.local`, `.DS_Store`, `coverage/`
+
+## Supabase Schema
+
+- Avoid structural prod changes only in Supabase UI
+- Use Supabase CLI locally; commit SQL in `supabase/migrations/`
+- Example: `supabase migration new add_invitations_table`
+
+## Merge
+
+Rebase/merge `main` before merge; prefer **Squash and Merge**; self-review diffs for `console.log` and commented code.
+
+## Assets
+
+Compress images in `/public` (WebP/AVIF); no 10MB raw photos in git.

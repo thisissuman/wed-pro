@@ -1,0 +1,57 @@
+---
+description: "Supabase Auth: protected dashboard, public /w routes, session handling, secrets, and RLS reminders."
+globs: "src/app/auth/**/*.{ts,tsx},src/app/login/**/*.{ts,tsx},src/app/signup/**/*.{ts,tsx},src/components/auth/**/*.{ts,tsx},src/lib/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Auth & Security
+
+## Stack
+
+**Supabase Auth** — email/password, Google; OTP later if needed.
+
+## Philosophy
+
+Minimize friction; mobile-friendly; fast onboarding. Dashboard access should feel effortless.
+
+## Secrets
+
+Never expose in client or commit:
+
+- `service_role` key
+- payment secrets
+- any non-`NEXT_PUBLIC_` Supabase secrets
+
+Use publishable/anon key in browser; server-only keys in server actions/route handlers only.
+
+## Route Separation
+
+| Area | Access |
+|------|--------|
+| `/dashboard/**`, editor | Authenticated only |
+| `/w/[slug]` | Public when `status = 'published'` |
+| `/login`, `/signup` | Public |
+
+Validate ownership on mutations (`user_id = auth.uid()`).
+
+## Sessions
+
+Persist securely; handle expiration gracefully; avoid broken half-auth states.
+
+## RLS (Supabase)
+
+- Enable RLS on exposed tables
+- Policies: owners full CRUD on own invitations; public `SELECT` only when published
+- For Supabase tasks, use the installed **supabase** plugin skill (MCP/CLI)
+
+## UX
+
+Minimal forms; clear errors for invalid credentials, network failures, unauthorized access.
+
+## Performance
+
+Lightweight auth checks; prefer server session validation in layouts/middleware over heavy client polling.
+
+## Priority
+
+Security → simplicity → smooth onboarding → mobile experience
