@@ -1,10 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Eye, ArrowRight } from "lucide-react";
+import { Eye, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createStarterWeddingData, makeDraftSlug } from "@/lib/invitations";
 import type { Template } from "@/types";
 
 interface TemplateCardProps {
@@ -14,18 +16,52 @@ interface TemplateCardProps {
 
 export function TemplateCard({ template, index = 0 }: TemplateCardProps) {
   const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSelect = async () => {
+    if (isCreating) return;
+
+    setErrorMessage(null);
+    setIsCreating(true);
+
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (user) {
-      router.push("/dashboard");
-    } else {
+    if (!user) {
       router.push("/login?next=/dashboard");
+      setIsCreating(false);
+      return;
     }
+
+    const id = crypto.randomUUID();
+    const slug = makeDraftSlug(template.id);
+    const content = createStarterWeddingData({
+      id,
+      slug,
+      templateId: template.id,
+      userId: user.id,
+    });
+
+    const { error } = await supabase.from("invitations").insert({
+      id,
+      user_id: user.id,
+      slug,
+      template_id: template.id,
+      status: "draft",
+      content,
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+      setIsCreating(false);
+      return;
+    }
+
+    router.push(`/dashboard/invitations/${id}/edit`);
+    router.refresh();
   };
 
   return (
@@ -83,11 +119,18 @@ export function TemplateCard({ template, index = 0 }: TemplateCardProps) {
           variant="primary"
           className="flex-1"
           onClick={handleSelect}
-          icon={<ArrowRight size={16} />}
+          disabled={isCreating}
+          icon={isCreating ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
         >
-          Select
+          {isCreating ? "Creating" : "Select"}
         </Button>
       </div>
+
+      {errorMessage && (
+        <p className="px-4 pb-4 text-xs leading-relaxed text-[#ffb4a8]">
+          {errorMessage}
+        </p>
+      )}
     </motion.article>
   );
 }

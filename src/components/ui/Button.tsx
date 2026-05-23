@@ -30,6 +30,7 @@ export function Button({
         "font-[family-name:var(--font-body)] text-sm font-medium tracking-wide",
         "transition-all duration-200 active:scale-95",
         "focus:outline-none focus:ring-2 focus:ring-champagne-gold/50",
+        "disabled:pointer-events-none disabled:opacity-50",
         variantStyles[variant],
         className
       )}

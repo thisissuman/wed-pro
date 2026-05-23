@@ -1,4 +1,5 @@
 import { Camera, MessageCircle } from "lucide-react";
+import Link from "next/link";
 
 export function CinematicFooter() {
   return (
@@ -21,28 +22,28 @@ export function CinematicFooter() {
           </h4>
           <ul className="space-y-2 font-[family-name:var(--font-body)] text-sm font-medium tracking-wide">
             <li>
-              <a
+              <Link
                 className="text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="/template"
               >
                 Templates
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 className="text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="/#features"
               >
                 Features
-              </a>
+              </Link>
             </li>
             <li>
-              <a
+              <Link
                 className="text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="/#testimonials"
               >
                 Stories
-              </a>
+              </Link>
             </li>
           </ul>
         </div>

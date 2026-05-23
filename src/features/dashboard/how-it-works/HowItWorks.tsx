@@ -92,7 +92,7 @@ export function HowItWorks() {
               <div className="space-y-4">
                 <div className="p-4 rounded-lg bg-surface-container-lowest/50 border border-surface-container-high">
                   <label className="block font-label-sm text-label-sm text-on-surface-variant/70 mb-1">
-                    Groom's Name
+                    Groom&apos;s Name
                   </label>
                   <div className="font-body-md text-body-md text-on-surface">
                     Rohan Mehra

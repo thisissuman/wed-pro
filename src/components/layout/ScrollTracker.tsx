@@ -32,6 +32,7 @@ export function ScrollTrackerProvider({ children }: ScrollTrackerProviderProps) 
   const [activeSection, setActiveSection] = useState<SectionId>(null);
   const pathname = usePathname();
   const isHomepage = pathname === "/";
+  const visibleSection = isHomepage ? activeSection : null;
 
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -55,7 +56,6 @@ export function ScrollTrackerProvider({ children }: ScrollTrackerProviderProps) 
 
   useEffect(() => {
     if (!isHomepage) {
-      setActiveSection(null);
       return;
     }
 
@@ -79,7 +79,7 @@ export function ScrollTrackerProvider({ children }: ScrollTrackerProviderProps) 
   }, [isHomepage, handleIntersection]);
 
   return (
-    <ScrollTrackerContext.Provider value={{ activeSection }}>
+    <ScrollTrackerContext.Provider value={{ activeSection: visibleSection }}>
       {children}
     </ScrollTrackerContext.Provider>
   );

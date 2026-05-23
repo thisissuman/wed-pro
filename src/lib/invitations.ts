@@ -1,0 +1,198 @@
+import { sampleWeddingData } from "@/data/sample-wedding";
+import type { InvitationStatus, WeddingData, WeddingEvent } from "@/types/wedding.types";
+
+export interface InvitationRow {
+  id: string;
+  user_id: string;
+  slug: string;
+  template_id: string;
+  status: InvitationStatus;
+  content: unknown;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+}
+
+interface StarterWeddingDataInput {
+  id: string;
+  slug: string;
+  templateId: string;
+  userId: string;
+  now?: string;
+}
+
+const FALLBACK_TEMPLATE_ID = "royal";
+
+function cloneSampleWeddingData(): WeddingData {
+  return JSON.parse(JSON.stringify(sampleWeddingData)) as WeddingData;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
+export function makeDraftSlug(templateId = FALLBACK_TEMPLATE_ID): string {
+  const randomPart =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().slice(0, 8)
+      : Math.random().toString(36).slice(2, 10);
+
+  return `${slugify(templateId || FALLBACK_TEMPLATE_ID)}-${randomPart}`;
+}
+
+export function createDefaultWeddingEvent(date: string): WeddingEvent {
+  return {
+    id:
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `event-${Date.now()}`,
+    title: "Wedding Ceremony",
+    type: "wedding",
+    description: "Join us for the sacred wedding ceremony and blessings.",
+    date,
+    time: "7:00 PM",
+    venue: "Venue Name",
+    address: "Venue address",
+    dressCode: "Traditional / Ethnic Wear",
+  };
+}
+
+export function createStarterWeddingData({
+  id,
+  slug,
+  templateId,
+  userId,
+  now = new Date().toISOString(),
+}: StarterWeddingDataInput): WeddingData {
+  const weddingDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  const data = cloneSampleWeddingData();
+
+  data.id = id;
+  data.slug = slug;
+  data.templateId = templateId;
+  data.status = "draft";
+  data.couple = {
+    bride: {
+      name: "Bride Name",
+      parentNames: "Daughter of the family",
+      bio: "A celebration of grace, joy, and new beginnings.",
+      heroText: "The Bride",
+    },
+    groom: {
+      name: "Groom Name",
+      parentNames: "Son of the family",
+      bio: "A celebration of love, laughter, and togetherness.",
+      heroText: "The Groom",
+    },
+    weddingDate,
+  };
+  data.hero = {
+    subtitle: "Together with their families, request the honour of your presence",
+    overlayText: "Save the Date",
+    overlayOpacity: 0.6,
+  };
+  data.events = [createDefaultWeddingEvent(weddingDate)];
+  data.venue = {
+    name: "Venue Name",
+    address: "Venue address",
+    description: "Add a short note about the celebration venue.",
+    googleMapLink: "",
+  };
+  data.countdown = {
+    targetDate: `${weddingDate}T19:00:00+05:30`,
+    timezone: "Asia/Kolkata",
+    label: "Counting Down to Forever",
+  };
+  data.rsvp = {
+    type: "whatsapp",
+    whatsappNumber: "",
+    message: "We are delighted to confirm our attendance at your wedding celebration!",
+    buttonText: "Confirm via WhatsApp",
+  };
+  data.seo = {
+    pageTitle: "Wedding Invitation",
+    metaDescription: "You are invited to celebrate this beautiful wedding.",
+  };
+  data.meta = {
+    createdAt: now,
+    updatedAt: now,
+    userId,
+  };
+
+  return data;
+}
+
+export function normalizeInvitationRow(row: InvitationRow): WeddingData {
+  const base = createStarterWeddingData({
+    id: row.id,
+    slug: row.slug,
+    templateId: row.template_id,
+    userId: row.user_id,
+    now: row.created_at,
+  });
+  const content = isRecord(row.content) ? (row.content as Partial<WeddingData>) : {};
+  const contentMeta = isRecord(content.meta) ? content.meta : {};
+  const contentPublishedAt =
+    typeof contentMeta.publishedAt === "string" ? contentMeta.publishedAt : undefined;
+
+  return {
+    ...base,
+    ...content,
+    id: row.id,
+    slug: row.slug,
+    templateId: row.template_id,
+    status: row.status,
+    meta: {
+      ...base.meta,
+      ...contentMeta,
+      userId: row.user_id,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      publishedAt: row.published_at ?? contentPublishedAt,
+    },
+  };
+}
+
+export function getInvitationTitle(data: WeddingData): string {
+  const groom = data.couple.groom.name.trim();
+  const bride = data.couple.bride.name.trim();
+
+  if (groom && bride) {
+    return `${groom} & ${bride}`;
+  }
+
+  return data.seo.pageTitle || "Untitled Invitation";
+}
+
+export function getInvitationDateLabel(data: WeddingData): string {
+  const rawDate = data.couple.weddingDate || data.events[0]?.date;
+  if (!rawDate) {
+    return "Date not set";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeZone: "Asia/Kolkata",
+  }).format(new Date(rawDate));
+}
+
+export function getPublicInvitationPath(slug: string): string {
+  return `/w/${slug}`;
+}
+
+export function getPublicInvitationUrl(slug: string, origin?: string): string {
+  const path = getPublicInvitationPath(slug);
+  return origin ? `${origin}${path}` : path;
+}
