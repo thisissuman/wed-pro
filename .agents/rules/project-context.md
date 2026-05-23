@@ -115,6 +115,39 @@ Users should be able to:
 
 ---
 
+## Database Architecture (Supabase)
+
+To support seamless live editing, autosaving, and dynamic template rendering, the platform uses a **JSONB Document Store Strategy** instead of highly fragmented normalized tables.
+
+### 1. `profiles` Table
+Stores public user profiles, securely linked to Supabase Auth (`auth.users`).
+*   `id`: `uuid` (Primary Key, references `auth.users(id)` ON DELETE CASCADE)
+*   `email`: `text` (Unique, Not Null)
+*   `full_name`: `text` (Nullable)
+*   `created_at`: `timestamptz` (Default `now()`)
+
+### 2. `invitations` Table
+Stores wedding invitations. The dynamic content is entirely stored in the nested `content` JSONB column mapped directly to the `WeddingData` type.
+*   `id`: `uuid` (Primary Key, Default `gen_random_uuid()`)
+*   `user_id`: `uuid` (References `public.profiles(id)` ON DELETE CASCADE, Not Null)
+*   `slug`: `text` (Unique, Not Null) - E.g., `rahul-weds-ananya` for clean routes (`/w/slug`)
+*   `template_id`: `text` (Not Null) - E.g., `royal`, `floral`
+*   `status`: `text` (Check constraint: `'draft'` or `'published'`, Default `'draft'`, Not Null)
+*   `content`: `jsonb` (Default `'{}'`::jsonb, Not Null) - Houses all event details, story timeline, RSVP settings, custom media, and active theme overrides.
+*   `created_at`: `timestamptz` (Default `now()`, Not Null)
+*   `updated_at`: `timestamptz` (Default `now()`, Not Null)
+*   `published_at`: `timestamptz` (Nullable)
+
+### 3. Performance & Security Features
+*   **Indexing:** Unique index on `invitations(slug)` ensures O(1) dynamic lookups for guest invitation views. Index on `invitations(user_id)` optimizes dashboard queries.
+*   **Triggers:** The trigger `update_updated_at_column()` automatically updates `updated_at` on any modifications.
+*   **RLS Policies:**
+    *   `profiles`: Users can select and update only their own profile.
+    *   `invitations` (Public): Anyone can `SELECT` an invitation if its status is `'published'`.
+    *   `invitations` (Owner): Authenticated owners have full `SELECT`, `INSERT`, `UPDATE`, and `DELETE` access matching `user_id = auth.uid()`.
+
+---
+
 # Mobile-First Philosophy
 
 This product is primarily mobile-focused.
