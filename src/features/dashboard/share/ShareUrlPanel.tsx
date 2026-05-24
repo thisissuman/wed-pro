@@ -7,12 +7,12 @@ import { TextInput } from "@/features/dashboard/shared/Inputs";
 import { getPublicInvitationPath, slugify } from "@/lib/invitations";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 
-export function ShareUrlPanel({ draft, update }: PanelProps) {
+export function ShareUrlPanel({ draft, update, bare }: PanelProps) {
   const sharePath = getPublicInvitationPath(draft.slug);
   const canShare = draft.status === "published";
 
-  return (
-    <EditorPanel title="Share URL">
+  const content = (
+    <>
       <TextInput
         label="Slug"
         value={draft.slug}
@@ -33,6 +33,10 @@ export function ShareUrlPanel({ draft, update }: PanelProps) {
           <ExternalLink size={14} />
         </Link>
       )}
-    </EditorPanel>
+    </>
   );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return <EditorPanel title="Share URL">{content}</EditorPanel>;
 }

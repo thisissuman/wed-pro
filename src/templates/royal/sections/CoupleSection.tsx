@@ -16,7 +16,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
   const { bride, groom } = couple;
 
   return (
-    <section className="px-6 py-16 md:py-24">
+    <section id="preview-section-couple" className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -58,7 +58,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
           >
             {/* Photo placeholder */}
             <div className="w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
-              {groom.photo ? (
+              {groom.photo?.trim() ? (
                 <img
                   src={groom.photo}
                   alt={groom.name}
@@ -94,7 +94,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             className="text-center space-y-4"
           >
             <div className="w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
-              {bride.photo ? (
+              {bride.photo?.trim() ? (
                 <img
                   src={bride.photo}
                   alt={bride.name}

@@ -17,9 +17,9 @@ const eventTypes: { value: EventType; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-export function EventsPanel({ draft, update }: PanelProps) {
-  return (
-    <EditorPanel title="Events">
+export function EventsPanel({ draft, update, bare }: PanelProps) {
+  const content = (
+    <>
       <div className="space-y-4">
         {draft.events.map((event) => (
           <EventEditor
@@ -61,8 +61,12 @@ export function EventsPanel({ draft, update }: PanelProps) {
         <Plus size={14} />
         Add Event
       </button>
-    </EditorPanel>
+    </>
   );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return <EditorPanel title="Events">{content}</EditorPanel>;
 }
 
 interface EventEditorProps {

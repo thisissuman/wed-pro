@@ -45,7 +45,7 @@ export default async function InvitationPreviewPage({ params }: InvitationPrevie
         </Link>
         <Link
           href={`/dashboard/invitations/${invitation.id}/edit`}
-          className="inline-flex items-center gap-2 rounded-full gold-gradient px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-deep-maroon"
+          className="inline-flex items-center gap-2 rounded-full gold-gradient px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-charcoal-black"
         >
           <Edit3 size={14} />
           Edit

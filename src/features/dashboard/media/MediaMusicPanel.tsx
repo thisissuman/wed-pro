@@ -4,14 +4,14 @@ import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField"
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { TextInput } from "@/features/dashboard/shared/Inputs";
 import { ToggleRow } from "@/features/dashboard/shared/ToggleRow";
+import { isCloudinaryConfigured } from "@/lib/media-url";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 
-export function MediaMusicPanel({ draft, update }: PanelProps) {
-  return (
-    <EditorPanel
-      title="Media & Music"
-      description="Set a hero background image and optional ambient music."
-    >
+export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
+  const configured = isCloudinaryConfigured();
+
+  const content = (
+    <>
       <CloudinaryUploadField
         label="Hero Background Image"
         value={draft.hero.backgroundMedia ?? ""}
@@ -25,19 +25,36 @@ export function MediaMusicPanel({ draft, update }: PanelProps) {
         }
       />
 
-      <TextInput
-        label="Music URL"
-        value={draft.music.url ?? ""}
-        inputMode="url"
-        placeholder="https://res.cloudinary.com/.../song.mp3"
-        helperText="Direct MP3 or M4A link. Browsers block autoplay — guests will see a play button."
-        onChange={(value) =>
-          update((current) => ({
-            ...current,
-            music: { ...current.music, url: value },
-          }))
-        }
-      />
+      {configured ? (
+        <CloudinaryUploadField
+          label="Background Music"
+          value={draft.music.url ?? ""}
+          folder={`wed-pro/${draft.id}/music`}
+          resourceType="video"
+          uploadLabel={draft.music.url ? "Replace music" : "Upload music"}
+          helperText="MP3 or M4A. Guests tap play — most mobile browsers block autoplay."
+          onChange={(value) =>
+            update((current) => ({
+              ...current,
+              music: { ...current.music, url: value },
+            }))
+          }
+        />
+      ) : (
+        <TextInput
+          label="Music URL"
+          value={draft.music.url ?? ""}
+          inputMode="url"
+          placeholder="https://res.cloudinary.com/.../song.mp3"
+          helperText="Direct MP3 or M4A link. Browsers block autoplay — guests will see a play button."
+          onChange={(value) =>
+            update((current) => ({
+              ...current,
+              music: { ...current.music, url: value },
+            }))
+          }
+        />
+      )}
 
       <TextInput
         label="Song Title"
@@ -62,6 +79,17 @@ export function MediaMusicPanel({ draft, update }: PanelProps) {
           }))
         }
       />
+    </>
+  );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return (
+    <EditorPanel
+      title="Media & Music"
+      description="Set a hero background image and optional ambient music."
+    >
+      {content}
     </EditorPanel>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, MessageCircle, Copy, Check } from "lucide-react";
 import { getInvitationTitle, getPublicInvitationUrl } from "@/lib/invitations";
+import { toast } from "@/lib/toast";
 import type { WeddingData } from "@/types/wedding.types";
 
 interface WhatsAppShareDialogProps {
@@ -41,9 +42,10 @@ function WhatsAppShareDialogContent({
     try {
       await navigator.clipboard.writeText(message);
       setCopied(true);
+      toast.success("Message copied");
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      // Older browsers will simply not copy; user can copy manually.
+      toast.error("Could not copy message");
     }
   };
 

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Noto_Sans_Devanagari } from "next/font/google";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AppToaster } from "@/components/providers/AppToaster";
 import "./globals.css";
 
 const playfairDisplay = Playfair_Display({
@@ -16,8 +18,6 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-// Indic fallback so Hindi / Marathi / Sanskrit text inside templates renders
-// with a polished script instead of the browser's default system serif.
 const notoDevanagari = Noto_Sans_Devanagari({
   variable: "--font-indic",
   subsets: ["devanagari"],
@@ -47,9 +47,15 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${playfairDisplay.variable} ${inter.variable} ${notoDevanagari.variable} dark`}
+      className={`${playfairDisplay.variable} ${inter.variable} ${notoDevanagari.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <ThemeProvider>
+          {children}
+          <AppToaster />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

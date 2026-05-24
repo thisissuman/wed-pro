@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "@/lib/toast";
 import {
   ArrowLeft,
   Check,
@@ -10,20 +11,27 @@ import {
   Globe2,
   Loader2,
   MessageCircle,
+  Monitor,
   Save,
+  Smartphone,
   Users,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { EditorAccordion } from "@/features/dashboard/shared/EditorAccordion";
+import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
 import { WhatsAppShareDialog } from "@/features/invitations/WhatsAppShareDialog";
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
 import { createClient } from "@/utils/supabase/client";
 import {
+  buildInvitationSlug,
   getInvitationTitle,
   getPublicInvitationUrl,
-  slugify,
+  resolveInvitationSlug,
+  withEssentialSections,
 } from "@/lib/invitations";
+import { PublishShareDialog } from "@/features/invitations/PublishShareDialog";
 import { useInvitationEditorStore } from "@/stores/invitation-editor-store";
 import { WeddingDetailsPanel } from "@/features/dashboard/wedding-details/WeddingDetailsPanel";
-import { ShareUrlPanel } from "@/features/dashboard/share/ShareUrlPanel";
 import { EventsPanel } from "@/features/dashboard/events/EventsPanel";
 import { VenuePanel } from "@/features/dashboard/venue/VenuePanel";
 import { RsvpPanel } from "@/features/dashboard/rsvp/RsvpPanel";
@@ -53,6 +61,8 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const [copied, setCopied] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showPublishShareDialog, setShowPublishShareDialog] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const didInitialize = useRef(false);
   const skipAutosave = useRef(true);
   // Autosave queue: only ever one write in flight; coalesce intervening edits
@@ -62,6 +72,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const saveGeneration = useRef(0);
   const inFlight = useRef(false);
   const pendingDraft = useRef<WeddingData | null>(null);
+  const prevSaveState = useRef<string | null>(null);
 
   useEffect(() => {
     initialize(initialData);
@@ -82,9 +93,9 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         const current: WeddingData = queued;
         queued = null;
 
-        const normalizedSlug = slugify(current.slug || getInvitationTitle(current));
+        const normalizedSlug = resolveInvitationSlug(current);
         if (!normalizedSlug) {
-          setSaveState("error", "Add a share URL slug before saving.");
+          setSaveState("error", "Add bride and groom names before saving.");
           return;
         }
 
@@ -97,6 +108,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         const content: WeddingData = {
           ...current,
           slug: normalizedSlug,
+          sections: withEssentialSections(current.sections),
           meta: {
             ...current.meta,
             updatedAt,
@@ -143,6 +155,23 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   );
 
   useEffect(() => {
+    const prev = prevSaveState.current;
+    if (prev === saveState) return;
+
+    if (saveState === "saving") {
+      toast.loading("Saving changes…");
+    } else if (saveState === "saved" && prev === "saving") {
+      toast.dismiss();
+      toast.success("Changes saved");
+    } else if (saveState === "error" && prev === "saving") {
+      toast.dismiss();
+      toast.error("Save failed", saveMessage || undefined);
+    }
+
+    prevSaveState.current = saveState;
+  }, [saveState, saveMessage]);
+
+  useEffect(() => {
     if (!draft || !didInitialize.current) return;
 
     if (skipAutosave.current) {
@@ -181,7 +210,8 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     const content: WeddingData = {
       ...draft,
       status: "published",
-      slug: slugify(draft.slug || getInvitationTitle(draft)),
+      slug: resolveInvitationSlug(draft),
+      sections: withEssentialSections(draft.sections),
       meta: {
         ...draft.meta,
         publishedAt,
@@ -203,9 +233,14 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
     if (error) {
       setSaveState("error", error.message);
+      toast.error("Publish failed", error.message);
       setIsPublishing(false);
       return;
     }
+
+    toast.success(
+      draft.status === "published" ? "Invitation republished" : "Invitation published"
+    );
 
     replaceDraft({
       ...content,
@@ -215,15 +250,42 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         publishedAt: data?.published_at ?? publishedAt,
       },
     });
+    setShowPublishShareDialog(true);
     setIsPublishing(false);
+  };
+
+  const updateCoupleNamesFromShare = (groomName: string, brideName: string) => {
+    updateDraft((current) => {
+      const slug = buildInvitationSlug(groomName, brideName) || current.slug;
+      return {
+        ...current,
+        slug,
+        couple: {
+          ...current.couple,
+          groom: { ...current.couple.groom, name: groomName },
+          bride: { ...current.couple.bride, name: brideName },
+        },
+        seo: {
+          ...current.seo,
+          pageTitle: `${groomName || "Groom"} & ${brideName || "Bride"} - Wedding Invitation`,
+        },
+      };
+    });
   };
 
   const copyShareLink = async () => {
     if (!draft) return;
 
-    await navigator.clipboard.writeText(getPublicInvitationUrl(draft.slug, window.location.origin));
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+    try {
+      await navigator.clipboard.writeText(
+        getPublicInvitationUrl(draft.slug, window.location.origin)
+      );
+      setCopied(true);
+      toast.success("Share link copied");
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      toast.error("Could not copy link");
+    }
   };
 
   if (!draft) {
@@ -267,7 +329,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             type="button"
             onClick={() => void publish()}
             disabled={isPublishing}
-            className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-5 py-2.5 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-deep-maroon transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-5 py-2.5 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
           >
             {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
             {draft.status === "published" ? "Republish" : "Publish"}
@@ -306,33 +368,107 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
-        <section className="space-y-4">
-          <WeddingDetailsPanel draft={draft} update={update} />
-          <ShareUrlPanel draft={draft} update={update} />
-          <SectionSettingsPanel draft={draft} update={update} />
-          <MediaMusicPanel draft={draft} update={update} />
-          <EventsPanel draft={draft} update={update} />
-          <StoryEditorPanel draft={draft} update={update} />
-          <GalleryEditorPanel draft={draft} update={update} />
-          <VenuePanel draft={draft} update={update} />
-          <RsvpPanel draft={draft} update={update} />
-        </section>
+        <EditorAccordion
+          defaultOpenId="wedding-details"
+          onActivate={scrollPreviewToSection}
+        >
+          <EditorAccordion.Item id="wedding-details" title="Wedding Details">
+            <WeddingDetailsPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item
+            id="media"
+            title="Media & Music"
+            description="Hero background and optional ambient music."
+          >
+            <MediaMusicPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item id="events" title="Events">
+            <EventsPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item id="story" title="Love Story">
+            <StoryEditorPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item id="gallery" title="Gallery">
+            <GalleryEditorPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item id="venue" title="Venue">
+            <VenuePanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item id="rsvp" title="RSVP">
+            <RsvpPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+          <EditorAccordion.Item
+            id="page-setup"
+            title="Optional Sections"
+            description="Show or hide extra sections. Events, gallery, and venue always stay on."
+          >
+            <SectionSettingsPanel draft={draft} update={update} bare />
+          </EditorAccordion.Item>
+        </EditorAccordion>
 
         <section className="lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)]">
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold">Live Preview</p>
-              <p className="mt-1 text-xs text-on-surface-variant/60">Mobile-first invitation view</p>
+              <p className="mt-1 text-xs text-on-surface-variant/60">
+                {previewMode === "mobile"
+                  ? "Mobile-first invitation view"
+                  : "Desktop responsive preview"}
+              </p>
             </div>
-            <Link
-              href={`/dashboard/invitations/${draft.id}/preview`}
-              className="inline-flex items-center gap-2 rounded-full border border-champagne-gold/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-champagne-gold transition hover:bg-champagne-gold/10"
-            >
-              Full
-              <ExternalLink size={13} />
-            </Link>
+            <div className="flex items-center gap-2">
+              <div
+                className="inline-flex rounded-full border border-champagne-gold/25 bg-surface-container/80 p-0.5"
+                role="group"
+                aria-label="Preview viewport"
+              >
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode("mobile")}
+                  className={cn(
+                    "inline-flex h-9 w-9 items-center justify-center rounded-full transition",
+                    previewMode === "mobile"
+                      ? "bg-champagne-gold/20 text-champagne-gold"
+                      : "text-on-surface-variant/60 hover:text-champagne-gold"
+                  )}
+                  aria-label="Mobile preview"
+                  aria-pressed={previewMode === "mobile"}
+                >
+                  <Smartphone size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode("desktop")}
+                  className={cn(
+                    "inline-flex h-9 w-9 items-center justify-center rounded-full transition",
+                    previewMode === "desktop"
+                      ? "bg-champagne-gold/20 text-champagne-gold"
+                      : "text-on-surface-variant/60 hover:text-champagne-gold"
+                  )}
+                  aria-label="Desktop preview"
+                  aria-pressed={previewMode === "desktop"}
+                >
+                  <Monitor size={16} />
+                </button>
+              </div>
+              <Link
+                href={`/dashboard/invitations/${draft.id}/preview`}
+                className="inline-flex items-center gap-2 rounded-full border border-champagne-gold/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-champagne-gold transition hover:bg-champagne-gold/10"
+              >
+                Full
+                <ExternalLink size={13} />
+              </Link>
+            </div>
           </div>
-          <div className="mx-auto h-[720px] max-w-[430px] overflow-y-auto rounded-[28px] border border-champagne-gold/20 bg-background shadow-[0_30px_100px_rgba(0,0,0,0.45)] no-scrollbar lg:h-full">
+          <div
+            id="preview-scroll-container"
+            className={cn(
+              "mx-auto h-[720px] overflow-y-auto bg-background no-scrollbar lg:h-full",
+              previewMode === "mobile"
+                ? "max-w-[430px] rounded-[28px] border border-champagne-gold/20 shadow-[0_30px_100px_rgba(0,0,0,0.45)]"
+                : "max-w-full rounded-none border-0 shadow-none"
+            )}
+          >
             {previewData && (
               <TemplateRenderer templateId={previewData.templateId} data={previewData} isPreview />
             )}
@@ -344,6 +480,13 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         draft={draft}
         open={showShareDialog}
         onClose={() => setShowShareDialog(false)}
+      />
+
+      <PublishShareDialog
+        draft={draft}
+        open={showPublishShareDialog}
+        onClose={() => setShowPublishShareDialog(false)}
+        onUpdateNames={updateCoupleNamesFromShare}
       />
     </main>
   );

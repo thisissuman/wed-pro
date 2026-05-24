@@ -10,7 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "gold-gradient text-deep-maroon font-semibold hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]",
+    "gold-gradient text-charcoal-black font-semibold hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]",
   ghost:
     "border border-champagne-gold/30 text-champagne-gold hover:bg-champagne-gold/5",
 };

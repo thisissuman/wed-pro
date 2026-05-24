@@ -150,7 +150,7 @@ export function RsvpForm({ slug, defaultMessage }: RsvpFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-full gold-gradient px-6 py-3 font-[family-name:var(--font-body)] text-sm font-semibold uppercase tracking-[0.14em] text-deep-maroon transition disabled:pointer-events-none disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-full gold-gradient px-6 py-3 font-[family-name:var(--font-body)] text-sm font-semibold uppercase tracking-[0.14em] text-charcoal-black transition disabled:pointer-events-none disabled:opacity-60"
       >
         {isPending ? (
           <>

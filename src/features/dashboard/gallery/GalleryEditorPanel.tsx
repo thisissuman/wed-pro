@@ -8,7 +8,7 @@ import { createGalleryImage } from "@/lib/invitations";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 import type { GalleryImage } from "@/types/wedding.types";
 
-export function GalleryEditorPanel({ draft, update }: PanelProps) {
+export function GalleryEditorPanel({ draft, update, bare }: PanelProps) {
   const { gallery } = draft;
 
   const updateImage = (id: string, patch: Partial<GalleryImage>) =>
@@ -66,11 +66,8 @@ export function GalleryEditorPanel({ draft, update }: PanelProps) {
 
   const sortedImages = [...gallery.images].sort((a, b) => a.order - b.order);
 
-  return (
-    <EditorPanel
-      title="Photo Gallery"
-      description="Showcase pre-wedding shoots and special moments. Add up to 12 photos."
-    >
+  const content = (
+    <>
       <TextInput
         label="Section Heading"
         value={gallery.heading ?? ""}
@@ -113,6 +110,17 @@ export function GalleryEditorPanel({ draft, update }: PanelProps) {
         <Plus size={14} />
         Add Photo
       </button>
+    </>
+  );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return (
+    <EditorPanel
+      title="Photo Gallery"
+      description="Showcase pre-wedding shoots and special moments. Add up to 12 photos."
+    >
+      {content}
     </EditorPanel>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Suspense, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { TemplateCard } from "@/features/dashboard/templates/TemplateCard";
 import { CinematicFooter } from "@/features/dashboard/footer/CinematicFooter";
 import { templates } from "@/data/templates";
@@ -7,7 +9,27 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export default function TemplatePage() {
+function TemplatePageContent() {
+  const searchParams = useSearchParams();
+  const recommendedFromQuery = searchParams.get("recommended");
+  const recommendedId = useMemo(() => {
+    if (recommendedFromQuery) return recommendedFromQuery;
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("recommendedTemplate");
+    }
+    return null;
+  }, [recommendedFromQuery]);
+
+  useEffect(() => {
+    if (!recommendedId) return;
+    const el = document.getElementById(`template-card-${recommendedId}`);
+    if (el) {
+      window.setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 400);
+    }
+  }, [recommendedId]);
+
   return (
     <div className="min-h-screen bg-background text-on-background selection:bg-champagne-gold/30">
       {/* Minimal Header for Template Page */}
@@ -69,7 +91,12 @@ export default function TemplatePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-items-center">
             {templates.map((template, i) => (
-              <TemplateCard key={template.id} template={template} index={i} />
+              <TemplateCard
+                key={template.id}
+                template={template}
+                index={i}
+                recommended={recommendedId === template.id}
+              />
             ))}
           </div>
         </section>
@@ -95,7 +122,7 @@ export default function TemplatePage() {
             </p>
             <Link
               href="mailto:hello@vivahastudio.com"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-deep-maroon font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
             >
               Request Custom Template
               <ArrowRight size={16} />
@@ -105,5 +132,13 @@ export default function TemplatePage() {
       </main>
       <CinematicFooter />
     </div>
+  );
+}
+
+export default function TemplatePage() {
+  return (
+    <Suspense fallback={null}>
+      <TemplatePageContent />
+    </Suspense>
   );
 }

@@ -1,14 +1,13 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
-import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import { createStoryMilestone } from "@/lib/invitations";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 import type { StoryMilestone } from "@/types/wedding.types";
 
-export function StoryEditorPanel({ draft, update }: PanelProps) {
+export function StoryEditorPanel({ draft, update, bare }: PanelProps) {
   const { story } = draft;
 
   const updateStory = (patch: Partial<typeof story>) =>
@@ -62,11 +61,8 @@ export function StoryEditorPanel({ draft, update }: PanelProps) {
       },
     }));
 
-  return (
-    <EditorPanel
-      title="Love Story"
-      description="Add milestones from your journey — first meeting, first date, proposal, and beyond."
-    >
+  const content = (
+    <>
       <TextInput
         label="Section Heading"
         value={story.heading ?? ""}
@@ -93,7 +89,6 @@ export function StoryEditorPanel({ draft, update }: PanelProps) {
               milestone={milestone}
               canMoveUp={index > 0}
               canMoveDown={index < story.timeline.length - 1}
-              invitationId={draft.id}
               onChange={(patch) => updateMilestone(milestone.id, patch)}
               onRemove={() => removeMilestone(milestone.id)}
               onMoveUp={() => moveMilestone(milestone.id, -1)}
@@ -111,6 +106,17 @@ export function StoryEditorPanel({ draft, update }: PanelProps) {
         <Plus size={14} />
         Add Milestone
       </button>
+    </>
+  );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return (
+    <EditorPanel
+      title="Love Story"
+      description="Add milestones from your journey — first meeting, first date, proposal, and beyond."
+    >
+      {content}
     </EditorPanel>
   );
 }
@@ -119,7 +125,6 @@ interface MilestoneCardProps {
   milestone: StoryMilestone;
   canMoveUp: boolean;
   canMoveDown: boolean;
-  invitationId: string;
   onChange: (patch: Partial<StoryMilestone>) => void;
   onRemove: () => void;
   onMoveUp: () => void;
@@ -130,7 +135,6 @@ function MilestoneCard({
   milestone,
   canMoveUp,
   canMoveDown,
-  invitationId,
   onChange,
   onRemove,
   onMoveUp,
@@ -182,14 +186,6 @@ function MilestoneCard({
           label="Description"
           value={milestone.description}
           onChange={(value) => onChange({ description: value })}
-        />
-        <CloudinaryUploadField
-          label="Photo"
-          value={milestone.photo ?? ""}
-          folder={`wed-pro/${invitationId}/story`}
-          helperText="Optional milestone photo."
-          compact
-          onChange={(value) => onChange({ photo: value })}
         />
       </div>
     </div>
