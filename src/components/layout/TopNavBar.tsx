@@ -1,16 +1,15 @@
 "use client";
 
-import { User, ArrowRight, Sun, Moon } from "lucide-react";
+import { User, Sun, Moon, LogOut, LayoutDashboard } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-import { User as SupabaseUser } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useActiveSection } from "./ScrollTracker";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 const sectionLinks = [
   { label: "Features", id: "features" },
@@ -19,7 +18,7 @@ const sectionLinks = [
 ] as const;
 
 export function TopNavBar() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { user, signOut } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -29,28 +28,10 @@ export function TopNavBar() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     if (!isDropdownOpen) return;
     const handler = () => setIsDropdownOpen(false);
@@ -71,8 +52,7 @@ export function TopNavBar() {
   );
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut();
     setIsDropdownOpen(false);
     toast.success("Signed out");
     router.push("/");
@@ -106,7 +86,6 @@ export function TopNavBar() {
       className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-champagne-gold/10 shadow-[0_4px_30px_rgba(212,175,55,0.05)]"
     >
       <div className="flex justify-between items-center px-[var(--spacing-container-margin)] py-3 md:py-4 w-full max-w-[1200px] mx-auto">
-        {/* Left: Brand Logo — always links to homepage */}
         <Link
           href="/"
           className="font-[family-name:var(--font-heading)] text-champagne-gold tracking-widest font-semibold text-lg md:text-headline-md shrink-0"
@@ -114,7 +93,6 @@ export function TopNavBar() {
           Vivaha Studio
         </Link>
 
-        {/* Center: Desktop Section Links */}
         <nav className="hidden md:flex items-center gap-8">
           {sectionLinks.map((link) => {
             const isActive = isHomepage && activeSection === link.id;
@@ -135,7 +113,6 @@ export function TopNavBar() {
           })}
         </nav>
 
-        {/* Right: CTA + Avatar */}
         <div className="flex items-center gap-3 md:gap-4">
           {mounted && (
             <button
@@ -156,10 +133,8 @@ export function TopNavBar() {
             )}
           >
             {user ? "Dashboard" : "Let's Start"}
-            <ArrowRight size={14} className="hidden md:inline" />
           </Link>
 
-          {/* Profile Avatar */}
           <div className="relative hidden md:block">
             <button
               onClick={handleAvatarClick}
@@ -177,7 +152,6 @@ export function TopNavBar() {
               </div>
             </button>
 
-            {/* Premium Frosted Glass Profile Dropdown */}
             <AnimatePresence>
               {isDropdownOpen && user && (
                 <motion.div
@@ -200,15 +174,17 @@ export function TopNavBar() {
                   <Link
                     href="/dashboard"
                     onClick={() => setIsDropdownOpen(false)}
-                    className="flex items-center w-full px-3 py-2.5 text-xs rounded-lg text-on-surface hover:bg-champagne-gold/10 transition-colors font-medium"
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-xs rounded-lg text-on-surface hover:bg-champagne-gold/10 transition-colors font-medium"
                   >
+                    <LayoutDashboard size={14} />
                     Dashboard
                   </Link>
 
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center w-full text-left px-3 py-2.5 text-xs rounded-lg text-[#ffb4a8] hover:bg-[#8f0f07]/25 transition-colors mt-1 font-semibold"
+                    className="flex items-center gap-2 w-full text-left px-3 py-2.5 text-xs rounded-lg text-[#ffb4a8] hover:bg-[#8f0f07]/25 transition-colors mt-1 font-semibold"
                   >
+                    <LogOut size={14} />
                     Sign Out
                   </button>
                 </motion.div>

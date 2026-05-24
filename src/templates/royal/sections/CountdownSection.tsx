@@ -38,13 +38,18 @@ export function CountdownSection({ countdown }: CountdownSectionProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    setTimeLeft(calcTimeLeft(countdown.targetDate));
+    const mountTimer = window.setTimeout(() => {
+      setMounted(true);
+      setTimeLeft(calcTimeLeft(countdown.targetDate));
+    }, 0);
 
     const interval = setInterval(() => {
       setTimeLeft(calcTimeLeft(countdown.targetDate));
     }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      window.clearTimeout(mountTimer);
+      clearInterval(interval);
+    };
   }, [countdown.targetDate]);
 
   const units = [

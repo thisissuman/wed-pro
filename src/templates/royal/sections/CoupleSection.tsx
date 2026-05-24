@@ -1,7 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { CoupleData } from "@/types/wedding.types";
+import { cn } from "@/lib/utils";
+import { isValidDisplayUrl } from "@/lib/media-url";
 
 interface CoupleSectionProps {
   couple: CoupleData;
@@ -14,6 +17,17 @@ interface CoupleSectionProps {
  */
 export function CoupleSection({ couple }: CoupleSectionProps) {
   const { bride, groom } = couple;
+  const family = couple.family;
+  const brideFirst = family?.displayOrder === "bride-first";
+  const groomParentLine =
+    getStructuredParentLine("groom", family?.groom.fatherName, family?.groom.motherName) ||
+    groom.parentNames;
+  const brideParentLine =
+    getStructuredParentLine("bride", family?.bride.fatherName, family?.bride.motherName) ||
+    bride.parentNames;
+  const groomPhoto = isValidDisplayUrl(groom.photo) ? groom.photo?.trim() : undefined;
+  const bridePhoto = isValidDisplayUrl(bride.photo) ? bride.photo?.trim() : undefined;
+  const showGrandparents = family?.includeGrandparents ?? false;
 
   return (
     <section id="preview-section-couple" className="px-6 py-16 md:py-24">
@@ -54,14 +68,16 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center space-y-4"
+            className={cn("text-center space-y-4", brideFirst && "order-2")}
           >
             {/* Photo placeholder */}
-            <div className="w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
-              {groom.photo?.trim() ? (
-                <img
-                  src={groom.photo}
+            <div className="relative w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
+              {groomPhoto ? (
+                <Image
+                  src={groomPhoto}
                   alt={groom.name}
+                  fill
+                  sizes="(max-width: 768px) 144px, 176px"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -73,9 +89,14 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             <h3 className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-ivory font-semibold">
               {groom.name}
             </h3>
-            {groom.parentNames && (
+            {groomParentLine && (
               <p className="font-[family-name:var(--font-body)] text-xs text-champagne-gold/60 tracking-wide">
-                {groom.parentNames}
+                {groomParentLine}
+              </p>
+            )}
+            {showGrandparents && family?.groom.grandparentsNames && (
+              <p className="mx-auto max-w-xs font-[family-name:var(--font-body)] text-[11px] leading-relaxed text-on-surface-variant/55">
+                Grandson of {family.groom.grandparentsNames}
               </p>
             )}
             {groom.bio && (
@@ -91,13 +112,15 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-center space-y-4"
+            className={cn("text-center space-y-4", brideFirst && "order-1")}
           >
-            <div className="w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
-              {bride.photo?.trim() ? (
-                <img
-                  src={bride.photo}
+            <div className="relative w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
+              {bridePhoto ? (
+                <Image
+                  src={bridePhoto}
                   alt={bride.name}
+                  fill
+                  sizes="(max-width: 768px) 144px, 176px"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -109,9 +132,14 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             <h3 className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-ivory font-semibold">
               {bride.name}
             </h3>
-            {bride.parentNames && (
+            {brideParentLine && (
               <p className="font-[family-name:var(--font-body)] text-xs text-champagne-gold/60 tracking-wide">
-                {bride.parentNames}
+                {brideParentLine}
+              </p>
+            )}
+            {showGrandparents && family?.bride.grandparentsNames && (
+              <p className="mx-auto max-w-xs font-[family-name:var(--font-body)] text-[11px] leading-relaxed text-on-surface-variant/55">
+                Granddaughter of {family.bride.grandparentsNames}
               </p>
             )}
             {bride.bio && (
@@ -124,4 +152,14 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
       </motion.div>
     </section>
   );
+}
+
+function getStructuredParentLine(
+  side: "bride" | "groom",
+  fatherName?: string,
+  motherName?: string
+) {
+  const parents = [fatherName, motherName].filter((value) => value?.trim()).join(" & ");
+  if (!parents) return "";
+  return `${side === "bride" ? "Daughter" : "Son"} of ${parents}`;
 }

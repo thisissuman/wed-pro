@@ -33,7 +33,12 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
     <div className="min-h-screen bg-background text-on-background selection:bg-champagne-gold/30 overflow-x-hidden">
       {/* 1. Hero — Emotional anchor with couple names and date */}
       {sections.showHero !== false && (
-        <HeroSection couple={data.couple} countdown={data.countdown} hero={data.hero} />
+        <HeroSection
+          couple={data.couple}
+          countdown={data.countdown}
+          hero={data.hero}
+          weddingHashtag={data.weddingHashtag}
+        />
       )}
 
       {/* 2. Couple — Bride & Groom reveal */}

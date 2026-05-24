@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Check, Copy, ExternalLink, X } from "lucide-react";
 import {
@@ -44,11 +44,6 @@ function PublishShareDialogContent({
   const [groomName, setGroomName] = useState(draft.couple.groom.name);
   const [brideName, setBrideName] = useState(draft.couple.bride.name);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    setGroomName(draft.couple.groom.name);
-    setBrideName(draft.couple.bride.name);
-  }, [draft.couple.bride.name, draft.couple.groom.name]);
 
   const slug = buildInvitationSlug(groomName, brideName) || draft.slug;
   const sharePath = getPublicInvitationPath(slug);

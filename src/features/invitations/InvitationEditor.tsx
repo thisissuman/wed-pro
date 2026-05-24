@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "@/lib/toast";
 import {
   ArrowLeft,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Copy,
+  Eye,
   ExternalLink,
   Globe2,
   Loader2,
@@ -15,6 +19,7 @@ import {
   Save,
   Smartphone,
   Users,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EditorAccordion } from "@/features/dashboard/shared/EditorAccordion";
@@ -39,12 +44,43 @@ import { StoryEditorPanel } from "@/features/dashboard/story/StoryEditorPanel";
 import { GalleryEditorPanel } from "@/features/dashboard/gallery/GalleryEditorPanel";
 import { SectionSettingsPanel } from "@/features/dashboard/sections/SectionSettingsPanel";
 import { MediaMusicPanel } from "@/features/dashboard/media/MediaMusicPanel";
+import { SharePreviewPanel } from "@/features/dashboard/share/SharePreviewPanel";
 import type { DraftUpdater } from "@/features/dashboard/shared/types";
 import type { WeddingData } from "@/types/wedding.types";
 
 interface InvitationEditorProps {
   initialData: WeddingData;
 }
+
+const editorSteps = [
+  {
+    id: "wedding-details",
+    title: "Wedding Details",
+    description: "Couple names, family details, date, and countdown.",
+  },
+  {
+    id: "media",
+    title: "Media & Music",
+    description: "Hero background and optional ambient music.",
+  },
+  { id: "events", title: "Events", description: "Ceremony timings and locations." },
+  { id: "story", title: "Love Story", description: "Your journey as a couple." },
+  { id: "gallery", title: "Gallery", description: "Photos and captions." },
+  { id: "venue", title: "Venue", description: "Main venue and directions." },
+  { id: "rsvp", title: "RSVP", description: "Guest confirmation settings." },
+  {
+    id: "share-preview",
+    title: "Share Preview",
+    description: "WhatsApp and social link preview when you share your invite.",
+  },
+  {
+    id: "page-setup",
+    title: "Optional Sections",
+    description: "Choose which emotional sections appear.",
+  },
+] as const;
+
+type EditorStepId = (typeof editorSteps)[number]["id"];
 
 export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const supabase = useMemo(() => createClient(), []);
@@ -62,9 +98,12 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showPublishShareDialog, setShowPublishShareDialog] = useState(false);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
+  const [mobileStepIndex, setMobileStepIndex] = useState(0);
   const didInitialize = useRef(false);
   const skipAutosave = useRef(true);
+  const mobileEditorTopRef = useRef<HTMLDivElement | null>(null);
   // Autosave queue: only ever one write in flight; coalesce intervening edits
   // into `pendingDraft` and apply after the active save resolves. A monotonic
   // generation token guards against out-of-order responses overwriting newer
@@ -72,7 +111,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const saveGeneration = useRef(0);
   const inFlight = useRef(false);
   const pendingDraft = useRef<WeddingData | null>(null);
-  const prevSaveState = useRef<string | null>(null);
 
   useEffect(() => {
     initialize(initialData);
@@ -155,23 +193,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   );
 
   useEffect(() => {
-    const prev = prevSaveState.current;
-    if (prev === saveState) return;
-
-    if (saveState === "saving") {
-      toast.loading("Saving changes…");
-    } else if (saveState === "saved" && prev === "saving") {
-      toast.dismiss();
-      toast.success("Changes saved");
-    } else if (saveState === "error" && prev === "saving") {
-      toast.dismiss();
-      toast.error("Save failed", saveMessage || undefined);
-    }
-
-    prevSaveState.current = saveState;
-  }, [saveState, saveMessage]);
-
-  useEffect(() => {
     if (!draft || !didInitialize.current) return;
 
     if (skipAutosave.current) {
@@ -201,6 +222,19 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     (updater) => updateDraft((current) => updater(current)),
     [updateDraft]
   );
+
+  const goToMobileStep = useCallback((nextIndex: number) => {
+    const clamped = Math.min(Math.max(nextIndex, 0), editorSteps.length - 1);
+    setMobileStepIndex(clamped);
+    const top = mobileEditorTopRef.current?.getBoundingClientRect().top;
+    if (typeof top === "number") {
+      window.scrollTo({
+        top: window.scrollY + top - 84,
+        behavior: "smooth",
+      });
+    }
+    scrollPreviewToSection(editorSteps[clamped].id);
+  }, []);
 
   const publish = async () => {
     if (!draft) return;
@@ -297,9 +331,34 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   }
 
   const canShare = draft.status === "published";
+  const currentMobileStep = editorSteps[mobileStepIndex];
+  const isLastMobileStep = mobileStepIndex === editorSteps.length - 1;
+
+  const renderStepPanel = (stepId: EditorStepId) => {
+    switch (stepId) {
+      case "wedding-details":
+        return <WeddingDetailsPanel draft={draft} update={update} bare />;
+      case "media":
+        return <MediaMusicPanel draft={draft} update={update} bare />;
+      case "events":
+        return <EventsPanel draft={draft} update={update} bare />;
+      case "story":
+        return <StoryEditorPanel draft={draft} update={update} bare />;
+      case "gallery":
+        return <GalleryEditorPanel draft={draft} update={update} bare />;
+      case "venue":
+        return <VenuePanel draft={draft} update={update} bare />;
+      case "rsvp":
+        return <RsvpPanel draft={draft} update={update} bare />;
+      case "share-preview":
+        return <SharePreviewPanel draft={draft} update={update} bare />;
+      case "page-setup":
+        return <SectionSettingsPanel draft={draft} update={update} bare />;
+    }
+  };
 
   return (
-    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pb-28 pt-6 md:pt-10">
+    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pb-32 pt-6 md:pt-10 md:pb-28 lg:pb-28">
       <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-5 md:flex-row md:items-end md:justify-between">
         <div className="space-y-3">
           <Link
@@ -329,7 +388,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             type="button"
             onClick={() => void publish()}
             disabled={isPublishing}
-            className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-5 py-2.5 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
+            className="hidden items-center justify-center gap-2 rounded-full gold-gradient px-5 py-2.5 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60 lg:inline-flex"
           >
             {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
             {draft.status === "published" ? "Republish" : "Publish"}
@@ -339,7 +398,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => void copyShareLink()}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10"
+              className="hidden items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 lg:inline-flex"
             >
               {copied ? <Check size={15} /> : <Copy size={15} />}
               {copied ? "Copied" : "Copy Link"}
@@ -350,7 +409,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => setShowShareDialog(true)}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366]/15 border border-[#25D366]/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#25D366] transition hover:bg-[#25D366]/25"
+              className="hidden items-center justify-center gap-2 rounded-full bg-[#25D366]/15 border border-[#25D366]/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#25D366] transition hover:bg-[#25D366]/25 lg:inline-flex"
             >
               <MessageCircle size={15} />
               WhatsApp
@@ -359,7 +418,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
           <Link
             href={`/dashboard/invitations/${draft.id}/guests`}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10"
+            className="hidden items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 lg:inline-flex"
           >
             <Users size={15} />
             Guests
@@ -368,52 +427,88 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
-        <EditorAccordion
-          defaultOpenId="wedding-details"
-          onActivate={scrollPreviewToSection}
-        >
-          <EditorAccordion.Item id="wedding-details" title="Wedding Details">
-            <WeddingDetailsPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item
-            id="media"
-            title="Media & Music"
-            description="Hero background and optional ambient music."
-          >
-            <MediaMusicPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item id="events" title="Events">
-            <EventsPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item id="story" title="Love Story">
-            <StoryEditorPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item id="gallery" title="Gallery">
-            <GalleryEditorPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item id="venue" title="Venue">
-            <VenuePanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item id="rsvp" title="RSVP">
-            <RsvpPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-          <EditorAccordion.Item
-            id="page-setup"
-            title="Optional Sections"
-            description="Show or hide extra sections. Events, gallery, and venue always stay on."
-          >
-            <SectionSettingsPanel draft={draft} update={update} bare />
-          </EditorAccordion.Item>
-        </EditorAccordion>
+        <section ref={mobileEditorTopRef} className="lg:hidden">
+          <div className="mb-4 rounded-2xl border border-champagne-gold/10 bg-surface-container/70 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.2)]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold/70">
+                  Step {mobileStepIndex + 1} of {editorSteps.length}
+                </p>
+                <h2 className="mt-1 font-heading text-xl text-ivory">
+                  {currentMobileStep.title}
+                </h2>
+                <p className="mt-1 text-xs leading-relaxed text-on-surface-variant/60">
+                  {currentMobileStep.description}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMobilePreview(true)}
+                className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition active:scale-95"
+              >
+                <Eye size={15} />
+                Preview
+              </button>
+            </div>
 
-        <section className="lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)]">
+            <div className="mt-4 grid grid-cols-9 gap-1" aria-label="Editor progress">
+              {editorSteps.map((step, index) => (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => goToMobileStep(index)}
+                  aria-label={`Go to ${step.title}`}
+                  aria-current={index === mobileStepIndex ? "step" : undefined}
+                  className={cn(
+                    "h-1.5 rounded-full transition",
+                    index <= mobileStepIndex ? "bg-champagne-gold" : "bg-champagne-gold/15"
+                  )}
+                />
+              ))}
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentMobileStep.id}
+              initial={{ opacity: 0, x: 18 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -18 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="rounded-2xl border border-champagne-gold/10 bg-surface-container/70 px-5 pb-6 pt-5 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
+            >
+              {renderStepPanel(currentMobileStep.id)}
+            </motion.div>
+          </AnimatePresence>
+        </section>
+
+        <div className="hidden lg:block">
+          <EditorAccordion
+            defaultOpenId="wedding-details"
+            onActivate={scrollPreviewToSection}
+          >
+            {editorSteps.map((step) => (
+              <EditorAccordion.Item
+                key={step.id}
+                id={step.id}
+                title={step.title}
+                description={step.id === "page-setup" ? "Show or hide extra sections. Events, gallery, and venue always stay on." : step.description}
+              >
+                {renderStepPanel(step.id)}
+              </EditorAccordion.Item>
+            ))}
+          </EditorAccordion>
+        </div>
+
+        <section className="hidden lg:sticky lg:top-6 lg:block lg:h-[calc(100dvh-3rem)]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold">Live Preview</p>
-              <p className="mt-1 text-xs text-on-surface-variant/60">
-                {previewMode === "mobile"
-                  ? "Mobile-first invitation view"
-                  : "Desktop responsive preview"}
+              <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold">
+                <span className="relative flex size-2" aria-hidden="true">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500/70 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+                </span>
+                Live Preview
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -475,6 +570,106 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
           </div>
         </section>
       </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-champagne-gold/10 bg-surface/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-[520px] items-center gap-2">
+          <button
+            type="button"
+            onClick={() => goToMobileStep(mobileStepIndex - 1)}
+            disabled={mobileStepIndex === 0}
+            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition active:scale-95 disabled:pointer-events-none disabled:opacity-35"
+          >
+            <ChevronLeft size={15} />
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowMobilePreview(true)}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition active:scale-95"
+            aria-label="Open live preview"
+          >
+            <Eye size={15} />
+          </button>
+          {isLastMobileStep ? (
+            <button
+              type="button"
+              onClick={() => void publish()}
+              disabled={isPublishing}
+              className="inline-flex min-h-11 flex-[1.4] items-center justify-center gap-2 rounded-full gold-gradient px-4 text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
+            >
+              {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
+              Publish
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => goToMobileStep(mobileStepIndex + 1)}
+              className="inline-flex min-h-11 flex-[1.4] items-center justify-center gap-2 rounded-full gold-gradient px-4 text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95"
+            >
+              Next
+              <ChevronRight size={15} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showMobilePreview && (
+          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-preview-title">
+            <motion.button
+              type="button"
+              aria-label="Close preview"
+              className="absolute inset-0 bg-charcoal-black/75"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              onClick={() => setShowMobilePreview(false)}
+            />
+            <motion.section
+              initial={{ opacity: 0, y: 32 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 32 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+              className="absolute inset-x-0 bottom-0 max-h-[92dvh] overflow-hidden rounded-t-[28px] border border-champagne-gold/15 bg-background shadow-[0_-30px_90px_rgba(0,0,0,0.55)]"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-champagne-gold/10 px-4 py-3">
+                <div>
+                  <h2
+                    id="mobile-preview-title"
+                    className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold"
+                  >
+                    <span className="relative flex size-2" aria-hidden="true">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500/70 opacity-75" />
+                      <span className="relative inline-flex size-2 rounded-full bg-red-500" />
+                    </span>
+                    Live Preview
+                  </h2>
+                  <p className="mt-1 text-xs text-on-surface-variant/60">
+                    Updates from your current step appear here.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMobilePreview(false)}
+                  className="inline-flex size-10 items-center justify-center rounded-full border border-champagne-gold/20 text-champagne-gold transition active:scale-95"
+                  aria-label="Close preview"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div
+                id="mobile-preview-scroll-container"
+                className="mx-auto h-[calc(92dvh-73px)] max-w-[430px] overflow-y-auto bg-background no-scrollbar"
+              >
+                {previewData && (
+                  <TemplateRenderer templateId={previewData.templateId} data={previewData} isPreview />
+                )}
+              </div>
+            </motion.section>
+          </div>
+        )}
+      </AnimatePresence>
 
       <WhatsAppShareDialog
         draft={draft}

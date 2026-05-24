@@ -23,12 +23,28 @@ export interface PersonData {
   heroText?: string;
 }
 
+export interface FamilySideData {
+  fatherName?: string;
+  motherName?: string;
+  grandparentsNames?: string;
+}
+
+export type ParentDisplayOrder = "bride-first" | "groom-first";
+
+export interface CoupleFamilyData {
+  bride: FamilySideData;
+  groom: FamilySideData;
+  displayOrder: ParentDisplayOrder;
+  includeGrandparents?: boolean;
+}
+
 /* ── Couple ── */
 export interface CoupleData {
   bride: PersonData;
   groom: PersonData;
   /** Wedding date — used across hero, countdown, SEO */
   weddingDate?: string;
+  family?: CoupleFamilyData;
 }
 
 /* ── Story Timeline ── */
@@ -221,6 +237,7 @@ export interface WeddingData {
   blessing: BlessingData;
   thankYou: ThankYouData;
   music: MusicData;
+  weddingHashtag?: string;
 
   /* Configuration */
   theme: ThemeConfig;

@@ -9,6 +9,7 @@ interface HeroSectionProps {
   couple: CoupleData;
   countdown: CountdownData;
   hero: HeroData;
+  weddingHashtag?: string;
 }
 
 /**
@@ -17,8 +18,9 @@ interface HeroSectionProps {
  * The emotional anchor of the invitation.
  * Animated couple names, wedding date, subtitle, and a cinematic reveal.
  */
-export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
+export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSectionProps) {
   const heroBackgroundSrc = hero.backgroundMedia?.trim();
+  const hashtag = weddingHashtag?.trim();
   const weddingDate = new Date(countdown.targetDate);
   const formattedDate = weddingDate.toLocaleDateString("en-IN", {
     day: "numeric",
@@ -150,6 +152,17 @@ export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
         >
           {formattedDate}
         </motion.p>
+
+        {hashtag && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 1.55 }}
+            className="mt-3 font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.28em] text-champagne-gold/55"
+          >
+            {hashtag.startsWith("#") ? hashtag : `#${hashtag}`}
+          </motion.p>
+        )}
 
         {/* Scroll hint */}
         <motion.div

@@ -3,9 +3,11 @@
 import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
-import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
+import { SelectInput, TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
+import { ToggleRow } from "@/features/dashboard/shared/ToggleRow";
 import { buildInvitationSlug } from "@/lib/invitations";
 import type { PanelProps } from "@/features/dashboard/shared/types";
+import type { ParentDisplayOrder, PersonData } from "@/types/wedding.types";
 
 function SectionDivider({ title, description }: { title: string; description?: string }) {
   return (
@@ -18,7 +20,29 @@ function SectionDivider({ title, description }: { title: string; description?: s
   );
 }
 
+const parentDisplayOptions: { value: ParentDisplayOrder; label: string }[] = [
+  { value: "groom-first", label: "Groom's family first" },
+  { value: "bride-first", label: "Bride's family first" },
+];
+
+function getParentLine(
+  side: "bride" | "groom",
+  fatherName?: string,
+  motherName?: string
+) {
+  const parents = [fatherName, motherName].filter((value) => value?.trim()).join(" & ");
+  if (!parents) return "";
+  return `${side === "bride" ? "Daughter" : "Son"} of ${parents}`;
+}
+
 export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
+  const family = draft.couple.family ?? {
+    bride: {},
+    groom: {},
+    displayOrder: "groom-first" as ParentDisplayOrder,
+    includeGrandparents: false,
+  };
+
   const patchNames = (groomName?: string, brideName?: string) =>
     update((current) => {
       const groom = groomName ?? current.couple.groom.name;
@@ -36,6 +60,40 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
         seo: {
           ...current.seo,
           pageTitle: `${groom || "Groom"} & ${bride || "Bride"} - Wedding Invitation`,
+        },
+      };
+    });
+
+  const patchFamilyMember = (
+    side: "bride" | "groom",
+    key: "fatherName" | "motherName" | "grandparentsNames",
+    value: string
+  ) =>
+    update((current) => {
+      const currentFamily = current.couple.family ?? {
+        bride: {},
+        groom: {},
+        displayOrder: "groom-first" as ParentDisplayOrder,
+        includeGrandparents: false,
+      };
+      const nextSide = {
+        ...currentFamily[side],
+        [key]: value,
+      };
+      const nextPerson: PersonData = {
+        ...current.couple[side],
+        parentNames: getParentLine(side, nextSide.fatherName, nextSide.motherName),
+      };
+
+      return {
+        ...current,
+        couple: {
+          ...current.couple,
+          [side]: nextPerson,
+          family: {
+            ...currentFamily,
+            [side]: nextSide,
+          },
         },
       };
     });
@@ -89,13 +147,25 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
               }))
             }
           />
+          <TextInput
+            label="Wedding Hashtag"
+            value={draft.weddingHashtag ?? ""}
+            placeholder="#RahulWedsAnanya"
+            helperText="Shown softly on the invitation for photo sharing."
+            onChange={(value) =>
+              update((current) => ({
+                ...current,
+                weddingHashtag: value,
+              }))
+            }
+          />
         </div>
       </div>
 
       <div onFocusCapture={() => scrollPreviewToSection("couple")}>
         <SectionDivider
           title="Meet the couple"
-          description="Names come from above. Add portraits, family lines, and a short note for each."
+          description="Add portraits, family details, and a short note for each."
         />
         <div className="mt-4 space-y-6">
           <div className="rounded-xl border border-champagne-gold/10 bg-charcoal-black/25 p-4 space-y-4">
@@ -120,19 +190,27 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
               }
             />
             <TextInput
-              label="Son of (family line)"
-              value={draft.couple.groom.parentNames ?? ""}
-              placeholder="Son of Mr. & Mrs. Sharma"
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  couple: {
-                    ...current.couple,
-                    groom: { ...current.couple.groom, parentNames: value },
-                  },
-                }))
-              }
+              label="Groom's Father"
+              value={family.groom.fatherName ?? ""}
+              placeholder="Mr. Ramesh Kapoor"
+              onChange={(value) => patchFamilyMember("groom", "fatherName", value)}
             />
+            <TextInput
+              label="Groom's Mother"
+              value={family.groom.motherName ?? ""}
+              placeholder="Mrs. Sunita Kapoor"
+              onChange={(value) => patchFamilyMember("groom", "motherName", value)}
+            />
+            {(family.includeGrandparents ?? false) && (
+              <TextInput
+                label="Groom's Grandparents"
+                value={family.groom.grandparentsNames ?? ""}
+                placeholder="Shri Mohan & Smt. Leela Kapoor"
+                onChange={(value) =>
+                  patchFamilyMember("groom", "grandparentsNames", value)
+                }
+              />
+            )}
             <TextArea
               label="Short message"
               value={draft.couple.groom.bio ?? ""}
@@ -172,19 +250,27 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
               }
             />
             <TextInput
-              label="Daughter of (family line)"
-              value={draft.couple.bride.parentNames ?? ""}
-              placeholder="Daughter of Mr. & Mrs. Patel"
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  couple: {
-                    ...current.couple,
-                    bride: { ...current.couple.bride, parentNames: value },
-                  },
-                }))
-              }
+              label="Bride's Father"
+              value={family.bride.fatherName ?? ""}
+              placeholder="Mr. Suresh Sharma"
+              onChange={(value) => patchFamilyMember("bride", "fatherName", value)}
             />
+            <TextInput
+              label="Bride's Mother"
+              value={family.bride.motherName ?? ""}
+              placeholder="Mrs. Anita Sharma"
+              onChange={(value) => patchFamilyMember("bride", "motherName", value)}
+            />
+            {(family.includeGrandparents ?? false) && (
+              <TextInput
+                label="Bride's Grandparents"
+                value={family.bride.grandparentsNames ?? ""}
+                placeholder="Shri Harish & Smt. Kamla Sharma"
+                onChange={(value) =>
+                  patchFamilyMember("bride", "grandparentsNames", value)
+                }
+              />
+            )}
             <TextArea
               label="Short message"
               value={draft.couple.bride.bio ?? ""}
@@ -201,6 +287,49 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
               }
             />
           </div>
+        </div>
+      </div>
+
+      <div onFocusCapture={() => scrollPreviewToSection("couple")}>
+        <SectionDivider
+          title="Family display"
+          description="Choose how parents appear on the invitation card."
+        />
+        <div className="mt-4 space-y-4">
+          <SelectInput
+            label="Parents Display Order"
+            value={family.displayOrder}
+            options={parentDisplayOptions}
+            onChange={(value) =>
+              update((current) => ({
+                ...current,
+                couple: {
+                  ...current.couple,
+                  family: {
+                    ...(current.couple.family ?? family),
+                    displayOrder: value,
+                  },
+                },
+              }))
+            }
+          />
+          <ToggleRow
+            label="Include grandparents' names"
+            description="Shows grandparents below the parents when provided."
+            checked={family.includeGrandparents ?? false}
+            onChange={(value) =>
+              update((current) => ({
+                ...current,
+                couple: {
+                  ...current.couple,
+                  family: {
+                    ...(current.couple.family ?? family),
+                    includeGrandparents: value,
+                  },
+                },
+              }))
+            }
+          />
         </div>
       </div>
 
