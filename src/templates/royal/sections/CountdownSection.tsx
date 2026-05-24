@@ -31,12 +31,16 @@ function calcTimeLeft(targetDate: string): TimeLeft {
  *
  * Live countdown timer to the wedding date with elegant typography.
  */
+const EMPTY_TIME: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
 export function CountdownSection({ countdown }: CountdownSectionProps) {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>(
-    calcTimeLeft(countdown.targetDate)
-  );
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>(EMPTY_TIME);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setTimeLeft(calcTimeLeft(countdown.targetDate));
+
     const interval = setInterval(() => {
       setTimeLeft(calcTimeLeft(countdown.targetDate));
     }, 1000);
@@ -79,7 +83,7 @@ export function CountdownSection({ countdown }: CountdownSectionProps) {
             >
               <div className="w-full aspect-square max-w-[100px] rounded-2xl bg-surface-container border border-champagne-gold/10 flex items-center justify-center mb-2">
                 <span className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-ivory font-bold tabular-nums">
-                  {String(unit.value).padStart(2, "0")}
+                  {mounted ? String(unit.value).padStart(2, "0") : "--"}
                 </span>
               </div>
               <span className="font-[family-name:var(--font-body)] text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-champagne-gold/50">

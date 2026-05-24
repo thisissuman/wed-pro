@@ -8,6 +8,15 @@ interface MusicPlayerProps {
   music: MusicData;
 }
 
+function isLikelyAudioUrl(url: string): boolean {
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    return /\.(mp3|wav|ogg|m4a|aac|flac|webm)(\?|$)/i.test(pathname) || pathname.includes("/video/upload/");
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Royal Template — Music Player
  *
@@ -17,14 +26,15 @@ interface MusicPlayerProps {
 export function MusicPlayer({ music }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
-    if (!music.url || !music.autoplay) return;
+    if (!music.url || !music.autoplay || loadFailed) return;
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.muted = true;
-    audio
+    void audio
       .play()
       .then(() => {
         setIsPlaying(true);
@@ -32,9 +42,9 @@ export function MusicPlayer({ music }: MusicPlayerProps) {
       .catch(() => {
         setIsPlaying(false);
       });
-  }, [music.autoplay, music.url]);
+  }, [music.autoplay, music.url, loadFailed]);
 
-  if (!music.url) return null;
+  if (!music.url || loadFailed || !isLikelyAudioUrl(music.url)) return null;
 
   const toggle = () => {
     const audio = audioRef.current;
@@ -42,7 +52,7 @@ export function MusicPlayer({ music }: MusicPlayerProps) {
 
     if (audio.paused) {
       audio.muted = false;
-      void audio.play().then(() => setIsPlaying(true));
+      void audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
     } else {
       audio.pause();
       setIsPlaying(false);
@@ -51,7 +61,17 @@ export function MusicPlayer({ music }: MusicPlayerProps) {
 
   return (
     <>
-      <audio ref={audioRef} src={music.url} loop preload="none" playsInline />
+      <audio
+        ref={audioRef}
+        src={music.url}
+        loop
+        preload="none"
+        playsInline
+        onError={() => {
+          setLoadFailed(true);
+          setIsPlaying(false);
+        }}
+      />
       <button
         type="button"
         onClick={toggle}

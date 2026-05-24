@@ -35,3 +35,11 @@ export function buildOAuthCallbackUrl(origin: string, next: string): string {
   }
   return url.toString();
 }
+
+export function buildLoginUrl(next?: string | null): string {
+  const safe = safeNextPath(next, "/dashboard");
+  if (safe === "/dashboard") {
+    return "/login";
+  }
+  return `/login?next=${encodeURIComponent(safe)}`;
+}
