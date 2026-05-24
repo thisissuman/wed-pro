@@ -26,7 +26,7 @@ const eventTypeEmoji: Record<string, string> = {
  */
 export function EventsSection({ events }: EventsSectionProps) {
   return (
-    <section className="px-6 py-16 md:py-24">
+    <section id="preview-section-events" className="px-6 py-16 md:py-24">
       <div className="max-w-3xl mx-auto">
         {/* Section heading */}
         <motion.div

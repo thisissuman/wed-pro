@@ -11,6 +11,7 @@ import {
   describeAuthError,
   safeNextPath,
 } from '@/lib/auth/redirects'
+import { toast } from '@/lib/toast'
 
 export default function LoginPage() {
   return (
@@ -50,9 +51,11 @@ function LoginPageInner() {
 
         if (error) {
           setErrorMsg(error.message)
+          toast.error('Login failed', error.message)
           return
         }
 
+        toast.success('Welcome back')
         router.push(nextPath)
         router.refresh()
       } catch {

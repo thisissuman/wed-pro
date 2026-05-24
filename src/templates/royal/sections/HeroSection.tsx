@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { isValidDisplayUrl } from "@/lib/media-url";
 import type { CoupleData, CountdownData, HeroData } from "@/types/wedding.types";
 
 interface HeroSectionProps {
@@ -17,6 +18,7 @@ interface HeroSectionProps {
  * Animated couple names, wedding date, subtitle, and a cinematic reveal.
  */
 export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
+  const heroBackgroundSrc = hero.backgroundMedia?.trim();
   const weddingDate = new Date(countdown.targetDate);
   const formattedDate = weddingDate.toLocaleDateString("en-IN", {
     day: "numeric",
@@ -25,11 +27,14 @@ export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
   });
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
+    <section
+      id="preview-section-hero"
+      className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden"
+    >
       {/* Background media — next/image for optimized LCP */}
-      {hero.backgroundMedia && (
+      {heroBackgroundSrc && isValidDisplayUrl(heroBackgroundSrc) && (
         <Image
-          src={hero.backgroundMedia}
+          src={heroBackgroundSrc}
           alt=""
           fill
           priority
@@ -47,6 +52,11 @@ export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
             ? `rgba(0,0,0,${hero.overlayOpacity ?? 0.7})`
             : "radial-gradient(ellipse at center, rgba(212,175,55,0.08) 0%, transparent 70%)",
         }}
+      />
+
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[30%] bg-gradient-to-t from-[#131313] to-transparent"
+        aria-hidden="true"
       />
 
       {/* Content */}

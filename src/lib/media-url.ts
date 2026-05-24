@@ -46,6 +46,13 @@ export function validateMediaUrl(input: string): MediaUrlValidation {
   }
 }
 
+/** True when a URL is safe to pass to next/image or <img src>. */
+export function isValidDisplayUrl(url: string | undefined | null): boolean {
+  const value = url?.trim() ?? "";
+  if (value.length === 0) return false;
+  return validateMediaUrl(value).ok;
+}
+
 const CLOUDINARY_HOSTS = new Set([
   "res.cloudinary.com",
   "media.cloudinary.com",

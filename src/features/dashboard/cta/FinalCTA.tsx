@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { templates } from "@/data/templates";
+import { WeddingStyleQuiz } from "./WeddingStyleQuiz";
 
 export function FinalCTA() {
+  const [quizOpen, setQuizOpen] = useState(false);
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -34,13 +38,14 @@ export function FinalCTA() {
           your cinematic invitation in minutes.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
-          <Link
-            href="/template"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full gold-gradient text-deep-maroon font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+          <button
+            type="button"
+            onClick={() => setQuizOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
           >
             Begin Your Story
             <ArrowRight size={16} />
-          </Link>
+          </button>
           <Link
             href="/template"
             className="inline-flex items-center justify-center px-8 py-4 rounded-full border border-champagne-gold/25 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium tracking-wide hover:bg-champagne-gold/5 hover:border-champagne-gold/40 active:scale-[0.98] transition-all duration-300"
@@ -49,6 +54,8 @@ export function FinalCTA() {
           </Link>
         </div>
       </div>
+
+      <WeddingStyleQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
     </motion.section>
   );
 }

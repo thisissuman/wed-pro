@@ -1,5 +1,6 @@
 "use client";
 
+import { withEssentialSections } from "@/lib/invitations";
 import type { TemplateProps } from "@/templates/types";
 import { HeroSection } from "./sections/HeroSection";
 import { CoupleSection } from "./sections/CoupleSection";
@@ -26,7 +27,7 @@ import { MusicPlayer } from "./sections/MusicPlayer";
  * Sections are conditionally rendered based on SectionVisibility.
  */
 export function RoyalTemplate({ data, isPreview }: TemplateProps) {
-  const { sections } = data;
+  const sections = withEssentialSections(data.sections);
 
   return (
     <div className="min-h-screen bg-background text-on-background selection:bg-champagne-gold/30 overflow-x-hidden">

@@ -5,9 +5,9 @@ import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 
-export function VenuePanel({ draft, update }: PanelProps) {
-  return (
-    <EditorPanel title="Venue">
+export function VenuePanel({ draft, update, bare }: PanelProps) {
+  const content = (
+    <>
       <TextInput
         label="Venue Name"
         value={draft.venue.name}
@@ -48,6 +48,10 @@ export function VenuePanel({ draft, update }: PanelProps) {
           }))
         }
       />
-    </EditorPanel>
+    </>
   );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return <EditorPanel title="Venue">{content}</EditorPanel>;
 }

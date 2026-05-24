@@ -37,6 +37,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** Events, gallery, and venue cannot be hidden on the public invitation. */
+export function withEssentialSections(
+  sections: WeddingData["sections"]
+): WeddingData["sections"] {
+  return {
+    ...sections,
+    showEvents: true,
+    showGallery: true,
+    showVenue: true,
+  };
+}
+
 export function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -45,6 +57,26 @@ export function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 64);
+}
+
+/** Public URL slug from couple names, e.g. `rahul-weds-ananya`. */
+export function buildInvitationSlug(groomName: string, brideName: string): string {
+  const groomFirst = slugify(groomName.split(/\s+/)[0] || groomName);
+  const brideFirst = slugify(brideName.split(/\s+/)[0] || brideName);
+
+  if (groomFirst && brideFirst) {
+    return `${groomFirst}-weds-${brideFirst}`.slice(0, 64);
+  }
+  if (groomFirst) return `${groomFirst}-wedding`.slice(0, 64);
+  if (brideFirst) return `${brideFirst}-wedding`.slice(0, 64);
+  return "";
+}
+
+export function resolveInvitationSlug(data: Pick<WeddingData, "slug" | "templateId" | "couple">): string {
+  const fromNames = buildInvitationSlug(data.couple.groom.name, data.couple.bride.name);
+  if (fromNames) return fromNames;
+  if (data.slug?.trim()) return slugify(data.slug);
+  return makeDraftSlug(data.templateId);
 }
 
 export function makeDraftSlug(templateId = FALLBACK_TEMPLATE_ID): string {
@@ -71,6 +103,30 @@ export function createStoryMilestone(): StoryMilestone {
     description: "",
   };
 }
+
+export const DEFAULT_GALLERY_STARTER_IMAGES: GalleryImage[] = [
+  {
+    id: "gal-starter-1",
+    url: "https://images.unsplash.com/photo-1583089892943-e02e5b017b6a?w=800&q=80",
+    caption: "Pre-wedding shoot",
+    alt: "Couple during pre-wedding photoshoot",
+    order: 1,
+  },
+  {
+    id: "gal-starter-2",
+    url: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80",
+    caption: "Together forever",
+    alt: "Couple holding hands",
+    order: 2,
+  },
+  {
+    id: "gal-starter-3",
+    url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80",
+    caption: "Our journey",
+    alt: "Wedding ceremony moment",
+    order: 3,
+  },
+];
 
 export function createGalleryImage(order: number): GalleryImage {
   return {
@@ -152,9 +208,15 @@ export function createStarterWeddingData({
   data.story = {
     heading: "Our Love Story",
     quote: "Every love story is beautiful, but ours is our favourite.",
-    timeline: [],
+    timeline: sampleWeddingData.story.timeline.map((milestone, index) => ({
+      ...milestone,
+      id: `story-starter-${index + 1}`,
+    })),
   };
-  data.gallery = { heading: "Our Gallery", images: [] };
+  data.gallery = {
+    heading: "Our Gallery",
+    images: DEFAULT_GALLERY_STARTER_IMAGES.map((img) => ({ ...img })),
+  };
   data.rsvp = {
     type: "whatsapp",
     whatsappNumber: "",
@@ -194,6 +256,10 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
     slug: row.slug,
     templateId: row.template_id,
     status: row.status,
+    sections: withEssentialSections({
+      ...base.sections,
+      ...(content.sections ?? {}),
+    }),
     meta: {
       ...base.meta,
       ...contentMeta,

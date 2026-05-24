@@ -25,7 +25,7 @@ export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
   const showInlineForm = rsvp.type === "form" && slug && !isPreview;
 
   return (
-    <section className="px-6 py-16 md:py-24">
+    <section id="preview-section-rsvp" className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -81,7 +81,7 @@ export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-deep-maroon font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all duration-200"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all duration-200"
           >
             <ExternalLink size={16} />
             {rsvp.buttonText || "Fill RSVP Form"}

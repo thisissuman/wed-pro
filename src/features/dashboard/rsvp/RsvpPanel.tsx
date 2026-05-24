@@ -11,14 +11,11 @@ const rsvpTypeOptions: { value: RSVPType; label: string }[] = [
   { value: "link", label: "External Link" },
 ];
 
-export function RsvpPanel({ draft, update }: PanelProps) {
+export function RsvpPanel({ draft, update, bare }: PanelProps) {
   const { rsvp } = draft;
 
-  return (
-    <EditorPanel
-      title="RSVP"
-      description="Pick how guests will confirm — WhatsApp, an in-app form, or an external link."
-    >
+  const content = (
+    <>
       <SelectInput
         label="RSVP Type"
         value={rsvp.type}
@@ -97,6 +94,17 @@ export function RsvpPanel({ draft, update }: PanelProps) {
           }
         />
       )}
+    </>
+  );
+
+  if (bare) return <div className="space-y-4">{content}</div>;
+
+  return (
+    <EditorPanel
+      title="RSVP"
+      description="Pick how guests will confirm — WhatsApp, an in-app form, or an external link."
+    >
+      {content}
     </EditorPanel>
   );
 }

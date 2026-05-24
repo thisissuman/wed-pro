@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, Truck, Sparkles, ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { SavingsCalculatorSheet } from "./SavingsCalculatorSheet";
 
 export function DigitalVsPhysical() {
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+
   return (
     <section className="relative z-10 flex flex-col items-center justify-center">
       {/* Section Header */}
@@ -139,9 +142,10 @@ export function DigitalVsPhysical() {
         <h2 className="font-[family-name:var(--font-heading)] text-headline-lg-mobile md:text-headline-lg text-ivory font-semibold">
           Ready to create magic?
         </h2>
-        <Link
-          href="/template"
-          className="group relative inline-flex items-center justify-center px-8 py-4 rounded-full bg-gradient-to-r from-champagne-gold to-rose-gold text-deep-maroon font-[family-name:var(--font-body)] text-sm font-bold uppercase tracking-widest shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:shadow-[0_0_60px_rgba(212,175,55,0.6)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+        <button
+          type="button"
+          onClick={() => setCalculatorOpen(true)}
+          className="group relative inline-flex items-center justify-center px-8 py-4 rounded-full bg-gradient-to-r from-champagne-gold to-rose-gold text-charcoal-black font-[family-name:var(--font-body)] text-sm font-bold uppercase tracking-widest shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:shadow-[0_0_60px_rgba(212,175,55,0.6)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
         >
           <span className="relative z-10">Start Designing Now</span>
           <ArrowRight
@@ -149,9 +153,14 @@ export function DigitalVsPhysical() {
             strokeWidth={2.5}
             className="ml-2 relative z-10 transition-transform group-hover:translate-x-1"
           />
-          <div className="absolute inset-0 rounded-full border-2 border-white/20 mix-blend-overlay pointer-events-none"></div>
-        </Link>
+          <div className="absolute inset-0 rounded-full border-2 border-white/20 mix-blend-overlay pointer-events-none" />
+        </button>
       </motion.div>
+
+      <SavingsCalculatorSheet
+        open={calculatorOpen}
+        onClose={() => setCalculatorOpen(false)}
+      />
     </section>
   );
 }

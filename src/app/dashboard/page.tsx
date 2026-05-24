@@ -43,7 +43,7 @@ export default async function DashboardPage() {
 
           <Link
             href="/template"
-            className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-6 py-3 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-deep-maroon transition hover:shadow-[0_0_20px_rgba(242,202,80,0.25)] active:scale-95"
+            className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-6 py-3 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition hover:shadow-[0_0_20px_rgba(242,202,80,0.25)] active:scale-95"
           >
             <Plus size={15} />
             New Invitation

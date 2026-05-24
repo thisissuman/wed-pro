@@ -131,7 +131,7 @@ html {
 }
 
 body {
-  background-color: var(--color-charcoal-black);
+  background-color: var(--color-background);
   color: var(--color-on-surface);
   font-family: var(--font-body);
   padding-top: 64px; /* Space for fixed TopNavBar */
@@ -150,13 +150,72 @@ body {
 /* Selection styling */
 ::selection {
   background-color: var(--color-champagne-gold);
-  color: var(--color-deep-maroon);
+  color: var(--color-charcoal-black);
+}
+
+/* ─── Light theme (warm ivory / beige) ─── */
+.light {
+  --color-background: #faf7f2;
+  --color-foreground: #1a1a1a;
+  --color-surface: #faf7f2;
+  --color-surface-dim: #f5f0e8;
+  --color-surface-bright: #ebe4d8;
+  --color-surface-container-lowest: #fffdf9;
+  --color-surface-container-low: #f5f0e8;
+  --color-surface-container: #efe8dc;
+  --color-surface-container-high: #e5ddd0;
+  --color-surface-container-highest: #dbd2c4;
+  --color-surface-variant: #d4cbbd;
+  --color-on-surface: #1a1a1a;
+  --color-on-surface-variant: #4a4540;
+  --color-on-background: #1a1a1a;
+  --color-outline: #6b6358;
+  --color-outline-variant: #c4b9a8;
+  --color-ivory: #1a1a1a;
+  --color-charcoal-black: #131313;
 }
 
 /* ─── Custom Utilities ─── */
 .gold-gradient {
-  background: linear-gradient(135deg, #D4AF37 0%, #B76E79 100%);
+  background: linear-gradient(135deg, #d4af37 0%, #b76e79 100%);
+  color: #131313;
 }
+
+/* Gemini-style running edge glow for Dashboard CTA */
+@keyframes gemini-edge-glow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.gemini-glow-btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.gemini-glow-btn::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.15) 25%,
+    rgba(242, 202, 80, 0.85) 50%,
+    rgba(183, 110, 121, 0.5) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: gemini-edge-glow 3s linear infinite;
+  opacity: 0.9;
+}
+
 
 .gold-aura {
   box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.15);
