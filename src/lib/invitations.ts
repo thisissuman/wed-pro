@@ -144,6 +144,17 @@ export function createStarterWeddingData({
     timezone: "Asia/Kolkata",
     label: "Counting Down to Forever",
   };
+  data.blessing = {
+    message:
+      "With the blessings of our families, we invite you to celebrate this sacred union.",
+    from: "With love, our families",
+  };
+  data.story = {
+    heading: "Our Love Story",
+    quote: "Every love story is beautiful, but ours is our favourite.",
+    timeline: [],
+  };
+  data.gallery = { heading: "Our Gallery", images: [] };
   data.rsvp = {
     type: "whatsapp",
     whatsappNumber: "",

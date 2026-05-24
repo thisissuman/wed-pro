@@ -9,6 +9,7 @@ import {
   type InvitationRow,
 } from "@/lib/invitations";
 import type { RsvpRow } from "@/lib/rsvp/types";
+import { buildLoginUrl } from "@/lib/auth/redirects";
 import { createClient } from "@/utils/supabase/server";
 
 interface GuestsPageProps {
@@ -23,7 +24,7 @@ export default async function GuestsPage({ params }: GuestsPageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(buildLoginUrl(`/dashboard/invitations/${id}/guests`));
   }
 
   const { data: invitation, error: invitationError } = await supabase

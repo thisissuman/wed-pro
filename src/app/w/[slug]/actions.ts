@@ -57,6 +57,20 @@ export async function submitRsvp(input: SubmitRsvpInput): Promise<SubmitRsvpResu
     return { ok: false, error: "This invitation isn't accepting RSVPs yet." };
   }
 
+  const { data: existingRsvp } = await supabase
+    .from("rsvps")
+    .select("id")
+    .eq("invitation_id", invitation.id)
+    .ilike("name", name)
+    .maybeSingle();
+
+  if (existingRsvp) {
+    return {
+      ok: false,
+      error: "We already have a response under this name. Please contact the couple directly if you need to update it.",
+    };
+  }
+
   const { error: insertError } = await supabase.from("rsvps").insert({
     invitation_id: invitation.id,
     name,

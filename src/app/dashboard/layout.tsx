@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { buildLoginUrl } from "@/lib/auth/redirects";
 import { createClient } from "@/utils/supabase/server";
 
 /**
@@ -19,7 +20,7 @@ export default async function DashboardLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(buildLoginUrl("/dashboard"));
   }
 
   return <>{children}</>;

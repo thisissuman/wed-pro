@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createStarterWeddingData, makeDraftSlug } from "@/lib/invitations";
+import { buildLoginUrl } from "@/lib/auth/redirects";
 import type { Template } from "@/types";
 
 interface TemplateCardProps {
@@ -31,7 +32,7 @@ export function TemplateCard({ template, index = 0 }: TemplateCardProps) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      router.push("/login?next=/dashboard");
+      router.push(buildLoginUrl("/template"));
       setIsCreating(false);
       return;
     }

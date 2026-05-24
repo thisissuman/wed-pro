@@ -36,7 +36,7 @@ export function GuestList({ guests }: GuestListProps) {
       <section className="rounded-2xl border border-dashed border-champagne-gold/20 bg-charcoal-black/30 px-6 py-12 text-center">
         <p className="font-heading text-xl text-ivory">No RSVPs yet.</p>
         <p className="mt-2 text-sm text-on-surface-variant/70">
-          Once your guests respond via the public invitation, they will appear here in real time.
+          Once your guests respond via the public invitation, they will appear here.
         </p>
       </section>
     );

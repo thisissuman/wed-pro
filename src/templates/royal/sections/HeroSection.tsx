@@ -33,7 +33,7 @@ export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
           alt=""
           fill
           priority
-          sizes="100vw"
+          sizes="(max-width: 768px) 100vw, 100vw"
           className="object-cover"
           aria-hidden="true"
         />
