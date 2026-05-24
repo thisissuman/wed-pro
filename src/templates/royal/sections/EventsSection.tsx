@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, Calendar, Clock } from "lucide-react";
+import { MapPin, Calendar, Clock, Navigation } from "lucide-react";
+import { appleMapsUrl, googleMapsUrl } from "@/lib/maps";
 import type { WeddingEvent } from "@/types/wedding.types";
 
 interface EventsSectionProps {
@@ -101,18 +102,8 @@ export function EventsSection({ events }: EventsSectionProps) {
                   </div>
                 </div>
 
-                {/* Google Maps CTA */}
-                {event.googleMapLink && (
-                  <a
-                    href={event.googleMapLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 mt-4 font-[family-name:var(--font-body)] text-xs text-champagne-gold hover:text-champagne-gold/80 underline underline-offset-2 transition-colors"
-                  >
-                    <MapPin size={12} />
-                    View on Map
-                  </a>
-                )}
+                {/* Map deep links */}
+                <EventMapButtons event={event} />
 
                 {/* Dress code */}
                 {event.dressCode && (
@@ -126,5 +117,44 @@ export function EventsSection({ events }: EventsSectionProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+function EventMapButtons({ event }: { event: WeddingEvent }) {
+  const target = {
+    coordinates: event.coordinates,
+    label: event.venue || event.title,
+    googleMapLink: event.googleMapLink,
+  };
+  const google = googleMapsUrl(target);
+  const apple = appleMapsUrl(target);
+
+  if (!google && !apple) return null;
+
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {google && (
+        <a
+          href={google}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full border border-champagne-gold/25 px-3 py-1.5 font-[family-name:var(--font-body)] text-xs text-champagne-gold transition hover:bg-champagne-gold/10"
+        >
+          <MapPin size={12} />
+          Google Maps
+        </a>
+      )}
+      {apple && (
+        <a
+          href={apple}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-full border border-champagne-gold/25 px-3 py-1.5 font-[family-name:var(--font-body)] text-xs text-champagne-gold transition hover:bg-champagne-gold/10"
+        >
+          <Navigation size={12} />
+          Apple Maps
+        </a>
+      )}
+    </div>
   );
 }

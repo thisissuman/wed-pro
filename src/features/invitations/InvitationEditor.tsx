@@ -9,27 +9,34 @@ import {
   ExternalLink,
   Globe2,
   Loader2,
-  Plus,
+  MessageCircle,
   Save,
-  Trash2,
+  Users,
 } from "lucide-react";
+import { WhatsAppShareDialog } from "@/features/invitations/WhatsAppShareDialog";
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
 import { createClient } from "@/utils/supabase/client";
 import {
-  createDefaultWeddingEvent,
   getInvitationTitle,
-  getPublicInvitationPath,
   getPublicInvitationUrl,
   slugify,
 } from "@/lib/invitations";
 import { useInvitationEditorStore } from "@/stores/invitation-editor-store";
-import type { EventType, WeddingData, WeddingEvent } from "@/types/wedding.types";
+import { WeddingDetailsPanel } from "@/features/dashboard/wedding-details/WeddingDetailsPanel";
+import { ShareUrlPanel } from "@/features/dashboard/share/ShareUrlPanel";
+import { EventsPanel } from "@/features/dashboard/events/EventsPanel";
+import { VenuePanel } from "@/features/dashboard/venue/VenuePanel";
+import { RsvpPanel } from "@/features/dashboard/rsvp/RsvpPanel";
+import { StoryEditorPanel } from "@/features/dashboard/story/StoryEditorPanel";
+import { GalleryEditorPanel } from "@/features/dashboard/gallery/GalleryEditorPanel";
+import { SectionSettingsPanel } from "@/features/dashboard/sections/SectionSettingsPanel";
+import { MediaMusicPanel } from "@/features/dashboard/media/MediaMusicPanel";
+import type { DraftUpdater } from "@/features/dashboard/shared/types";
+import type { WeddingData } from "@/types/wedding.types";
 
 interface InvitationEditorProps {
   initialData: WeddingData;
 }
-
-const eventTypes: EventType[] = ["mehendi", "haldi", "sangeet", "wedding", "reception", "other"];
 
 export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const supabase = useMemo(() => createClient(), []);
@@ -45,8 +52,16 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const previewData = useDeferredValue(draft);
   const [copied, setCopied] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const didInitialize = useRef(false);
   const skipAutosave = useRef(true);
+  // Autosave queue: only ever one write in flight; coalesce intervening edits
+  // into `pendingDraft` and apply after the active save resolves. A monotonic
+  // generation token guards against out-of-order responses overwriting newer
+  // state when network latency reorders requests.
+  const saveGeneration = useRef(0);
+  const inFlight = useRef(false);
+  const pendingDraft = useRef<WeddingData | null>(null);
 
   useEffect(() => {
     initialize(initialData);
@@ -55,42 +70,74 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
   const saveDraft = useCallback(
     async (nextDraft: WeddingData) => {
-      const normalizedSlug = slugify(nextDraft.slug || getInvitationTitle(nextDraft));
-      if (!normalizedSlug) {
-        setSaveState("error", "Add a share URL slug before saving.");
+      if (inFlight.current) {
+        // Save in progress — queue the latest snapshot and let the active save
+        // flush it when done. Newer edits overwrite older queued snapshots.
+        pendingDraft.current = nextDraft;
         return;
       }
 
-      setSaveState("saving", "Saving changes");
-      const updatedAt = new Date().toISOString();
-      const content: WeddingData = {
-        ...nextDraft,
-        slug: normalizedSlug,
-        meta: {
-          ...nextDraft.meta,
-          updatedAt,
-        },
-      };
+      let queued: WeddingData | null = nextDraft;
+      while (queued) {
+        const current: WeddingData = queued;
+        queued = null;
 
-      const { data, error } = await supabase
-        .from("invitations")
-        .update({
+        const normalizedSlug = slugify(current.slug || getInvitationTitle(current));
+        if (!normalizedSlug) {
+          setSaveState("error", "Add a share URL slug before saving.");
+          return;
+        }
+
+        saveGeneration.current += 1;
+        const generation = saveGeneration.current;
+        inFlight.current = true;
+        setSaveState("saving", "Saving changes");
+
+        const updatedAt = new Date().toISOString();
+        const content: WeddingData = {
+          ...current,
           slug: normalizedSlug,
-          template_id: content.templateId,
-          status: content.status,
-          content,
-        })
-        .eq("id", content.id)
-        .select("updated_at")
-        .single();
+          meta: {
+            ...current.meta,
+            updatedAt,
+          },
+        };
 
-      if (error) {
-        setSaveState("error", error.message);
-        return;
+        const { data, error } = await supabase
+          .from("invitations")
+          .update({
+            slug: normalizedSlug,
+            template_id: content.templateId,
+            status: content.status,
+            content,
+          })
+          .eq("id", content.id)
+          .select("updated_at")
+          .single();
+
+        inFlight.current = false;
+
+        // Stale response from a save that has already been superseded — drop it.
+        if (generation !== saveGeneration.current) {
+          continue;
+        }
+
+        if (error) {
+          setSaveState("error", error.message);
+          // Drop queued snapshots so the error message isn't masked.
+          pendingDraft.current = null;
+          return;
+        }
+
+        setLastSavedAt(data?.updated_at ?? updatedAt);
+        setSaveState("saved", "Saved");
+
+        // Flush any draft that arrived while this save was in flight.
+        if (pendingDraft.current) {
+          queued = pendingDraft.current;
+          pendingDraft.current = null;
+        }
       }
-
-      setLastSavedAt(data?.updated_at ?? updatedAt);
-      setSaveState("saved", "Saved");
     },
     [setLastSavedAt, setSaveState, supabase]
   );
@@ -110,9 +157,21 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     return () => window.clearTimeout(timeout);
   }, [draft, saveDraft]);
 
-  const update = (updater: (current: WeddingData) => WeddingData) => {
-    updateDraft((current) => updater(current));
-  };
+  // Warn before leaving the page while there are unsaved or in-flight edits.
+  useEffect(() => {
+    const handler = (event: BeforeUnloadEvent) => {
+      if (saveState === "saving" || saveState === "idle") {
+        event.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [saveState]);
+
+  const update: DraftUpdater = useCallback(
+    (updater) => updateDraft((current) => updater(current)),
+    [updateDraft]
+  );
 
   const publish = async () => {
     if (!draft) return;
@@ -175,7 +234,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     );
   }
 
-  const sharePath = getPublicInvitationPath(draft.slug);
   const canShare = draft.status === "published";
 
   return (
@@ -225,190 +283,39 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               {copied ? "Copied" : "Copy Link"}
             </button>
           )}
+
+          {canShare && (
+            <button
+              type="button"
+              onClick={() => setShowShareDialog(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366]/15 border border-[#25D366]/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#25D366] transition hover:bg-[#25D366]/25"
+            >
+              <MessageCircle size={15} />
+              WhatsApp
+            </button>
+          )}
+
+          <Link
+            href={`/dashboard/invitations/${draft.id}/guests`}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10"
+          >
+            <Users size={15} />
+            Guests
+          </Link>
         </div>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
         <section className="space-y-4">
-          <EditorPanel title="Wedding Details">
-            <TextInput
-              label="Bride Name"
-              value={draft.couple.bride.name}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  couple: {
-                    ...current.couple,
-                    bride: { ...current.couple.bride, name: value },
-                  },
-                  seo: {
-                    ...current.seo,
-                    pageTitle: `${current.couple.groom.name || "Groom"} & ${value || "Bride"} - Wedding Invitation`,
-                  },
-                }))
-              }
-            />
-            <TextInput
-              label="Groom Name"
-              value={draft.couple.groom.name}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  couple: {
-                    ...current.couple,
-                    groom: { ...current.couple.groom, name: value },
-                  },
-                  seo: {
-                    ...current.seo,
-                    pageTitle: `${value || "Groom"} & ${current.couple.bride.name || "Bride"} - Wedding Invitation`,
-                  },
-                }))
-              }
-            />
-            <TextInput
-              label="Wedding Date"
-              type="date"
-              value={draft.couple.weddingDate ?? ""}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  couple: { ...current.couple, weddingDate: value },
-                  countdown: { ...current.countdown, targetDate: `${value}T19:00:00+05:30` },
-                }))
-              }
-            />
-            <TextArea
-              label="Invitation Message"
-              value={draft.hero.subtitle ?? ""}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  hero: { ...current.hero, subtitle: value },
-                }))
-              }
-            />
-          </EditorPanel>
-
-          <EditorPanel title="Share URL">
-            <TextInput
-              label="Slug"
-              value={draft.slug}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  slug: slugify(value),
-                }))
-              }
-            />
-            <p className="text-xs leading-relaxed text-on-surface-variant/60">{sharePath}</p>
-            {canShare && (
-              <Link
-                href={sharePath}
-                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold"
-              >
-                Open public invitation
-                <ExternalLink size={14} />
-              </Link>
-            )}
-          </EditorPanel>
-
-          <EditorPanel title="Events">
-            <div className="space-y-4">
-              {draft.events.map((event) => (
-                <EventEditor
-                  key={event.id}
-                  event={event}
-                  canRemove={draft.events.length > 1}
-                  onChange={(patch) =>
-                    update((current) => ({
-                      ...current,
-                      events: current.events.map((item) =>
-                        item.id === event.id ? { ...item, ...patch } : item
-                      ),
-                    }))
-                  }
-                  onRemove={() =>
-                    update((current) => ({
-                      ...current,
-                      events: current.events.filter((item) => item.id !== event.id),
-                    }))
-                  }
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                update((current) => ({
-                  ...current,
-                  events: [
-                    ...current.events,
-                    createDefaultWeddingEvent(current.couple.weddingDate ?? new Date().toISOString().slice(0, 10)),
-                  ],
-                }))
-              }
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-champagne-gold/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10"
-            >
-              <Plus size={14} />
-              Add Event
-            </button>
-          </EditorPanel>
-
-          <EditorPanel title="Venue">
-            <TextInput
-              label="Venue Name"
-              value={draft.venue.name}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  venue: { ...current.venue, name: value },
-                }))
-              }
-            />
-            <TextArea
-              label="Venue Address"
-              value={draft.venue.address}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  venue: { ...current.venue, address: value },
-                }))
-              }
-            />
-            <TextInput
-              label="Google Map Link"
-              value={draft.venue.googleMapLink ?? ""}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  venue: { ...current.venue, googleMapLink: value },
-                }))
-              }
-            />
-          </EditorPanel>
-
-          <EditorPanel title="RSVP">
-            <TextInput
-              label="WhatsApp Number"
-              value={draft.rsvp.whatsappNumber ?? ""}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  rsvp: { ...current.rsvp, whatsappNumber: value },
-                }))
-              }
-            />
-            <TextArea
-              label="RSVP Message"
-              value={draft.rsvp.message ?? ""}
-              onChange={(value) =>
-                update((current) => ({
-                  ...current,
-                  rsvp: { ...current.rsvp, message: value },
-                }))
-              }
-            />
-          </EditorPanel>
+          <WeddingDetailsPanel draft={draft} update={update} />
+          <ShareUrlPanel draft={draft} update={update} />
+          <SectionSettingsPanel draft={draft} update={update} />
+          <MediaMusicPanel draft={draft} update={update} />
+          <EventsPanel draft={draft} update={update} />
+          <StoryEditorPanel draft={draft} update={update} />
+          <GalleryEditorPanel draft={draft} update={update} />
+          <VenuePanel draft={draft} update={update} />
+          <RsvpPanel draft={draft} update={update} />
         </section>
 
         <section className="lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)]">
@@ -432,120 +339,12 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
           </div>
         </section>
       </div>
+
+      <WhatsAppShareDialog
+        draft={draft}
+        open={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+      />
     </main>
-  );
-}
-
-function EditorPanel({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-2xl border border-champagne-gold/10 bg-surface-container/70 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.2)]">
-      <h2 className="mb-4 font-heading text-lg text-champagne-gold">{title}</h2>
-      <div className="space-y-4">{children}</div>
-    </section>
-  );
-}
-
-function TextInput({
-  label,
-  value,
-  onChange,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-}) {
-  return (
-    <label className="block space-y-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
-        {label}
-      </span>
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-sm text-ivory outline-none transition focus:border-champagne-gold/60"
-      />
-    </label>
-  );
-}
-
-function TextArea({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="block space-y-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
-        {label}
-      </span>
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        rows={3}
-        className="w-full resize-none rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-sm leading-relaxed text-ivory outline-none transition focus:border-champagne-gold/60"
-      />
-    </label>
-  );
-}
-
-function EventEditor({
-  event,
-  canRemove,
-  onChange,
-  onRemove,
-}: {
-  event: WeddingEvent;
-  canRemove: boolean;
-  onChange: (patch: Partial<WeddingEvent>) => void;
-  onRemove: () => void;
-}) {
-  return (
-    <div className="rounded-xl border border-champagne-gold/10 bg-charcoal-black/30 p-4">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <select
-          value={event.type}
-          onChange={(changeEvent) => onChange({ type: changeEvent.target.value as EventType })}
-          className="rounded-full border border-champagne-gold/15 bg-charcoal-black px-3 py-2 text-xs uppercase tracking-[0.12em] text-champagne-gold outline-none"
-        >
-          {eventTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-        {canRemove && (
-          <button
-            type="button"
-            onClick={onRemove}
-            aria-label="Remove event"
-            className="rounded-full border border-[#ffb4a8]/20 p-2 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
-          >
-            <Trash2 size={14} />
-          </button>
-        )}
-      </div>
-      <div className="space-y-3">
-        <TextInput label="Title" value={event.title} onChange={(value) => onChange({ title: value })} />
-        <div className="grid grid-cols-2 gap-3">
-          <TextInput label="Date" type="date" value={event.date} onChange={(value) => onChange({ date: value })} />
-          <TextInput label="Time" value={event.time} onChange={(value) => onChange({ time: value })} />
-        </div>
-        <TextInput label="Venue" value={event.venue} onChange={(value) => onChange({ venue: value })} />
-        <TextArea label="Description" value={event.description ?? ""} onChange={(value) => onChange({ description: value })} />
-      </div>
-    </div>
   );
 }

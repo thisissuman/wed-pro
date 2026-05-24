@@ -11,6 +11,7 @@ import { GallerySection } from "./sections/GallerySection";
 import { VenueSection } from "./sections/VenueSection";
 import { RSVPSection } from "./sections/RSVPSection";
 import { ThankYouSection } from "./sections/ThankYouSection";
+import { MusicPlayer } from "./sections/MusicPlayer";
 
 /**
  * Royal Template — Main Orchestrator
@@ -24,7 +25,7 @@ import { ThankYouSection } from "./sections/ThankYouSection";
  *
  * Sections are conditionally rendered based on SectionVisibility.
  */
-export function RoyalTemplate({ data }: TemplateProps) {
+export function RoyalTemplate({ data, isPreview }: TemplateProps) {
   const { sections } = data;
 
   return (
@@ -71,13 +72,16 @@ export function RoyalTemplate({ data }: TemplateProps) {
 
       {/* 9. RSVP — Confirm attendance */}
       {sections.showRSVP !== false && (
-        <RSVPSection rsvp={data.rsvp} />
+        <RSVPSection rsvp={data.rsvp} slug={data.slug} isPreview={isPreview} />
       )}
 
       {/* 10. Thank You — Emotional closure */}
       {sections.showThankYou !== false && (
         <ThankYouSection thankYou={data.thankYou} couple={data.couple} />
       )}
+
+      {/* Floating music player (tap-to-play) */}
+      <MusicPlayer music={data.music} />
     </div>
   );
 }

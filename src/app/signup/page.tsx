@@ -1,20 +1,32 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useState, useTransition } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { AuthBackground } from '@/components/auth/AuthBackground'
 import { Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react'
+import { buildOAuthCallbackUrl, safeNextPath } from '@/lib/auth/redirects'
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupPageInner />
+    </Suspense>
+  )
+}
+
+function SignupPageInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const nextPath = safeNextPath(searchParams.get('next'))
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [isGooglePending, setIsGooglePending] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -32,7 +44,7 @@ export default function SignupPage() {
             data: {
               full_name: name,
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: buildOAuthCallbackUrl(window.location.origin, nextPath),
           },
         })
 
@@ -41,14 +53,11 @@ export default function SignupPage() {
           return
         }
 
-        // Check if session is already created (meaning email confirmation is disabled)
         if (data.session) {
-          router.push('/dashboard')
+          router.push(nextPath)
           router.refresh()
         } else {
-          // Email confirmation is enabled
           setSuccessMsg('A confirmation link has been sent to your email address. Please click it to complete your registration.')
-          // Clear inputs
           setName('')
           setEmail('')
           setPassword('')
@@ -62,19 +71,22 @@ export default function SignupPage() {
   const handleGoogleLogin = async () => {
     setErrorMsg(null)
     setSuccessMsg(null)
+    setIsGooglePending(true)
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: buildOAuthCallbackUrl(window.location.origin, nextPath),
         },
       })
       if (error) {
         setErrorMsg(error.message)
+        setIsGooglePending(false)
       }
     } catch {
       setErrorMsg('Failed to initialize Google signup.')
+      setIsGooglePending(false)
     }
   }
 
@@ -223,7 +235,7 @@ export default function SignupPage() {
           <button
             type="button"
             onClick={handleGoogleLogin}
-            disabled={isPending}
+            disabled={isPending || isGooglePending}
             className="w-full flex items-center justify-center gap-3 bg-transparent border border-[#f2ca50]/20 text-[#e5e2e1] font-body text-sm py-3.5 rounded-full hover:bg-[#f2ca50]/5 hover:border-[#f2ca50]/40 active:scale-[0.98] transition-all duration-300 disabled:opacity-50"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -232,7 +244,9 @@ export default function SignupPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
-            <span className="font-body text-xs uppercase tracking-widest text-[#d0c5af]">Continue with Google</span>
+            <span className="font-body text-xs uppercase tracking-widest text-[#d0c5af]">
+              {isGooglePending ? 'Redirecting…' : 'Continue with Google'}
+            </span>
           </button>
         </div>
 

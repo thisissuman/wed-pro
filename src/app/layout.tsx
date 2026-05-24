@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Inter, Noto_Sans_Devanagari } from "next/font/google";
 import "./globals.css";
 
 const playfairDisplay = Playfair_Display({
@@ -12,6 +12,15 @@ const playfairDisplay = Playfair_Display({
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+// Indic fallback so Hindi / Marathi / Sanskrit text inside templates renders
+// with a polished script instead of the browser's default system serif.
+const notoDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-indic",
+  subsets: ["devanagari"],
   display: "swap",
   weight: ["400", "500", "600", "700"],
 });
@@ -37,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${playfairDisplay.variable} ${inter.variable} dark`}
+      className={`${playfairDisplay.variable} ${inter.variable} ${notoDevanagari.variable} dark`}
     >
       <body className="min-h-dvh antialiased">{children}</body>
     </html>

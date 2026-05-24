@@ -1,5 +1,11 @@
 import { sampleWeddingData } from "@/data/sample-wedding";
-import type { InvitationStatus, WeddingData, WeddingEvent } from "@/types/wedding.types";
+import type {
+  GalleryImage,
+  InvitationStatus,
+  StoryMilestone,
+  WeddingData,
+  WeddingEvent,
+} from "@/types/wedding.types";
 
 export interface InvitationRow {
   id: string;
@@ -50,12 +56,35 @@ export function makeDraftSlug(templateId = FALLBACK_TEMPLATE_ID): string {
   return `${slugify(templateId || FALLBACK_TEMPLATE_ID)}-${randomPart}`;
 }
 
+function generateId(prefix: string): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function createStoryMilestone(): StoryMilestone {
+  return {
+    id: generateId("story"),
+    title: "New Milestone",
+    date: "",
+    description: "",
+  };
+}
+
+export function createGalleryImage(order: number): GalleryImage {
+  return {
+    id: generateId("gallery"),
+    url: "",
+    caption: "",
+    alt: "",
+    order,
+  };
+}
+
 export function createDefaultWeddingEvent(date: string): WeddingEvent {
   return {
-    id:
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `event-${Date.now()}`,
+    id: generateId("event"),
     title: "Wedding Ceremony",
     type: "wedding",
     description: "Join us for the sacred wedding ceremony and blessings.",

@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
+import { appleMapsUrl, googleMapsUrl } from "@/lib/maps";
 import type { VenueData } from "@/types/wedding.types";
 
 interface VenueSectionProps {
@@ -42,21 +43,48 @@ export function VenueSection({ venue }: VenueSectionProps) {
           </p>
         )}
 
-        {/* Google Maps CTA */}
-        {venue.googleMapLink && (
-          <motion.a
-            href={venue.googleMapLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-champagne-gold/30 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium hover:bg-champagne-gold/10 transition-colors duration-200"
-          >
-            <MapPin size={16} />
-            Open in Google Maps
-          </motion.a>
-        )}
+        {/* Map deep links */}
+        <VenueMapButtons venue={venue} />
       </motion.div>
     </section>
+  );
+}
+
+function VenueMapButtons({ venue }: { venue: VenueData }) {
+  const target = { coordinates: venue.coordinates, label: venue.name, googleMapLink: venue.googleMapLink };
+  const google = googleMapsUrl(target);
+  const apple = appleMapsUrl(target);
+
+  if (!google && !apple) return null;
+
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2">
+      {google && (
+        <motion.a
+          href={google}
+          target="_blank"
+          rel="noopener noreferrer"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-champagne-gold/30 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium hover:bg-champagne-gold/10 transition-colors duration-200"
+        >
+          <MapPin size={16} />
+          Google Maps
+        </motion.a>
+      )}
+      {apple && (
+        <motion.a
+          href={apple}
+          target="_blank"
+          rel="noopener noreferrer"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-champagne-gold/30 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium hover:bg-champagne-gold/10 transition-colors duration-200"
+        >
+          <Navigation size={16} />
+          Apple Maps
+        </motion.a>
+      )}
+    </div>
   );
 }
