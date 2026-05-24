@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Noto_Sans_Devanagari } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AppToaster } from "@/components/providers/AppToaster";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const playfairDisplay = Playfair_Display({
@@ -26,6 +28,7 @@ const notoDevanagari = Noto_Sans_Devanagari({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: "Vivaha Studio — Premium Digital Wedding Invitations",
   description:
     "Craft cinematic digital wedding invitations for your royal celebration. Browse premium templates, customize with live editing, and share instantly via WhatsApp.",
@@ -52,8 +55,10 @@ export default function RootLayout({
     >
       <body className="min-h-dvh antialiased">
         <ThemeProvider>
-          {children}
-          <AppToaster />
+          <AuthProvider>
+            {children}
+            <AppToaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

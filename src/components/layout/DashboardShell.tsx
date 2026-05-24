@@ -1,17 +1,16 @@
-import { TopNavBar } from "./TopNavBar";
-import { BottomNavBar } from "./BottomNavBar";
+import { NavChrome } from "./NavChrome";
 import { ScrollTrackerProvider } from "./ScrollTracker";
 
 interface DashboardShellProps {
   children: React.ReactNode;
+  hideMobileChrome?: boolean;
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({ children, hideMobileChrome }: DashboardShellProps) {
   return (
     <ScrollTrackerProvider>
-      <TopNavBar />
+      <NavChrome hideMobileChrome={hideMobileChrome} />
       {children}
-      <BottomNavBar />
     </ScrollTrackerProvider>
   );
 }

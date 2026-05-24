@@ -44,6 +44,7 @@ import { StoryEditorPanel } from "@/features/dashboard/story/StoryEditorPanel";
 import { GalleryEditorPanel } from "@/features/dashboard/gallery/GalleryEditorPanel";
 import { SectionSettingsPanel } from "@/features/dashboard/sections/SectionSettingsPanel";
 import { MediaMusicPanel } from "@/features/dashboard/media/MediaMusicPanel";
+import { SharePreviewPanel } from "@/features/dashboard/share/SharePreviewPanel";
 import type { DraftUpdater } from "@/features/dashboard/shared/types";
 import type { WeddingData } from "@/types/wedding.types";
 
@@ -67,6 +68,11 @@ const editorSteps = [
   { id: "gallery", title: "Gallery", description: "Photos and captions." },
   { id: "venue", title: "Venue", description: "Main venue and directions." },
   { id: "rsvp", title: "RSVP", description: "Guest confirmation settings." },
+  {
+    id: "share-preview",
+    title: "Share Preview",
+    description: "WhatsApp and social link preview when you share your invite.",
+  },
   {
     id: "page-setup",
     title: "Optional Sections",
@@ -105,7 +111,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const saveGeneration = useRef(0);
   const inFlight = useRef(false);
   const pendingDraft = useRef<WeddingData | null>(null);
-  const prevSaveState = useRef<string | null>(null);
 
   useEffect(() => {
     initialize(initialData);
@@ -186,23 +191,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     },
     [setLastSavedAt, setSaveState, supabase]
   );
-
-  useEffect(() => {
-    const prev = prevSaveState.current;
-    if (prev === saveState) return;
-
-    if (saveState === "saving") {
-      toast.loading("Saving changes…");
-    } else if (saveState === "saved" && prev === "saving") {
-      toast.dismiss();
-      toast.success("Changes saved");
-    } else if (saveState === "error" && prev === "saving") {
-      toast.dismiss();
-      toast.error("Save failed", saveMessage || undefined);
-    }
-
-    prevSaveState.current = saveState;
-  }, [saveState, saveMessage]);
 
   useEffect(() => {
     if (!draft || !didInitialize.current) return;
@@ -362,13 +350,15 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         return <VenuePanel draft={draft} update={update} bare />;
       case "rsvp":
         return <RsvpPanel draft={draft} update={update} bare />;
+      case "share-preview":
+        return <SharePreviewPanel draft={draft} update={update} bare />;
       case "page-setup":
         return <SectionSettingsPanel draft={draft} update={update} bare />;
     }
   };
 
   return (
-    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pb-56 pt-6 md:pt-10 lg:pb-28">
+    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pb-32 pt-6 md:pt-10 md:pb-28 lg:pb-28">
       <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-5 md:flex-row md:items-end md:justify-between">
         <div className="space-y-3">
           <Link
@@ -461,7 +451,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-8 gap-1.5" aria-label="Editor progress">
+            <div className="mt-4 grid grid-cols-9 gap-1" aria-label="Editor progress">
               {editorSteps.map((step, index) => (
                 <button
                   key={step.id}
@@ -510,7 +500,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
           </EditorAccordion>
         </div>
 
-        <section className="hidden lg:sticky lg:top-24 lg:block lg:h-[calc(100dvh-7rem)]">
+        <section className="hidden lg:sticky lg:top-6 lg:block lg:h-[calc(100dvh-3rem)]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold">
@@ -519,11 +509,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                   <span className="relative inline-flex size-2 rounded-full bg-red-500" />
                 </span>
                 Live Preview
-              </p>
-              <p className="mt-1 text-xs text-on-surface-variant/60">
-                {previewMode === "mobile"
-                  ? "Mobile-first invitation view"
-                  : "Desktop responsive preview"}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -586,7 +571,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[72px] z-40 border-t border-champagne-gold/10 bg-surface/95 px-4 py-3 shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-champagne-gold/10 bg-surface/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-[520px] items-center gap-2">
           <button
             type="button"

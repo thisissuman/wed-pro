@@ -247,11 +247,21 @@ The editor should feel:
 
 Editing experience should include:
 - real-time preview
-- autosave
+- autosave (silent — inline status badge only; no toast per save)
 - smooth transitions
 - minimal friction
 
 Avoid overwhelming users with too many controls.
+
+## Editor Chrome (App Shell)
+
+On `/dashboard/invitations/[id]/edit`, the marketing shell is stripped for a focused workspace:
+- **Header hidden** on all breakpoints (desktop and mobile).
+- **Bottom nav hidden** on mobile only (desktop has no bottom nav).
+- Editor provides its own back link to dashboard, save status badge, and step navigation.
+- Desktop live preview uses full viewport height (`sticky`, no header offset).
+
+Auth/account on mobile lives in the **bottom nav Studio menu** (Dashboard + Sign Out). The top header profile dropdown is **desktop only** (`md:block`).
 
 ---
 
@@ -295,6 +305,15 @@ Separate:
 Avoid:
 - deeply nested prop drilling
 - unnecessary global state
+
+## Client Auth & App Shell
+
+`AuthProvider` (root layout) is the single client auth source:
+- One `getSession()` + `onAuthStateChange` subscription shared by `TopNavBar` and `BottomNavBar`.
+- Do **not** call `supabase.auth.getUser()` independently in nav components (causes duplicate API calls and Login/Studio flash).
+- While auth is loading, mobile bottom nav shows **Studio** (not Login).
+
+`DashboardShell` → `NavChrome` controls marketing chrome visibility by route.
 
 ---
 
@@ -453,3 +472,33 @@ The system should naturally connect related flows:
 For detailed technical and workflow guidelines, refer to Cursor project rules in `.cursor/rules/`:
 - **performance.mdc** + **template-architecture.mdc**: Rendering strategies, lazy loading, scalability, and avoiding premature abstractions.
 - **git-conventions.mdc**: Git branching, conventional commits, and `.gitignore` policies.
+
+---
+
+# Current MVP Status (as of May 2026)
+
+## Shipped
+- **Template:** Royal Rajputana (single template; registry ready for more).
+- **Auth:** Email/password, Google OAuth, forgot/reset password; dashboard guards; `proxy.ts` session refresh.
+- **Editor:** 9-step flow (includes **Share Preview** for WhatsApp/OG), debounced autosave, Zustand store, live preview, Cloudinary uploads.
+- **Publish:** Publish/republish, share dialogs, public `/w/[slug]` for published invites only.
+- **RSVP:** WhatsApp link, external link, or in-app form; guest list at `/dashboard/invitations/[id]/guests`.
+- **SEO runtime:** `generateMetadata` on public pages via `buildInvitationShareMetadata()`; absolute OG URLs via `NEXT_PUBLIC_SITE_URL`.
+
+## Gaps (prioritize before scaling)
+- ~~**WhatsApp/OG editor UI**~~ — Share Preview step in editor (`seo.pageTitle`, `metaDescription`, `ogImage`, `whatsappPreviewImage`).
+- **Blessing / Thank you** — sections toggle on/off but lack dedicated copy editors.
+- ~~**Session middleware**~~ — `src/proxy.ts` refreshes cookies; `AuthProvider` keep-alive for idle tabs.
+- **Guest utilities** — list is read-only; no export or delete in UI.
+- **Payments** — Razorpay not implemented (marketing mentions premium; decide ship or defer).
+- **CI / smoke tests** — no GitHub Actions; `playwright-core` in devDeps unused.
+
+## Recommended next build order
+1. ~~WhatsApp preview editor (OG image + description)~~ — **Share Preview** editor step (`SharePreviewPanel`).
+2. ~~Session middleware~~ — `src/proxy.ts` + `utils/supabase/proxy.ts`; client keep-alive in `AuthProvider`.
+3. In-app RSVP as clearer default + end-to-end guest flow polish.
+4. Blessing / Thank you content panels.
+5. Publish hardening (slug conflicts, optional unpublish).
+6. Guest CSV export + delete.
+7. Playwright smoke test on PR.
+8. Razorpay or remove payment promises from marketing until ready.

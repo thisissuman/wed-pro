@@ -2,8 +2,8 @@ import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
+import { buildInvitationShareMetadata } from "@/lib/seo";
 import {
-  getInvitationTitle,
   normalizeInvitationRow,
   type InvitationRow,
 } from "@/lib/invitations";
@@ -41,28 +41,7 @@ export async function generateMetadata({
     };
   }
 
-  const title = invitation.seo.pageTitle || `${getInvitationTitle(invitation)} - Wedding Invitation`;
-  const description =
-    invitation.seo.metaDescription ||
-    `You are invited to celebrate ${getInvitationTitle(invitation)}.`;
-  const image = invitation.seo.ogImage || invitation.seo.whatsappPreviewImage;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      images: image ? [{ url: image }] : undefined,
-    },
-    twitter: {
-      card: image ? "summary_large_image" : "summary",
-      title,
-      description,
-      images: image ? [image] : undefined,
-    },
-  };
+  return buildInvitationShareMetadata(invitation);
 }
 
 export default async function PublicInvitationPage({ params }: PublicInvitationPageProps) {
