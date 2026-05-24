@@ -32,6 +32,20 @@ export const sampleWeddingData: WeddingData = {
       heroText: "The Groom",
     },
     weddingDate: "2026-02-13",
+    family: {
+      bride: {
+        fatherName: "Mr. Rajesh Sharma",
+        motherName: "Mrs. Sunita Sharma",
+        grandparentsNames: "Late Shri Harish & Smt. Kamla Sharma",
+      },
+      groom: {
+        fatherName: "Mr. Vikram Mehta",
+        motherName: "Mrs. Priya Mehta",
+        grandparentsNames: "Shri Mohan & Smt. Leela Mehta",
+      },
+      displayOrder: "groom-first",
+      includeGrandparents: false,
+    },
   },
 
   /* ── Hero ── */
@@ -235,6 +249,8 @@ export const sampleWeddingData: WeddingData = {
     autoplay: false,
     title: "Tum Hi Ho — Arijit Singh",
   },
+
+  weddingHashtag: "#RahulAnanyaWedding",
 
   /* ── Theme ── */
   theme: {

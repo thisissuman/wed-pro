@@ -1,5 +1,6 @@
 import { sampleWeddingData } from "@/data/sample-wedding";
 import type {
+  CoupleFamilyData,
   GalleryImage,
   InvitationStatus,
   StoryMilestone,
@@ -182,6 +183,20 @@ export function createStarterWeddingData({
       heroText: "The Groom",
     },
     weddingDate,
+    family: {
+      bride: {
+        fatherName: "",
+        motherName: "",
+        grandparentsNames: "",
+      },
+      groom: {
+        fatherName: "",
+        motherName: "",
+        grandparentsNames: "",
+      },
+      displayOrder: "groom-first",
+      includeGrandparents: false,
+    },
   };
   data.hero = {
     subtitle: "Together with their families, request the honour of your presence",
@@ -227,6 +242,7 @@ export function createStarterWeddingData({
     pageTitle: "Wedding Invitation",
     metaDescription: "You are invited to celebrate this beautiful wedding.",
   };
+  data.weddingHashtag = "";
   data.meta = {
     createdAt: now,
     updatedAt: now,
@@ -248,6 +264,13 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
   const contentMeta = isRecord(content.meta) ? content.meta : {};
   const contentPublishedAt =
     typeof contentMeta.publishedAt === "string" ? contentMeta.publishedAt : undefined;
+  const baseFamily: CoupleFamilyData = base.couple.family ?? {
+    bride: {},
+    groom: {},
+    displayOrder: "groom-first",
+    includeGrandparents: false,
+  };
+  const contentFamily = content.couple?.family;
 
   return {
     ...base,
@@ -256,6 +279,31 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
     slug: row.slug,
     templateId: row.template_id,
     status: row.status,
+    couple: {
+      ...base.couple,
+      ...(content.couple ?? {}),
+      bride: {
+        ...base.couple.bride,
+        ...(content.couple?.bride ?? {}),
+      },
+      groom: {
+        ...base.couple.groom,
+        ...(content.couple?.groom ?? {}),
+      },
+      family: {
+        ...baseFamily,
+        ...(contentFamily ?? {}),
+        bride: {
+          ...baseFamily.bride,
+          ...(contentFamily?.bride ?? {}),
+        },
+        groom: {
+          ...baseFamily.groom,
+          ...(contentFamily?.groom ?? {}),
+        },
+        displayOrder: contentFamily?.displayOrder ?? baseFamily.displayOrder,
+      },
+    },
     sections: withEssentialSections({
       ...base.sections,
       ...(content.sections ?? {}),
