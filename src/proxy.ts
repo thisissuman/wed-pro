@@ -43,7 +43,7 @@ async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       url.searchParams.set('next', pathname)
-      return NextResponse.redirect(url)
+      return redirectWithRefreshedCookies(url, supabaseResponse)
     }
   }
 
@@ -51,10 +51,26 @@ async function updateSession(request: NextRequest) {
   if (user && (pathname === '/login' || pathname === '/signup')) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    return redirectWithRefreshedCookies(url, supabaseResponse)
   }
 
   return supabaseResponse
+}
+
+/**
+ * Build a redirect response while forwarding cookies the Supabase client
+ * refreshed on `supabaseResponse`. Without this, a session refresh that
+ * happened during a redirect would be silently dropped by the browser.
+ */
+function redirectWithRefreshedCookies(
+  url: URL,
+  supabaseResponse: NextResponse
+): NextResponse {
+  const response = NextResponse.redirect(url)
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie)
+  })
+  return response
 }
 
 export async function proxy(request: NextRequest) {

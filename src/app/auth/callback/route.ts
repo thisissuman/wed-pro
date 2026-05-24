@@ -1,19 +1,28 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 
+function safeNext(value: string | null): string {
+  if (!value) return '/dashboard'
+  // Only allow internal redirects to avoid open-redirect issues.
+  if (value.startsWith('/') && !value.startsWith('//')) {
+    return value
+  }
+  return '/dashboard'
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
+  const next = safeNext(searchParams.get('next'))
 
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    
+
     if (!error) {
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
-      
+
       if (isLocalEnv) {
         return NextResponse.redirect(`${origin}${next}`)
       } else if (forwardedHost) {
@@ -24,6 +33,11 @@ export async function GET(request: Request) {
     }
   }
 
-  // If error occurs, redirect to login page with a specific query parameter
-  return NextResponse.redirect(`${origin}/login?error=auth-code-error`)
+  // If error occurs, redirect to login page with a specific query parameter.
+  const errorUrl = new URL('/login', origin)
+  errorUrl.searchParams.set('error', 'auth-code-error')
+  if (next !== '/dashboard') {
+    errorUrl.searchParams.set('next', next)
+  }
+  return NextResponse.redirect(errorUrl)
 }

@@ -3,8 +3,10 @@
 /* ─── Design System: Royal Cinematic Editorial ─── */
 @theme inline {
   /* ── Fonts ── */
-  --font-heading: "Playfair Display", serif;
-  --font-body: "Inter", sans-serif;
+  /* Indic fallback is appended so non-Latin characters (Hindi, Marathi, etc.)
+     render with Noto Sans Devanagari instead of the browser's system serif. */
+  --font-heading: "Playfair Display", "Noto Sans Devanagari", serif;
+  --font-body: "Inter", "Noto Sans Devanagari", sans-serif;
 
   /* ── Surface & Background Colors ── */
   --color-background: #131313;

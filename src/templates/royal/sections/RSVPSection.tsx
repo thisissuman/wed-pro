@@ -2,10 +2,13 @@
 
 import { motion } from "framer-motion";
 import { MessageCircle, ExternalLink } from "lucide-react";
+import { RsvpForm } from "@/features/rsvp/RsvpForm";
 import type { RSVPData } from "@/types/wedding.types";
 
 interface RSVPSectionProps {
   rsvp: RSVPData;
+  slug?: string;
+  isPreview?: boolean;
 }
 
 /**
@@ -13,11 +16,13 @@ interface RSVPSectionProps {
  *
  * Call-to-action for confirming attendance via WhatsApp or link.
  */
-export function RSVPSection({ rsvp }: RSVPSectionProps) {
+export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
   const whatsappUrl =
     rsvp.type === "whatsapp" && rsvp.whatsappNumber
       ? `https://wa.me/${rsvp.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(rsvp.message || "I would love to attend your wedding!")}`
       : null;
+
+  const showInlineForm = rsvp.type === "form" && slug && !isPreview;
 
   return (
     <section className="px-6 py-16 md:py-24">
@@ -54,8 +59,22 @@ export function RSVPSection({ rsvp }: RSVPSectionProps) {
           </motion.a>
         )}
 
-        {/* Form or Link RSVP */}
-        {rsvp.type === "form" && rsvp.formUrl && (
+        {/* Inline in-app RSVP form (published view only) */}
+        {showInlineForm && slug && (
+          <div className="pt-2">
+            <RsvpForm slug={slug} defaultMessage={rsvp.message} />
+          </div>
+        )}
+
+        {/* Preview placeholder when guests will see the inline form */}
+        {rsvp.type === "form" && !showInlineForm && !rsvp.formUrl && (
+          <p className="rounded-lg border border-champagne-gold/15 bg-charcoal-black/30 px-4 py-3 text-xs text-on-surface-variant/70">
+            Guests will see an in-app RSVP form once the invitation is published.
+          </p>
+        )}
+
+        {/* External form link fallback (when form type still points to an external URL) */}
+        {rsvp.type === "form" && !showInlineForm && rsvp.formUrl && (
           <motion.a
             href={rsvp.formUrl}
             target="_blank"
@@ -65,7 +84,7 @@ export function RSVPSection({ rsvp }: RSVPSectionProps) {
             className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-deep-maroon font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all duration-200"
           >
             <ExternalLink size={16} />
-            Fill RSVP Form
+            {rsvp.buttonText || "Fill RSVP Form"}
           </motion.a>
         )}
 
@@ -79,7 +98,7 @@ export function RSVPSection({ rsvp }: RSVPSectionProps) {
             className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-champagne-gold/30 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium hover:bg-champagne-gold/10 transition-colors duration-200"
           >
             <ExternalLink size={16} />
-            Confirm Attendance
+            {rsvp.buttonText || "Confirm Attendance"}
           </motion.a>
         )}
       </motion.div>

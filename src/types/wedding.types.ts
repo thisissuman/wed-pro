@@ -67,6 +67,11 @@ export interface WeddingEvent {
   venue: string;
   address?: string;
   googleMapLink?: string;
+  /** Lat/lng for deep-linked native map apps */
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
   icon?: string;
   /** e.g. "Traditional / Ethnic Wear" */
   dressCode?: string;

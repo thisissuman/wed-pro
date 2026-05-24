@@ -1,0 +1,6 @@
+# Vivaha Studio — Supabase local CLI config
+# Project ref from supabase-db.md (production)
+project_id = "kbwkvbwdxstwsfgkpwbp"
+
+[db]
+major_version = 17

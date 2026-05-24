@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import type { CoupleData, CountdownData, HeroData } from "@/types/wedding.types";
 
 interface HeroSectionProps {
@@ -25,11 +26,16 @@ export function HeroSection({ couple, countdown, hero }: HeroSectionProps) {
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden">
-      {/* Background media */}
+      {/* Background media — next/image for optimized LCP */}
       {hero.backgroundMedia && (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url("${hero.backgroundMedia}")` }}
+        <Image
+          src={hero.backgroundMedia}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          aria-hidden="true"
         />
       )}
 
