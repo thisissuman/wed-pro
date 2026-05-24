@@ -481,24 +481,26 @@ For detailed technical and workflow guidelines, refer to Cursor project rules in
 - **Template:** Royal Rajputana (single template; registry ready for more).
 - **Auth:** Email/password, Google OAuth, forgot/reset password; dashboard guards; `proxy.ts` session refresh.
 - **Editor:** 9-step flow (includes **Share Preview** for WhatsApp/OG), debounced autosave, Zustand store, live preview, Cloudinary uploads.
+- **Blessing / Thank you copy editors:** Inline content panels directly integrated inside the Optional Sections editor step.
+- **Guest utilities:** Headcount summaries with dynamic, secure RSVP deletion (RLS authenticated) and client-side CSV export.
 - **Publish:** Publish/republish, share dialogs, public `/w/[slug]` for published invites only.
 - **RSVP:** WhatsApp link, external link, or in-app form; guest list at `/dashboard/invitations/[id]/guests`.
 - **SEO runtime:** `generateMetadata` on public pages via `buildInvitationShareMetadata()`; absolute OG URLs via `NEXT_PUBLIC_SITE_URL`.
 
 ## Gaps (prioritize before scaling)
 - ~~**WhatsApp/OG editor UI**~~ — Share Preview step in editor (`seo.pageTitle`, `metaDescription`, `ogImage`, `whatsappPreviewImage`).
-- **Blessing / Thank you** — sections toggle on/off but lack dedicated copy editors.
+- ~~**Blessing / Thank you**~~ — sections toggle on/off but lack dedicated copy editors (shipped inline copy editors).
 - ~~**Session middleware**~~ — `src/proxy.ts` refreshes cookies; `AuthProvider` keep-alive for idle tabs.
-- **Guest utilities** — list is read-only; no export or delete in UI.
+- ~~**Guest utilities**~~ — list is read-only; no export or delete in UI (shipped delete action + CSV export).
 - **Payments** — Razorpay not implemented (marketing mentions premium; decide ship or defer).
 - **CI / smoke tests** — no GitHub Actions; `playwright-core` in devDeps unused.
 
 ## Recommended next build order
-1. ~~WhatsApp preview editor (OG image + description)~~ — **Share Preview** editor step (`SharePreviewPanel`).
+1. ~~WhatsApp preview editor~~ — **Share Preview** editor step (`SharePreviewPanel`).
 2. ~~Session middleware~~ — `src/proxy.ts` + `utils/supabase/proxy.ts`; client keep-alive in `AuthProvider`.
-3. In-app RSVP as clearer default + end-to-end guest flow polish.
-4. Blessing / Thank you content panels.
-5. Publish hardening (slug conflicts, optional unpublish).
-6. Guest CSV export + delete.
+3. ~~Blessing / Thank you content panels~~ — Shipped inline copy editors.
+4. ~~Guest CSV export + delete~~ — Shipped.
+5. In-app RSVP as clearer default + end-to-end guest flow polish.
+6. Publish hardening (slug conflicts, optional unpublish).
 7. Playwright smoke test on PR.
 8. Razorpay or remove payment promises from marketing until ready.

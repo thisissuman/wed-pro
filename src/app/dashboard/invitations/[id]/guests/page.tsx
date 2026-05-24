@@ -71,7 +71,7 @@ export default async function GuestsPage({ params }: GuestsPageProps) {
           </p>
         </header>
 
-        <GuestList guests={guests} />
+        <GuestList guests={guests} invitationId={invitation.id} />
       </main>
     </DashboardShell>
   );

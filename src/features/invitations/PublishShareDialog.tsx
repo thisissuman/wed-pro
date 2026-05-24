@@ -1,19 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Copy, ExternalLink, X } from "lucide-react";
+import { AlertTriangle, Check, Copy, ExternalLink, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 import {
   buildInvitationSlug,
   getPublicInvitationPath,
   getPublicInvitationUrl,
 } from "@/lib/invitations";
+import { isSlugAvailable } from "@/lib/publish";
 import { toast } from "@/lib/toast";
 import type { WeddingData } from "@/types/wedding.types";
 
 interface PublishShareDialogProps {
   draft: WeddingData;
   open: boolean;
+  slugAdjusted?: boolean;
+  requestedSlug?: string;
   onClose: () => void;
   onUpdateNames: (groomName: string, brideName: string) => void;
 }
@@ -21,6 +25,8 @@ interface PublishShareDialogProps {
 export function PublishShareDialog({
   draft,
   open,
+  slugAdjusted = false,
+  requestedSlug,
   onClose,
   onUpdateNames,
 }: PublishShareDialogProps) {
@@ -29,6 +35,8 @@ export function PublishShareDialog({
   return (
     <PublishShareDialogContent
       draft={draft}
+      slugAdjusted={slugAdjusted}
+      requestedSlug={requestedSlug}
       onClose={onClose}
       onUpdateNames={onUpdateNames}
     />
@@ -37,6 +45,8 @@ export function PublishShareDialog({
 
 function PublishShareDialogContent({
   draft,
+  slugAdjusted,
+  requestedSlug,
   onClose,
   onUpdateNames,
 }: Omit<PublishShareDialogProps, "open">) {
@@ -44,10 +54,28 @@ function PublishShareDialogContent({
   const [groomName, setGroomName] = useState(draft.couple.groom.name);
   const [brideName, setBrideName] = useState(draft.couple.bride.name);
   const [copied, setCopied] = useState(false);
+  const [slugConflict, setSlugConflict] = useState(false);
 
-  const slug = buildInvitationSlug(groomName, brideName) || draft.slug;
+  const slug = draft.slug;
   const sharePath = getPublicInvitationPath(slug);
   const shareUrl = getPublicInvitationUrl(slug, origin);
+
+  useEffect(() => {
+    const candidate = buildInvitationSlug(groomName, brideName) || slug;
+    if (!candidate) {
+      setSlugConflict(false);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      const supabase = createClient();
+      void isSlugAvailable(supabase, candidate, draft.id)
+        .then((available) => setSlugConflict(!available))
+        .catch(() => setSlugConflict(false));
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [groomName, brideName, slug, draft.id]);
 
   const applyNames = (nextGroom: string, nextBride: string) => {
     setGroomName(nextGroom);
@@ -87,9 +115,30 @@ function PublishShareDialogContent({
         </p>
         <h2 className="mt-2 font-heading text-2xl text-ivory">Share your link</h2>
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant/80">
-          Your link uses the groom and bride names. Edit only the names below to
-          update the URL.
+          Your link uses the groom and bride names. Edit only the names below to update the URL
+          before your next publish.
         </p>
+
+        {slugAdjusted && requestedSlug && requestedSlug !== slug && (
+          <div className="mt-4 flex gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2.5 text-xs leading-relaxed text-amber-100/90">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0 text-amber-300" />
+            <p>
+              <span className="font-semibold">Link adjusted.</span> /w/{requestedSlug} was already
+              taken, so we published at <span className="font-mono text-champagne-gold">/w/{slug}</span>{" "}
+              instead.
+            </p>
+          </div>
+        )}
+
+        {slugConflict && !slugAdjusted && (
+          <div className="mt-4 flex gap-2 rounded-xl border border-[#ffb4a8]/25 bg-[#8f0f07]/15 px-3 py-2.5 text-xs leading-relaxed text-[#ffb4a8]">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <p>
+              This link may conflict with another invitation. Republish to auto-assign a suffix like{" "}
+              <span className="font-mono">-2</span>, or change names in Share Preview.
+            </p>
+          </div>
+        )}
 
         <div className="mt-5 rounded-xl border border-champagne-gold/15 bg-charcoal-black/40 px-4 py-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/50">
@@ -98,9 +147,6 @@ function PublishShareDialogContent({
           <p className="mt-2 break-all font-mono text-sm text-champagne-gold">
             {origin}
             {sharePath}
-          </p>
-          <p className="mt-2 text-[11px] text-on-surface-variant/55">
-            Example: <span className="text-on-surface-variant/75">/w/rahul-weds-ananya</span>
           </p>
         </div>
 

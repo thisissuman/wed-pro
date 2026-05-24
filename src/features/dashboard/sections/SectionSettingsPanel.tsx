@@ -2,6 +2,7 @@
 
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { ToggleRow } from "@/features/dashboard/shared/ToggleRow";
+import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 import type { SectionVisibility } from "@/types/wedding.types";
 
@@ -35,24 +36,74 @@ const optionalSectionToggles: SectionToggleConfig[] = [
 
 export function SectionSettingsPanel({ draft, update, bare }: PanelProps) {
   const content = (
-    <div className="space-y-2">
-      <p className="mb-3 text-xs leading-relaxed text-on-surface-variant/60">
+    <div className="space-y-4">
+      <p className="mb-1 text-xs leading-relaxed text-on-surface-variant/60">
         Events, gallery, and venue are always included. Toggle optional sections below.
       </p>
-      {optionalSectionToggles.map((toggle) => (
-        <ToggleRow
-          key={toggle.key}
-          label={toggle.label}
-          description={toggle.description}
-          checked={draft.sections[toggle.key] !== false}
-          onChange={(value) =>
-            update((current) => ({
-              ...current,
-              sections: { ...current.sections, [toggle.key]: value },
-            }))
-          }
-        />
-      ))}
+      {optionalSectionToggles.map((toggle) => {
+        const isChecked = draft.sections[toggle.key] !== false;
+
+        return (
+          <div key={toggle.key} className="space-y-3">
+            <ToggleRow
+              label={toggle.label}
+              description={toggle.description}
+              checked={isChecked}
+              onChange={(value) =>
+                update((current) => ({
+                  ...current,
+                  sections: { ...current.sections, [toggle.key]: value },
+                }))
+              }
+            />
+
+            {/* Expand Blessing input fields inline if toggled on */}
+            {toggle.key === "showBlessing" && isChecked && (
+              <div className="ml-6 pl-4 border-l border-champagne-gold/15 space-y-4 py-1">
+                <TextArea
+                  label="Blessing Message"
+                  value={draft.blessing?.message ?? ""}
+                  placeholder="With the blessings of our beloved families..."
+                  onChange={(value) =>
+                    update((current) => ({
+                      ...current,
+                      blessing: { ...current.blessing, message: value },
+                    }))
+                  }
+                />
+                <TextInput
+                  label="Blessing From"
+                  value={draft.blessing?.from ?? ""}
+                  placeholder="The Sharma & Mehta Families"
+                  onChange={(value) =>
+                    update((current) => ({
+                      ...current,
+                      blessing: { ...current.blessing, from: value },
+                    }))
+                  }
+                />
+              </div>
+            )}
+
+            {/* Expand Thank You message input field inline if toggled on */}
+            {toggle.key === "showThankYou" && isChecked && (
+              <div className="ml-6 pl-4 border-l border-champagne-gold/15 space-y-4 py-1">
+                <TextArea
+                  label="Thank You Message"
+                  value={draft.thankYou?.message ?? ""}
+                  placeholder="Your presence is the greatest gift. Thank you for being part of our story..."
+                  onChange={(value) =>
+                    update((current) => ({
+                      ...current,
+                      thankYou: { ...current.thankYou, message: value },
+                    }))
+                  }
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -67,3 +118,4 @@ export function SectionSettingsPanel({ draft, update, bare }: PanelProps) {
     </EditorPanel>
   );
 }
+
