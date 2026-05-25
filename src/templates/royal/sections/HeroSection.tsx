@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { isValidDisplayUrl } from "@/lib/media-url";
 import type { HeroSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import { ScratchReveal } from "../components/ScratchReveal";
 import { templateMotion } from "../../shared/motion/presets";
 
@@ -25,7 +26,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
 
   return (
     <section
-      id="preview-section-hero"
+      id={PREVIEW_SECTION_IDS.hero}
       className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 overflow-hidden"
     >
       {/* Background media — next/image for optimized LCP */}

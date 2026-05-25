@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Navigation } from "lucide-react";
 import { appleMapsUrl, googleMapsUrl } from "@/lib/maps";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import type { VenueData } from "@/types/wedding.types";
 
 interface VenueSectionProps {
@@ -16,7 +17,7 @@ interface VenueSectionProps {
  */
 export function VenueSection({ venue }: VenueSectionProps) {
   return (
-    <section id="preview-section-venue" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.venue} className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

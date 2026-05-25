@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Eye, ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
@@ -147,14 +148,13 @@ export function TemplateCard({ template, index = 0, recommended = false }: Templ
 
       {/* Action Bar */}
       <div className="p-4 flex gap-3 mt-auto bg-surface">
-        <Button
-          variant="ghost"
-          icon={<Eye size={18} />}
-          className="flex-1"
-          onClick={() => router.push(`/preview/${template.id}`)}
+        <Link
+          href={`/preview/${template.id}`}
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-champagne-gold/30 px-6 py-3 font-[family-name:var(--font-body)] text-sm font-medium tracking-wide text-champagne-gold no-underline transition-all duration-200 hover:bg-champagne-gold/5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-champagne-gold/50"
         >
+          <Eye size={18} />
           Preview
-        </Button>
+        </Link>
         <Button
           variant="primary"
           className="flex-1"

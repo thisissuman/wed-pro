@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import type { StoryData } from "@/types/wedding.types";
 
 interface StorySectionProps {
@@ -16,7 +17,7 @@ export function StorySection({ story }: StorySectionProps) {
   const timeline = story.timeline;
 
   return (
-    <section id="preview-section-story" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.story} className="px-6 py-16 md:py-24">
       <div className="max-w-2xl mx-auto">
         {/* Section heading */}
         <motion.div

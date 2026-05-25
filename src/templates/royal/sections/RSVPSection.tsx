@@ -1,26 +1,24 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, ExternalLink } from "lucide-react";
-import type { RSVPData } from "@/types/wedding.types";
-
-interface RSVPSectionProps {
-  rsvp: RSVPData;
-}
+import type { RsvpSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 
 /**
  * Royal Template — RSVP Section
  *
  * WhatsApp or external link only — no server-side guest storage.
  */
-export function RSVPSection({ rsvp }: RSVPSectionProps) {
+function RSVPSectionInner({ rsvp }: RsvpSectionContract) {
   const whatsappUrl =
     rsvp.type === "whatsapp" && rsvp.whatsappNumber
       ? `https://wa.me/${rsvp.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(rsvp.message || "I would love to attend your wedding!")}`
       : null;
 
   return (
-    <section id="preview-section-rsvp" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.rsvp} className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -70,3 +68,5 @@ export function RSVPSection({ rsvp }: RSVPSectionProps) {
     </section>
   );
 }
+
+export const RSVPSection = memo(RSVPSectionInner);

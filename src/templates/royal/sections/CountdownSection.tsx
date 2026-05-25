@@ -1,12 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import type { CountdownData } from "@/types/wedding.types";
-
-interface CountdownSectionProps {
-  countdown: CountdownData;
-}
+import { memo, useEffect, useState } from "react";
+import type { CountdownSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 
 interface TimeLeft {
   days: number;
@@ -33,7 +30,7 @@ function calcTimeLeft(targetDate: string): TimeLeft {
  */
 const EMPTY_TIME: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-export function CountdownSection({ countdown }: CountdownSectionProps) {
+function CountdownSectionInner({ countdown }: CountdownSectionContract) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(EMPTY_TIME);
   const [mounted, setMounted] = useState(false);
 
@@ -60,7 +57,7 @@ export function CountdownSection({ countdown }: CountdownSectionProps) {
   ];
 
   return (
-    <section id="preview-section-countdown" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.countdown} className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -101,3 +98,5 @@ export function CountdownSection({ countdown }: CountdownSectionProps) {
     </section>
   );
 }
+
+export const CountdownSection = memo(CountdownSectionInner);

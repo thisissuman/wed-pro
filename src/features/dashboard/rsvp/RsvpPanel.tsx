@@ -1,8 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { SelectInput, TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import type { PanelProps } from "@/features/dashboard/shared/types";
+import {
+  validateHttpsUrl,
+  validateWhatsAppNumber,
+} from "@/lib/validate-editor";
 import type { RSVPType } from "@/types/wedding.types";
 
 const rsvpTypeOptions: { value: RSVPType; label: string }[] = [
@@ -12,6 +17,18 @@ const rsvpTypeOptions: { value: RSVPType; label: string }[] = [
 
 export function RsvpPanel({ draft, update, bare }: PanelProps) {
   const { rsvp } = draft;
+
+  const whatsappError = useMemo(() => {
+    if (rsvp.type !== "whatsapp") return undefined;
+    const result = validateWhatsAppNumber(rsvp.whatsappNumber ?? "");
+    return result.ok ? undefined : result.message;
+  }, [rsvp.type, rsvp.whatsappNumber]);
+
+  const linkError = useMemo(() => {
+    if (rsvp.type !== "link") return undefined;
+    const result = validateHttpsUrl(rsvp.formUrl ?? "");
+    return result.ok ? undefined : result.message;
+  }, [rsvp.type, rsvp.formUrl]);
 
   const content = (
     <>
@@ -49,6 +66,7 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
             inputMode="tel"
             placeholder="+919876543210"
             helperText="Include country code, no spaces."
+            error={whatsappError}
             onChange={(value) =>
               update((current) => ({
                 ...current,
@@ -77,6 +95,7 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
           inputMode="url"
           placeholder="https://"
           helperText="Optional — Google Form, Typeform, or any HTTPS RSVP page."
+          error={linkError}
           onChange={(value) =>
             update((current) => ({
               ...current,

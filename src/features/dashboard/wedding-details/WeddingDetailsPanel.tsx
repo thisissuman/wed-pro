@@ -1,11 +1,13 @@
 "use client";
 
+import { useMemo } from "react";
 import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
 import { SelectInput, TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import { ToggleRow } from "@/features/dashboard/shared/ToggleRow";
 import { buildInvitationSlug } from "@/lib/invitations";
+import { validateHashtag, validateWeddingDate } from "@/lib/validate-editor";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 import type { ParentDisplayOrder, PersonData } from "@/types/wedding.types";
 
@@ -36,6 +38,16 @@ function getParentLine(
 }
 
 export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
+  const dateError = useMemo(() => {
+    const result = validateWeddingDate(draft.couple.weddingDate ?? "");
+    return result.ok ? undefined : result.message;
+  }, [draft.couple.weddingDate]);
+
+  const hashtagError = useMemo(() => {
+    const result = validateHashtag(draft.weddingHashtag ?? "");
+    return result.ok ? undefined : result.message;
+  }, [draft.weddingHashtag]);
+
   const family = draft.couple.family ?? {
     bride: {},
     groom: {},
@@ -139,6 +151,7 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
             label="Wedding Date"
             type="date"
             value={draft.couple.weddingDate ?? ""}
+            error={dateError}
             onChange={(value) =>
               update((current) => ({
                 ...current,
@@ -152,6 +165,7 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
             value={draft.weddingHashtag ?? ""}
             placeholder="#RahulWedsAnanya"
             helperText="Shown softly on the invitation for photo sharing."
+            error={hashtagError}
             onChange={(value) =>
               update((current) => ({
                 ...current,

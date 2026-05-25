@@ -2,20 +2,18 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import type { CoupleData } from "@/types/wedding.types";
+import type { CoupleSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
+import { SectionHeading, TemplateSection } from "@/templates/shared/components";
 import { cn } from "@/lib/utils";
 import { isValidDisplayUrl } from "@/lib/media-url";
-
-interface CoupleSectionProps {
-  couple: CoupleData;
-}
 
 /**
  * Royal Template — Couple Section
  *
  * Bride & Groom reveal with parent names, bios, and elegant layout.
  */
-export function CoupleSection({ couple }: CoupleSectionProps) {
+export function CoupleSection({ couple }: CoupleSectionContract) {
   const { bride, groom } = couple;
   const family = couple.family;
   const brideFirst = family?.displayOrder === "bride-first";
@@ -30,7 +28,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
   const showGrandparents = family?.includeGrandparents ?? false;
 
   return (
-    <section id="preview-section-couple" className="px-6 py-16 md:py-24">
+    <TemplateSection id={PREVIEW_SECTION_IDS.couple}>
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -38,27 +36,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
         transition={{ duration: 0.6 }}
         className="max-w-4xl mx-auto"
       >
-        {/* Section heading */}
-        <div className="text-center mb-12 md:mb-16">
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.3em] text-champagne-gold/60 mb-3"
-          >
-            With Love
-          </motion.p>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="font-[family-name:var(--font-heading)] text-3xl md:text-4xl text-ivory font-semibold"
-          >
-            Meet The Couple
-          </motion.h2>
-        </div>
+        <SectionHeading eyebrow="With Love" title="Meet The Couple" />
 
         {/* Couple cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
@@ -71,7 +49,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             className={cn("text-center space-y-4", brideFirst && "order-2")}
           >
             {/* Photo placeholder */}
-            <div className="relative w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
+            <div className="template-media-slot relative mx-auto flex aspect-square w-36 items-center justify-center md:w-44 rounded-full border-2 border-champagne-gold/20">
               {groomPhoto ? (
                 <Image
                   src={groomPhoto}
@@ -114,7 +92,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
             transition={{ duration: 0.6, delay: 0.3 }}
             className={cn("text-center space-y-4", brideFirst && "order-1")}
           >
-            <div className="relative w-36 h-36 md:w-44 md:h-44 mx-auto rounded-full bg-surface-container border-2 border-champagne-gold/20 overflow-hidden flex items-center justify-center">
+            <div className="template-media-slot relative mx-auto flex aspect-square w-36 items-center justify-center md:w-44 rounded-full border-2 border-champagne-gold/20">
               {bridePhoto ? (
                 <Image
                   src={bridePhoto}
@@ -150,7 +128,7 @@ export function CoupleSection({ couple }: CoupleSectionProps) {
           </motion.div>
         </div>
       </motion.div>
-    </section>
+    </TemplateSection>
   );
 }
 

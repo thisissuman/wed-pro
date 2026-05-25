@@ -4,6 +4,7 @@ import { Check, ChevronDown } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { sanitizePlainText } from "@/lib/sanitize-text";
 
 interface TextInputProps {
   label: string;
@@ -13,6 +14,7 @@ interface TextInputProps {
   placeholder?: string;
   inputMode?: "text" | "tel" | "email" | "url" | "numeric" | "decimal";
   helperText?: string;
+  error?: string;
 }
 
 export function TextInput({
@@ -23,6 +25,7 @@ export function TextInput({
   placeholder,
   inputMode,
   helperText,
+  error,
 }: TextInputProps) {
   return (
     <label className="block space-y-2">
@@ -34,10 +37,21 @@ export function TextInput({
         value={value}
         inputMode={inputMode}
         placeholder={placeholder}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
-        className="w-full rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-sm text-ivory outline-none transition focus:border-champagne-gold/60"
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+          onChange(sanitizePlainText(event.target.value))
+        }
+        aria-invalid={Boolean(error)}
+        className={cn(
+          "w-full rounded-xl border bg-charcoal-black/50 px-4 py-3 text-sm text-ivory outline-none transition focus:border-champagne-gold/60",
+          error ? "border-error/50" : "border-champagne-gold/15"
+        )}
       />
-      {helperText && (
+      {error && (
+        <span className="block text-[11px] leading-relaxed text-error" role="alert">
+          {error}
+        </span>
+      )}
+      {!error && helperText && (
         <span className="block text-[11px] leading-relaxed text-on-surface-variant/50">
           {helperText}
         </span>
@@ -53,6 +67,7 @@ interface TextAreaProps {
   rows?: number;
   placeholder?: string;
   helperText?: string;
+  error?: string;
 }
 
 export function TextArea({
@@ -62,6 +77,7 @@ export function TextArea({
   rows = 3,
   placeholder,
   helperText,
+  error,
 }: TextAreaProps) {
   return (
     <label className="block space-y-2">
@@ -72,10 +88,21 @@ export function TextArea({
         value={value}
         rows={rows}
         placeholder={placeholder}
-        onChange={(event: ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value)}
-        className="w-full resize-none rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-sm leading-relaxed text-ivory outline-none transition focus:border-champagne-gold/60"
+        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+          onChange(sanitizePlainText(event.target.value))
+        }
+        aria-invalid={Boolean(error)}
+        className={cn(
+          "w-full resize-none rounded-xl border bg-charcoal-black/50 px-4 py-3 text-sm leading-relaxed text-ivory outline-none transition focus:border-champagne-gold/60",
+          error ? "border-error/50" : "border-champagne-gold/15"
+        )}
       />
-      {helperText && (
+      {error && (
+        <span className="block text-[11px] leading-relaxed text-error" role="alert">
+          {error}
+        </span>
+      )}
+      {!error && helperText && (
         <span className="block text-[11px] leading-relaxed text-on-surface-variant/50">
           {helperText}
         </span>

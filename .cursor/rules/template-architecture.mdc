@@ -20,6 +20,7 @@ Templates are **presentation only**. They render UI from `WeddingData`; they nev
 src/templates/
   TemplateRenderer.tsx
   shared/
+    components/
     motion/
     sections/
     theme/
@@ -43,6 +44,7 @@ All templates consume **`WeddingData`** from `src/types/`. Same schema for edito
 - **100% shared:** hooks (`useWeddingCountdown`), UI atoms (buttons, typography wrappers)
 - **Bespoke per template:** section components inside `src/templates/<id>/sections/` — template-specific Tailwind/colors OK for cinematic identity
 - Do not force identical section UI across all templates (anti-pattern for premium feel)
+- `src/templates/shared/components/` is optional support, not a design system cage. Use shared atoms only when they help match the design.
 
 ## Section Flow (Storytelling)
 
@@ -59,6 +61,31 @@ Support Indian events (Mehendi, Haldi, Wedding, Reception, Sangeet). Event shape
 ## Section Contracts
 
 Shared contracts live in `src/templates/shared/sections/types.ts`. New templates can keep bespoke section UI, but they should consume the same props so editor and publish logic remain stable.
+
+## Preview Section IDs
+
+The editor live preview scrolls to fixed DOM ids from `src/templates/shared/sections/preview-ids.ts`.
+
+Every template must use these ids on matching sections:
+
+| Section | Required id |
+|---------|-------------|
+| Hero | `PREVIEW_SECTION_IDS.hero` |
+| Couple | `PREVIEW_SECTION_IDS.couple` |
+| Countdown | `PREVIEW_SECTION_IDS.countdown` |
+| Events | `PREVIEW_SECTION_IDS.events` |
+| Story | `PREVIEW_SECTION_IDS.story` |
+| Gallery | `PREVIEW_SECTION_IDS.gallery` |
+| Venue | `PREVIEW_SECTION_IDS.venue` |
+| RSVP | `PREVIEW_SECTION_IDS.rsvp` |
+
+Blessing and Thank You are not mapped today; add them to the shared id map only if the editor gains matching navigation targets.
+
+## Registry
+
+Register each template once in `src/templates/registry.ts`. The runtime renderer and marketing gallery both derive from this registry; do not create a second card entry in `src/data/templates.ts`.
+
+`/preview/<template-id>` works automatically when the registry id matches the template id.
 
 ## Animations
 

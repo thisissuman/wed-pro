@@ -243,7 +243,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     const top = mobileEditorTopRef.current?.getBoundingClientRect().top;
     if (typeof top === "number") {
       window.scrollTo({
-        top: window.scrollY + top - 84,
+        top: window.scrollY + top - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--editor-sticky-offset") || "80"),
         behavior: "smooth",
       });
     }
@@ -387,8 +387,8 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   };
 
   return (
-    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pb-32 pt-6 md:pt-10 md:pb-28 lg:pb-28">
-      <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-5 md:flex-row md:items-end md:justify-between">
+    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pt-6 pb-[calc(var(--editor-bottom-bar-h)+env(safe-area-inset-bottom)+2rem)] md:pt-10 md:pb-28 lg:pb-28">
+      <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-3">
           <Link
             href="/dashboard"
@@ -417,7 +417,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             type="button"
             onClick={() => void publish()}
             disabled={isPublishing}
-            className="hidden items-center justify-center gap-2 rounded-full gold-gradient px-5 py-2.5 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60 lg:inline-flex"
+            className="hidden items-center justify-center gap-2 rounded-full gold-gradient px-5 py-3 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60 lg:inline-flex"
           >
             {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
             {draft.status === "published" ? "Republish" : "Publish"}
@@ -427,7 +427,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => void copyShareLink()}
-              className="hidden items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 lg:inline-flex"
+              className="hidden items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 lg:inline-flex"
             >
               {copied ? <Check size={15} /> : <Copy size={15} />}
               {copied ? "Copied" : "Copy Link"}
@@ -438,7 +438,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => setShowShareDialog(true)}
-              className="hidden items-center justify-center gap-2 rounded-full bg-[#25D366]/15 border border-[#25D366]/40 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#25D366] transition hover:bg-[#25D366]/25 lg:inline-flex"
+              className="hidden items-center justify-center gap-2 rounded-full bg-[#25D366]/15 border border-[#25D366]/40 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#25D366] transition hover:bg-[#25D366]/25 lg:inline-flex"
             >
               <MessageCircle size={15} />
               WhatsApp
@@ -449,7 +449,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => setShowUnpublishDialog(true)}
-              className="hidden items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15 lg:inline-flex"
+              className="hidden items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15 lg:inline-flex"
             >
               <Undo2 size={15} />
               Unpublish
@@ -459,7 +459,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)]">
         <section ref={mobileEditorTopRef} className="lg:hidden">
           <div className="mb-4 rounded-2xl border border-champagne-gold/10 bg-surface-container/70 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-between gap-3">
@@ -508,7 +508,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -18 }}
               transition={{ duration: 0.22, ease: "easeOut" }}
-              className="rounded-2xl border border-champagne-gold/10 bg-surface-container/70 px-5 pb-6 pt-5 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
+              className="rounded-2xl border border-champagne-gold/10 bg-surface-container/70 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.2)]"
             >
               {renderStepPanel(currentMobileStep.id)}
             </motion.div>
@@ -554,7 +554,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                   type="button"
                   onClick={() => setPreviewMode("mobile")}
                   className={cn(
-                    "inline-flex h-9 w-9 items-center justify-center rounded-full transition",
+                    "inline-flex size-10 items-center justify-center rounded-full transition",
                     previewMode === "mobile"
                       ? "bg-champagne-gold/20 text-champagne-gold"
                       : "text-on-surface-variant/60 hover:text-champagne-gold"
@@ -568,7 +568,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                   type="button"
                   onClick={() => setPreviewMode("desktop")}
                   className={cn(
-                    "inline-flex h-9 w-9 items-center justify-center rounded-full transition",
+                    "inline-flex size-10 items-center justify-center rounded-full transition",
                     previewMode === "desktop"
                       ? "bg-champagne-gold/20 text-champagne-gold"
                       : "text-on-surface-variant/60 hover:text-champagne-gold"
@@ -591,9 +591,9 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
           <div
             id="preview-scroll-container"
             className={cn(
-              "mx-auto h-[720px] overflow-y-auto bg-background no-scrollbar lg:h-full",
+              "mx-auto overflow-y-auto bg-background no-scrollbar lg:h-full",
               previewMode === "mobile"
-                ? "max-w-[430px] rounded-[28px] border border-champagne-gold/20 shadow-[0_30px_100px_rgba(0,0,0,0.45)]"
+                ? "h-[720px] max-w-[430px] rounded-[var(--editor-preview-radius)] border border-champagne-gold/20 shadow-[0_30px_100px_rgba(0,0,0,0.45)]"
                 : "max-w-full rounded-none border-0 shadow-none"
             )}
           >
@@ -664,7 +664,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 32 }}
               transition={{ duration: 0.24, ease: "easeOut" }}
-              className="absolute inset-x-0 bottom-0 max-h-[92dvh] overflow-hidden rounded-t-[28px] border border-champagne-gold/15 bg-background shadow-[0_-30px_90px_rgba(0,0,0,0.55)]"
+              className="absolute inset-x-0 bottom-0 max-h-[92dvh] overflow-hidden rounded-t-[var(--editor-preview-radius)] border border-champagne-gold/15 bg-background shadow-[0_-30px_90px_rgba(0,0,0,0.55)]"
             >
               <div className="flex items-center justify-between gap-3 border-b border-champagne-gold/10 px-4 py-3">
                 <div>
@@ -693,7 +693,8 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               </div>
               <div
                 id="mobile-preview-scroll-container"
-                className="mx-auto h-[calc(92dvh-73px)] max-w-[430px] overflow-y-auto bg-background no-scrollbar"
+                className="mx-auto max-w-[430px] overflow-y-auto bg-background no-scrollbar"
+                style={{ height: "calc(92dvh - var(--editor-preview-chrome-h))" }}
               >
                 {previewData && (
                   <TemplateRenderer templateId={previewData.templateId} data={previewData} isPreview />
