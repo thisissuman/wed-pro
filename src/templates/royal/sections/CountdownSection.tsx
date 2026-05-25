@@ -1,12 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-import type { CountdownData } from "@/types/wedding.types";
-
-interface CountdownSectionProps {
-  countdown: CountdownData;
-}
+import { memo, useEffect, useState } from "react";
+import type { CountdownSectionContract } from "@/templates/shared/sections/types";
 
 interface TimeLeft {
   days: number;
@@ -33,7 +29,7 @@ function calcTimeLeft(targetDate: string): TimeLeft {
  */
 const EMPTY_TIME: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
-export function CountdownSection({ countdown }: CountdownSectionProps) {
+function CountdownSectionInner({ countdown }: CountdownSectionContract) {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>(EMPTY_TIME);
   const [mounted, setMounted] = useState(false);
 
@@ -101,3 +97,5 @@ export function CountdownSection({ countdown }: CountdownSectionProps) {
     </section>
   );
 }
+
+export const CountdownSection = memo(CountdownSectionInner);

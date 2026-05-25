@@ -1,0 +1,21 @@
+# Tasks: Spacing, Perfection & Scalability Roadmap
+
+- [x] **Step 1: Design QA & Layout Audit**
+  - [x] Audit margins and paddings using 4px/8px scale on homepage, dashboard, and templates
+  - [x] Refine mobile editor drawer slider and touch viewports
+  - [x] Polish desktop editor split-pane aspect ratios
+- [x] **Step 2: Playwright Visual & Edge-Case Testing**
+  - [x] Configure `expect(page).toHaveScreenshot()` visual regression tests
+  - [x] Write E2E validation boundary tests (empty states, errors)
+  - [ ] Test mobile slider touch events and player sync
+- [x] **Step 3: Zero CLS & Mobile Speed Hardening**
+  - [x] Implement strict aspect-ratio containers on lazily-loaded images
+  - [x] Configure hero media prefetch priority and DNS preconnects
+  - [x] Memoize interactive elements to eliminate scrolling paint lags
+- [x] **Step 4: Refactor Royal & Registry Enforcements**
+  - [x] Extract shared layout elements into `src/templates/shared/components`
+  - [x] Harmonize section files with `shared/sections/types.ts`
+  - [x] Audit dynamic registry mapping
+- [x] **Step 5: Security Hardening & Input Sanitization**
+  - [x] Add regex/schema sanitization to editor text inputs
+  - [ ] Verify RLS and upload boundaries (manual — `docs/hardening-security.md`)

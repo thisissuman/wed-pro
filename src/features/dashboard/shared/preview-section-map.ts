@@ -12,11 +12,19 @@ export const PANEL_PREVIEW_SECTION: Record<string, string> = {
   rsvp: "preview-section-rsvp",
 };
 
+function getActivePreviewScrollContainer(): HTMLElement | null {
+  const mobile = document.getElementById("mobile-preview-scroll-container");
+  if (mobile && mobile.offsetParent !== null) {
+    return mobile;
+  }
+  return document.getElementById("preview-scroll-container");
+}
+
 export function scrollPreviewToSection(panelId: string) {
   const targetId = PANEL_PREVIEW_SECTION[panelId];
   if (!targetId) return;
 
-  const container = document.getElementById("preview-scroll-container");
+  const container = getActivePreviewScrollContainer();
   const el = document.getElementById(targetId);
   if (!container || !el) return;
 

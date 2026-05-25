@@ -1,12 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Music2, Pause, Play } from "lucide-react";
-import type { MusicData } from "@/types/wedding.types";
-
-interface MusicPlayerProps {
-  music: MusicData;
-}
+import type { MusicPlayerContract } from "@/templates/shared/sections/types";
 
 function isLikelyAudioUrl(url: string): boolean {
   try {
@@ -23,7 +19,7 @@ function isLikelyAudioUrl(url: string): boolean {
  * Floating tap-to-play audio control. Optional autoplay is attempted muted
  * (per browser policies); user can unmute by tapping the play button.
  */
-export function MusicPlayer({ music }: MusicPlayerProps) {
+function MusicPlayerInner({ music }: MusicPlayerContract) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -89,3 +85,5 @@ export function MusicPlayer({ music }: MusicPlayerProps) {
     </>
   );
 }
+
+export const MusicPlayer = memo(MusicPlayerInner);

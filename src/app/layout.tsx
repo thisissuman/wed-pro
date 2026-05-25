@@ -53,6 +53,10 @@ export default function RootLayout({
       className={`${playfairDisplay.variable} ${inter.variable} ${notoDevanagari.variable}`}
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+      </head>
       <body className="min-h-dvh antialiased">
         <ThemeProvider>
           <AuthProvider>

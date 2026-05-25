@@ -1,3 +1,4 @@
+import type { Template } from "@/types";
 import type { TemplateRegistryEntry } from "./types";
 import { RoyalTemplate } from "./royal/RoyalTemplate";
 
@@ -19,9 +20,22 @@ const registry: TemplateRegistryEntry[] = [
     thumbnail:
       "https://lh3.googleusercontent.com/aida-public/AB6AXuB8tY2hQv7YmfTpckOrgxMKUo5jIeUSU2s8cr8zHzRt1W3CZkuLR9FWAwiwmlI2rPBvjFtonHhWV4HXaJRm6cn3LJAX_qfGgu_nuJeZpFbwFnDvaWwyaJKh_wb0S_r5bB05fxT-S5ZAwI7upnBsUlB5nwJc5XZ_pyFZbHfceSsuk0wzQRNkpaKhyHiJbz0q7YUnMwr1PUlM8zuUR-P-eCW1i5hzmrislJnzFssn1Ne0K8CIn_0omLjG5iHfU8L1qFydqZaXUtpafQM",
     category: "royal",
+    badge: "Bestseller",
     component: RoyalTemplate,
   },
 ];
+
+/** Marketing gallery cards — single source of truth with runtime registry. */
+export function getMarketingTemplates(): Template[] {
+  return registry.map(({ id, name, description, thumbnail, category, badge }) => ({
+    id,
+    name,
+    description,
+    imageUrl: thumbnail,
+    category: category as Template["category"],
+    badge,
+  }));
+}
 
 /**
  * Get a single template by ID.

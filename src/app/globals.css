@@ -87,6 +87,13 @@
   --spacing-section-gap-md: 40px;
   --spacing-section-gap-lg: 80px;
 
+  /* ── Editor workspace (8px grid) ── */
+  --editor-sidebar-width: 26rem;
+  --editor-preview-chrome-h: 4.5rem;
+  --editor-bottom-bar-h: 3.75rem;
+  --editor-sticky-offset: 5rem;
+  --editor-preview-radius: 1.5rem;
+
   /* ── Border Radius ── */
   --radius-sm: 0.25rem;
   --radius-md: 0.5rem;
@@ -173,6 +180,13 @@ body {
   --color-outline-variant: #c4b9a8;
   --color-ivory: #1a1a1a;
   --color-charcoal-black: #131313;
+}
+
+/* Reserve space before lazy-loaded template media paints (reduces CLS). */
+.template-media-slot {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-surface-container);
 }
 
 /* ─── Custom Utilities ─── */
