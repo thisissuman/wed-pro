@@ -18,7 +18,9 @@ export function getSupabaseEnv(): { url: string; anonKey: string } {
     return { url, anonKey };
   }
 
-  if (process.env.CI === "true") {
+  const isCi =
+    process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+  if (isCi) {
     return { url: CI_PLACEHOLDER_URL, anonKey: CI_PLACEHOLDER_ANON_KEY };
   }
 
