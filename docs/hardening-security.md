@@ -54,8 +54,8 @@ Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and p
 
 | Secret | Required for | Notes |
 |--------|----------------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Auth E2E only | Build uses CI placeholders if unset (`src/utils/supabase/env.ts`) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Auth E2E only | From Supabase → Project Settings → API |
+| `NEXT_PUBLIC_SUPABASE_URL` | Auth E2E only | CI uses a harmless placeholder if unset |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Auth E2E only | CI uses a harmless placeholder if unset; real value is from Supabase → Project Settings → API |
 | `NEXT_PUBLIC_SITE_URL` | Optional | Defaults to `http://127.0.0.1:3000` in CI |
 | `PLAYWRIGHT_TEST_EMAIL` | Optional auth smoke test | Skipped when empty |
 | `PLAYWRIGHT_TEST_PASSWORD` | Optional auth smoke test | Use a dedicated test user, not production |
