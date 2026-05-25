@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vivaha Studio Template Master Prompt</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #131313;
+        --card: #201f1f;
+        --text: #f5f0e8;
+        --muted: #d0c5af;
+        --gold: #d4af37;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        line-height: 1.6;
+      }
+
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 40px 24px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(28px, 5vw, 44px);
+        line-height: 1.1;
+      }
+
+      p {
+        color: var(--muted);
+      }
+
+      a {
+        color: var(--gold);
+      }
+
+      .card {
+        margin-top: 24px;
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        border-radius: 24px;
+        background: var(--card);
+        padding: 24px;
+      }
+
+      pre {
+        overflow-x: auto;
+        white-space: pre-wrap;
+        border-radius: 18px;
+        background: #0a0a0a;
+        padding: 20px;
+        color: var(--text);
+      }
+
+      code {
+        font-family:
+          "SFMono-Regular",
+          Consolas,
+          "Liberation Mono",
+          monospace;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Vivaha Studio Template Master Prompt</h1>
+      <p>
+        Use this short prompt in a fresh Cursor chat when creating a new sellable
+        template from Figma, screenshots, or a written design brief.
+      </p>
+
+      <div class="card">
+        <h2>Reference Files</h2>
+        <p>
+          The full workflow lives in <a href="./docs/create-template-prompt.md">docs/create-template-prompt.md</a>.
+          Cursor should also read
+          <a href="./.cursor/skills/create-template/SKILL.md">.cursor/skills/create-template/SKILL.md</a>,
+          <a href="./.cursor/rules/template-architecture.mdc">.cursor/rules/template-architecture.mdc</a>,
+          <a href="./.cursor/rules/animations.mdc">.cursor/rules/animations.mdc</a>,
+          and <a href="./.cursor/rules/performance.mdc">.cursor/rules/performance.mdc</a>.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Copy-Paste Prompt</h2>
+        <pre><code>Create Vivaha Studio template "&lt;template-id&gt;" from my design spec.
+
+Read and follow: docs/create-template-prompt.md, .cursor/skills/create-template/SKILL.md, .cursor/rules/template-architecture.mdc, .cursor/rules/animations.mdc, .cursor/rules/performance.mdc.
+
+Design spec:
+- Source: &lt;Figma link, screenshots, or written brief&gt;
+- Name: &lt;display name&gt;
+- Category: &lt;royal|floral|minimal|modern&gt;
+- Colors: &lt;primary, background, text, accent&gt;
+- Fonts: &lt;heading, body&gt;
+- Section order: &lt;list&gt;
+- Signature motion: &lt;e.g. fade-up sections, horizontal gallery, curtain reveal, none&gt;
+- Thumbnail URL: &lt;https://...&gt;
+
+Rules:
+- Use WeddingData + shared section contracts only; no Supabase/auth/Zustand in src/templates/.
+- Bespoke UI belongs in src/templates/&lt;template-id&gt;/sections/ and optional components/.
+- Use PREVIEW_SECTION_IDS on mapped sections so editor live-preview scroll works.
+- Register once in src/templates/registry.ts; /template gallery auto-wires.
+- Mirror RoyalTemplate: TemplateThemeProvider, withEssentialSections, visibility flags, MusicPlayer.
+- Use next/image + sizes, safe media URL checks, transform/opacity motion, and prefers-reduced-motion.
+- Add a Playwright visual snapshot for /preview/&lt;template-id&gt;.
+
+Branch: feat/&lt;template-id&gt;-template. Run lint, build, and test:e2e --project=mobile-chrome when done.</code></pre>
+      </div>
+    </main>
+  </body>
+</html>

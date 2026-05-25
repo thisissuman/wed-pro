@@ -1,7 +1,12 @@
 # Add A New Template
 
-Use this checklist when adding the next two designs. The goal is to add visual
-variety without changing editor, auth, publish, or public route logic.
+Use this checklist when adding sellable template designs from Figma, screenshots,
+or a written design brief. The goal is to add visual variety without changing
+editor, auth, publish, or public route logic.
+
+For the repeatable copy-paste workflow, start with
+`docs/create-template-prompt.md`. This file is the shorter implementation
+checklist.
 
 ## 1. Scaffold
 
@@ -9,13 +14,13 @@ variety without changing editor, auth, publish, or public route logic.
 src/templates/<template-id>/
   <PascalTemplate>.tsx
   theme.ts
-  components/
-  hooks/
+  components/     # optional, template-specific interactions and ornaments
+  hooks/          # optional, template-specific hooks
   sections/
 ```
 
 Start from `src/templates/royal/` only where useful. Do not copy business logic
-or Supabase access into a template.
+or Supabase access into a template. Templates are presentation only.
 
 ## 2. Theme Tokens
 
@@ -36,6 +41,20 @@ import type { HeroSectionContract } from "@/templates/shared/sections/types";
 New templates can keep bespoke section components, but props should match the
 shared contracts so editor data stays stable.
 
+Mapped sections must also use ids from
+`src/templates/shared/sections/preview-ids.ts` so the editor live preview can
+scroll to the active section:
+
+```ts
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
+```
+
+Use the matching id on each section element, for example:
+
+```tsx
+<section id={PREVIEW_SECTION_IDS.events}>...</section>
+```
+
 ## 4. Motion
 
 - Import reusable presets from `src/templates/shared/motion/presets.ts`.
@@ -46,7 +65,8 @@ shared contracts so editor data stays stable.
 ## 5. Registry & Routes
 
 - Add the template to `src/templates/registry.ts`.
-- Add its card data to `src/data/templates.ts`.
+- Do **not** add separate card data to `src/data/templates.ts`; the template
+  gallery is derived from the registry.
 - Verify `/preview/<template-id>`.
 - Verify `/template` preview/select buttons.
 - Verify editor preview still renders with `TemplateRenderer`.
@@ -70,6 +90,12 @@ npx playwright install chromium
 npm run test:e2e -- --project=mobile-chrome
 ```
 
+When adding a new template preview screenshot, create the baseline once:
+
+```bash
+npm run test:e2e -- --project=mobile-chrome tests/e2e/visual-regression.spec.ts --update-snapshots
+```
+
 ## Done When
 
 - The template renders complete `WeddingData` without crashes.
@@ -77,3 +103,5 @@ npm run test:e2e -- --project=mobile-chrome
 - It can be selected from `/template`.
 - No database, auth, payment, or Zustand imports exist inside template files.
 - Images use `next/image` with accurate `sizes`.
+- Required preview ids are present for the editor scroll map.
+- A `/preview/<template-id>` visual baseline is committed.

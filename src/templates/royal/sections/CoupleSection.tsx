@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import type { CoupleSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import { SectionHeading, TemplateSection } from "@/templates/shared/components";
 import { cn } from "@/lib/utils";
 import { isValidDisplayUrl } from "@/lib/media-url";
@@ -27,7 +28,7 @@ export function CoupleSection({ couple }: CoupleSectionContract) {
   const showGrandparents = family?.includeGrandparents ?? false;
 
   return (
-    <TemplateSection id="preview-section-couple">
+    <TemplateSection id={PREVIEW_SECTION_IDS.couple}>
       <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}

@@ -4,6 +4,7 @@ import { memo } from "react";
 import { motion } from "framer-motion";
 import { MessageCircle, ExternalLink } from "lucide-react";
 import type { RsvpSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 
 /**
  * Royal Template — RSVP Section
@@ -17,7 +18,7 @@ function RSVPSectionInner({ rsvp }: RsvpSectionContract) {
       : null;
 
   return (
-    <section id="preview-section-rsvp" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.rsvp} className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

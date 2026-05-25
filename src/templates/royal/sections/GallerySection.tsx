@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { isValidDisplayUrl } from "@/lib/media-url";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import type { GalleryData } from "@/types/wedding.types";
 
 interface GallerySectionProps {
@@ -53,7 +54,7 @@ export function GallerySection({ gallery }: GallerySectionProps) {
 
   return (
     <>
-      <section id="preview-section-gallery" className="px-6 py-16 md:py-24">
+      <section id={PREVIEW_SECTION_IDS.gallery} className="px-6 py-16 md:py-24">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 15 }}

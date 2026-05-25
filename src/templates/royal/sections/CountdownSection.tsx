@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { memo, useEffect, useState } from "react";
 import type { CountdownSectionContract } from "@/templates/shared/sections/types";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 
 interface TimeLeft {
   days: number;
@@ -56,7 +57,7 @@ function CountdownSectionInner({ countdown }: CountdownSectionContract) {
   ];
 
   return (
-    <section id="preview-section-countdown" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.countdown} className="px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

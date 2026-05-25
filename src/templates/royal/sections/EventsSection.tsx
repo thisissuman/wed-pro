@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Clock, Navigation } from "lucide-react";
 import { appleMapsUrl, googleMapsUrl } from "@/lib/maps";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import type { WeddingEvent } from "@/types/wedding.types";
 
 interface EventsSectionProps {
@@ -26,7 +27,7 @@ const eventTypeEmoji: Record<string, string> = {
  */
 export function EventsSection({ events }: EventsSectionProps) {
   return (
-    <section id="preview-section-events" className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.events} className="px-6 py-16 md:py-24">
       <div className="max-w-3xl mx-auto">
         {/* Section heading */}
         <motion.div
