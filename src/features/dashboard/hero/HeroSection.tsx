@@ -12,7 +12,7 @@ export function HeroSection() {
 
       {/* Tagline */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 1, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
@@ -23,7 +23,7 @@ export function HeroSection() {
 
       {/* Main Heading */}
       <motion.h1
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 1, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
         className="font-[family-name:var(--font-heading)] text-[2.25rem] leading-[2.75rem] md:text-display-lg text-ivory font-bold relative z-10 max-w-3xl mx-auto"
@@ -34,7 +34,7 @@ export function HeroSection() {
 
       {/* Subheading */}
       <motion.p
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 1, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
         className="font-[family-name:var(--font-body)] text-body-md md:text-body-lg text-on-surface-variant max-w-xl mx-auto leading-relaxed"
@@ -46,7 +46,7 @@ export function HeroSection() {
 
       {/* CTA Buttons */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
+        initial={{ opacity: 1, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.35, ease: "easeOut" }}
         className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2"
