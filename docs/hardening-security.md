@@ -50,7 +50,7 @@ publishing, uploads, or Supabase policies.
 
 ## GitHub Actions CI
 
-Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and pushes to `main` / `feat/**`).
+Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and pushes to `main`).
 
 | Secret | Required for | Notes |
 |--------|----------------|-------|
