@@ -58,9 +58,21 @@ Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and p
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Auth E2E only | CI uses a harmless placeholder if unset; real value is from Supabase → Project Settings → API |
 | `NEXT_PUBLIC_SITE_URL` | Optional | Defaults to `http://127.0.0.1:3000` in CI |
 | `PLAYWRIGHT_TEST_EMAIL` | Optional auth smoke test | Skipped when empty |
-| `PLAYWRIGHT_TEST_PASSWORD` | Optional auth smoke test | Use a dedicated test user, not production |
+| `PLAYWRIGHT_TEST_PASSWORD` | Optional auth smoke test | Use a dedicated test user, not production. Test deletes one draft if the account already has 3 invitations. |
 
 Add secrets under **GitHub repo → Settings → Secrets and variables → Actions**.
+
+After adding or changing secrets, open the PR → **Checks** → **Re-run all jobs** (no code push required).
+
+### GitHub settings checklist
+
+| Where | Do you need it? |
+|-------|----------------|
+| **Secrets → Actions** (the four secrets above) | Yes — you already did this |
+| **Actions → General → Allow all actions** | Usually already default; only check if workflows never start |
+| **Branch protection on `main`** | Optional — require `lint-build-test` before merge |
+| **Environments / deployment approvals** | Not needed for this repo yet |
+| **Vercel env vars** | Yes for production — same `NEXT_PUBLIC_*` as local `.env.local` |
 
 ## Verification Commands
 
