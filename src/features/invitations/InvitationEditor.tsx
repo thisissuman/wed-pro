@@ -89,7 +89,10 @@ const editorSteps = [
 type EditorStepId = (typeof editorSteps)[number]["id"];
 
 export function InvitationEditor({ initialData }: InvitationEditorProps) {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return createClient();
+  }, []);
   const draft = useInvitationEditorStore((state) => state.draft);
   const saveState = useInvitationEditorStore((state) => state.saveState);
   const saveMessage = useInvitationEditorStore((state) => state.saveMessage);
@@ -129,6 +132,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
   const saveDraft = useCallback(
     async (nextDraft: WeddingData) => {
+      if (!supabase) return;
       if (inFlight.current) {
         // Save in progress — queue the latest snapshot and let the active save
         // flush it when done. Newer edits overwrite older queued snapshots.
@@ -247,7 +251,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   }, []);
 
   const publish = async () => {
-    if (!draft) return;
+    if (!draft || !supabase) return;
 
     setIsPublishing(true);
     setPublishSlugAdjusted(false);
@@ -290,7 +294,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   };
 
   const unpublish = async () => {
-    if (!draft) return;
+    if (!draft || !supabase) return;
 
     setIsUnpublishing(true);
     const result = await unpublishInvitation(supabase, draft);

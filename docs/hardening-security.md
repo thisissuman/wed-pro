@@ -48,6 +48,20 @@ publishing, uploads, or Supabase policies.
 - [ ] Uploaded images are delivered through optimized transformations where possible.
 - [ ] Music URLs are treated as user content and never executed as HTML.
 
+## GitHub Actions CI
+
+Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and pushes to `main` / `feat/**`).
+
+| Secret | Required for | Notes |
+|--------|----------------|-------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Auth E2E only | Build uses CI placeholders if unset (`src/utils/supabase/env.ts`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Auth E2E only | From Supabase → Project Settings → API |
+| `NEXT_PUBLIC_SITE_URL` | Optional | Defaults to `http://127.0.0.1:3000` in CI |
+| `PLAYWRIGHT_TEST_EMAIL` | Optional auth smoke test | Skipped when empty |
+| `PLAYWRIGHT_TEST_PASSWORD` | Optional auth smoke test | Use a dedicated test user, not production |
+
+Add secrets under **GitHub repo → Settings → Secrets and variables → Actions**.
+
 ## Verification Commands
 
 ```bash

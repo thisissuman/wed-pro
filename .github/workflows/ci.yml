@@ -1,3 +1,13 @@
+# Runs lint, production build, and Playwright smoke tests on PRs and main/feature pushes.
+# Uses actions/checkout@v4 and actions/setup-node@v4 (Node 20+ on the runner).
+#
+# GitHub repo secrets (Settings → Secrets → Actions) — optional for build, required for auth E2E:
+#   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   NEXT_PUBLIC_SITE_URL (optional; defaults to http://127.0.0.1:3000)
+#   PLAYWRIGHT_TEST_EMAIL, PLAYWRIGHT_TEST_PASSWORD (optional; auth test skipped if unset)
+#
+# Build passes without secrets via CI placeholders in src/utils/supabase/env.ts.
+
 name: CI
 
 on:
@@ -5,11 +15,13 @@ on:
   push:
     branches:
       - main
+      - "feat/**"
 
 jobs:
   lint-build-test:
     runs-on: ubuntu-latest
     env:
+      CI: true
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL || 'http://127.0.0.1:3000' }}
