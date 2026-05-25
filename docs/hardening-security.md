@@ -62,6 +62,18 @@ Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and p
 
 Add secrets under **GitHub repo → Settings → Secrets and variables → Actions**.
 
+After adding or changing secrets, open the PR → **Checks** → **Re-run all jobs** (no code push required).
+
+### GitHub settings checklist
+
+| Where | Do you need it? |
+|-------|----------------|
+| **Secrets → Actions** (the four secrets above) | Yes — you already did this |
+| **Actions → General → Allow all actions** | Usually already default; only check if workflows never start |
+| **Branch protection on `main`** | Optional — require `lint-build-test` before merge |
+| **Environments / deployment approvals** | Not needed for this repo yet |
+| **Vercel env vars** | Yes for production — same `NEXT_PUBLIC_*` as local `.env.local` |
+
 ## Verification Commands
 
 ```bash
