@@ -38,17 +38,15 @@ export function PremiumFeatures() {
           Everything You Need
         </span>
         <h2 className="font-[family-name:var(--font-heading)] text-headline-lg md:text-display-lg text-ivory mb-6 font-semibold leading-tight">
-          Premium Features
+          Free Beta Features
         </h2>
         <p className="font-[family-name:var(--font-body)] text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-8">
-          Every invitation comes packed with interactive features that make your
-          wedding announcement unforgettable.
+          Enjoy unrestricted access to our entire premium invitation suite during our free beta phase. Perfect your announcement with absolutely no limitations or hidden fees.
         </p>
         <div className="h-[1px] w-24 bg-champagne-gold/30 mx-auto mb-8"></div>
         <p className="font-[family-name:var(--font-body)] text-body-md text-on-surface-variant/70 max-w-3xl mx-auto italic">
-          Your invitation stays publicly shareable until 30 days after the
-          wedding, then turns private automatically — designed to protect your
-          special day.
+          Publish, update, unpublish, and share your invitation freely while we
+          polish the studio for real couples.
         </p>
       </div>
 

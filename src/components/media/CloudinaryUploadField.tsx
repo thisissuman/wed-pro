@@ -145,7 +145,7 @@ export function CloudinaryUploadField({
                   type="button"
                   onClick={() => open()}
                   disabled={isLoading}
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-champagne-gold/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-champagne-gold/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-50"
                 >
                   {isLoading ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -169,7 +169,7 @@ export function CloudinaryUploadField({
                 value={value}
                 onChange={(event) => handleManualUrl(event.target.value)}
                 placeholder="https://res.cloudinary.com/..."
-                className="flex-1 rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-3 py-2 text-xs text-ivory outline-none transition focus:border-champagne-gold/60"
+                className="min-h-[44px] flex-1 rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-3 py-2 text-xs text-ivory outline-none transition focus:border-champagne-gold/60"
               />
               {value && (
                 <button
@@ -179,7 +179,7 @@ export function CloudinaryUploadField({
                     onChange("");
                   }}
                   aria-label={`Remove ${label}`}
-                  className="rounded-full border border-[#ffb4a8]/20 p-2 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
+                  className="min-h-[44px] min-w-[44px] rounded-full border border-[#ffb4a8]/20 p-2 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
                 >
                   <X size={14} />
                 </button>

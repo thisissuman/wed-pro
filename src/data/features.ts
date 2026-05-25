@@ -29,8 +29,8 @@ export const features: Feature[] = [
   { 
     id: "f5", 
     icon: "Mail", 
-    label: "Messaging & Inbox",
-    description: "Receive confirmations & guest messages."
+    label: "WhatsApp RSVP",
+    description: "Guests confirm attendance in one tap via WhatsApp."
   },
   { 
     id: "f6", 

@@ -16,7 +16,7 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
         label="Hero Background Image"
         value={draft.hero.backgroundMedia ?? ""}
         folder={`wed-pro/${draft.id}/hero`}
-        helperText="A high-resolution landscape photo works best for the opening section."
+        helperText="Use a compressed landscape image under 8 MB. Cloudinary will deliver optimized sizes for mobile guests."
         onChange={(value) =>
           update((current) => ({
             ...current,
@@ -32,7 +32,7 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
           folder={`wed-pro/${draft.id}/music`}
           resourceType="video"
           uploadLabel={draft.music.url ? "Replace music" : "Upload music"}
-          helperText="MP3 or M4A. Guests tap play — most mobile browsers block autoplay."
+          helperText="MP3 or M4A under 12 MB. Guests tap play — most mobile browsers block autoplay."
           onChange={(value) =>
             update((current) => ({
               ...current,

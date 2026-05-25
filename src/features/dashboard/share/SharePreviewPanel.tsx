@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, MessageCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
@@ -14,6 +15,7 @@ import {
   slugify,
 } from "@/lib/invitations";
 import { getSiteUrl } from "@/lib/site-url";
+import { isSlugAvailable, findAvailableSlug } from "@/lib/publish";
 import { isValidDisplayUrl } from "@/lib/media-url";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 
@@ -25,6 +27,39 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
       !draft.seo.whatsappPreviewImage ||
       draft.seo.whatsappPreviewImage === draft.seo.ogImage
   );
+
+  const [slugTaken, setSlugTaken] = useState(false);
+  const [suggestedSlug, setSuggestedSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    const normalized = slugify(draft.slug);
+    const timeout = window.setTimeout(() => {
+      if (!normalized) {
+        setSlugTaken(false);
+        setSuggestedSlug(null);
+        return;
+      }
+
+      const supabase = createClient();
+      void (async () => {
+        try {
+          const available = await isSlugAvailable(supabase, normalized, draft.id);
+          setSlugTaken(!available);
+          if (!available) {
+            const next = await findAvailableSlug(supabase, normalized, draft.id);
+            setSuggestedSlug(next);
+          } else {
+            setSuggestedSlug(null);
+          }
+        } catch {
+          setSlugTaken(false);
+          setSuggestedSlug(null);
+        }
+      })();
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [draft.slug, draft.id]);
 
   const sharePath = getPublicInvitationPath(draft.slug);
   const canShare = draft.status === "published";
@@ -180,6 +215,30 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
             }))
           }
         />
+        {slugTaken && (
+          <div className="rounded-xl border border-[#ffb4a8]/25 bg-[#8f0f07]/10 px-3 py-2.5 text-xs leading-relaxed text-[#ffb4a8]">
+            This slug is already used by another invitation.
+            {suggestedSlug && suggestedSlug !== draft.slug && (
+              <>
+                {" "}
+                Publish will use{" "}
+                <button
+                  type="button"
+                  className="font-mono font-semibold text-champagne-gold underline"
+                  onClick={() =>
+                    update((current) => ({
+                      ...current,
+                      slug: suggestedSlug,
+                    }))
+                  }
+                >
+                  /w/{suggestedSlug}
+                </button>{" "}
+                instead.
+              </>
+            )}
+          </div>
+        )}
         <p className="text-xs leading-relaxed text-on-surface-variant/60 break-all">{publicUrl}</p>
         {canShare && (
           <Link

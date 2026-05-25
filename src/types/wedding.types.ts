@@ -135,7 +135,7 @@ export interface CountdownData {
 }
 
 /* ── RSVP ── */
-export type RSVPType = "whatsapp" | "form" | "link";
+export type RSVPType = "whatsapp" | "link";
 
 export interface RSVPData {
   type: RSVPType;

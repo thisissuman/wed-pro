@@ -13,6 +13,10 @@ import { VenueSection } from "./sections/VenueSection";
 import { RSVPSection } from "./sections/RSVPSection";
 import { ThankYouSection } from "./sections/ThankYouSection";
 import { MusicPlayer } from "./sections/MusicPlayer";
+import { CinematicIntro } from "./components/CinematicIntro";
+import { SparkleOverlay } from "./components/SparkleOverlay";
+import { TemplateThemeProvider } from "../shared/theme/ThemeProvider";
+import { royalTheme } from "./theme";
 
 /**
  * Royal Template — Main Orchestrator
@@ -30,7 +34,13 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
   const sections = withEssentialSections(data.sections);
 
   return (
-    <div className="min-h-screen bg-background text-on-background selection:bg-champagne-gold/30 overflow-x-hidden">
+    <TemplateThemeProvider
+      defaultTheme={royalTheme}
+      theme={data.theme}
+      className="relative min-h-screen bg-[var(--template-background)] text-[var(--template-text)] selection:bg-champagne-gold/30 overflow-x-hidden"
+    >
+      <CinematicIntro slug={data.slug} isPreview={isPreview} />
+      <SparkleOverlay />
       {/* 1. Hero — Emotional anchor with couple names and date */}
       {sections.showHero !== false && (
         <HeroSection
@@ -78,7 +88,7 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
 
       {/* 9. RSVP — Confirm attendance */}
       {sections.showRSVP !== false && (
-        <RSVPSection rsvp={data.rsvp} slug={data.slug} isPreview={isPreview} />
+        <RSVPSection rsvp={data.rsvp} />
       )}
 
       {/* 10. Thank You — Emotional closure */}
@@ -88,6 +98,6 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
 
       {/* Floating music player (tap-to-play) */}
       <MusicPlayer music={data.music} />
-    </div>
+    </TemplateThemeProvider>
   );
 }

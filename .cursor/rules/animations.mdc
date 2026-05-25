@@ -59,6 +59,16 @@ Responsive and instant — no animation lag during typing/editing.
 
 Cinematic reveals OK; performance still #1. Not an animation showcase.
 
+### Royal template cinematic kit (`src/templates/royal/components/`)
+
+| Component | Behavior |
+|-----------|----------|
+| `CinematicIntro` | Curtain split on tap; once per session (`sessionStorage`); skip when `isPreview` or reduced motion |
+| `ScratchReveal` | Canvas scratch overlay on hero date; touch/pointer; skip when reduced motion |
+| `SparkleOverlay` | CSS `@keyframes` particles (`transform`/`opacity` only) |
+
+Use `usePrefersReducedMotion` from `src/templates/royal/hooks/`. No infinite JS animation loops.
+
 ## Reduced Motion
 
 Respect `prefers-reduced-motion`; degrade gracefully on low-end devices.

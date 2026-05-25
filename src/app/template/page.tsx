@@ -79,8 +79,6 @@ function TemplatePageContent() {
           </motion.p>
         </section>
 
-        {/* Removed CategoryFilters */}
-
         {/* Featured Collections — Template Grid */}
         <section className="space-y-4">
           <div className="flex justify-between items-end">
@@ -100,8 +98,6 @@ function TemplatePageContent() {
             ))}
           </div>
         </section>
-
-        {/* Removed LiveDemoSection */}
 
         {/* Bottom CTA */}
         <motion.section

@@ -2,27 +2,22 @@
 
 import { motion } from "framer-motion";
 import { MessageCircle, ExternalLink } from "lucide-react";
-import { RsvpForm } from "@/features/rsvp/RsvpForm";
 import type { RSVPData } from "@/types/wedding.types";
 
 interface RSVPSectionProps {
   rsvp: RSVPData;
-  slug?: string;
-  isPreview?: boolean;
 }
 
 /**
  * Royal Template — RSVP Section
  *
- * Call-to-action for confirming attendance via WhatsApp or link.
+ * WhatsApp or external link only — no server-side guest storage.
  */
-export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
+export function RSVPSection({ rsvp }: RSVPSectionProps) {
   const whatsappUrl =
     rsvp.type === "whatsapp" && rsvp.whatsappNumber
       ? `https://wa.me/${rsvp.whatsappNumber.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(rsvp.message || "I would love to attend your wedding!")}`
       : null;
-
-  const showInlineForm = rsvp.type === "form" && slug && !isPreview;
 
   return (
     <section id="preview-section-rsvp" className="px-6 py-16 md:py-24">
@@ -44,7 +39,6 @@ export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
           celebration truly complete.
         </p>
 
-        {/* WhatsApp RSVP */}
         {whatsappUrl && (
           <motion.a
             href={whatsappUrl}
@@ -52,39 +46,10 @@ export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-[#25D366] text-white font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all duration-200"
+            className="inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center gap-2.5 px-8 py-4 rounded-full bg-[#25D366] text-white font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-[transform,opacity] duration-200"
           >
             <MessageCircle size={18} />
             {rsvp.buttonText || "Confirm via WhatsApp"}
-          </motion.a>
-        )}
-
-        {/* Inline in-app RSVP form (published view only) */}
-        {showInlineForm && slug && (
-          <div className="pt-2">
-            <RsvpForm slug={slug} defaultMessage={rsvp.message} />
-          </div>
-        )}
-
-        {/* Preview placeholder when guests will see the inline form */}
-        {rsvp.type === "form" && !showInlineForm && !rsvp.formUrl && (
-          <p className="rounded-lg border border-champagne-gold/15 bg-charcoal-black/30 px-4 py-3 text-xs text-on-surface-variant/70">
-            Guests will see an in-app RSVP form once the invitation is published.
-          </p>
-        )}
-
-        {/* External form link fallback (when form type still points to an external URL) */}
-        {rsvp.type === "form" && !showInlineForm && rsvp.formUrl && (
-          <motion.a
-            href={rsvp.formUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all duration-200"
-          >
-            <ExternalLink size={16} />
-            {rsvp.buttonText || "Fill RSVP Form"}
           </motion.a>
         )}
 
@@ -95,7 +60,7 @@ export function RSVPSection({ rsvp, slug, isPreview }: RSVPSectionProps) {
             rel="noopener noreferrer"
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-champagne-gold/30 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium hover:bg-champagne-gold/10 transition-colors duration-200"
+            className="inline-flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center gap-2 px-8 py-4 rounded-full border border-champagne-gold/30 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium hover:bg-champagne-gold/10 transition-[transform,opacity] duration-200"
           >
             <ExternalLink size={16} />
             {rsvp.buttonText || "Confirm Attendance"}

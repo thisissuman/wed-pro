@@ -3,14 +3,9 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { isValidDisplayUrl } from "@/lib/media-url";
-import type { CoupleData, CountdownData, HeroData } from "@/types/wedding.types";
-
-interface HeroSectionProps {
-  couple: CoupleData;
-  countdown: CountdownData;
-  hero: HeroData;
-  weddingHashtag?: string;
-}
+import type { HeroSectionContract } from "@/templates/shared/sections/types";
+import { ScratchReveal } from "../components/ScratchReveal";
+import { templateMotion } from "../../shared/motion/presets";
 
 /**
  * Royal Template — Hero Section
@@ -18,7 +13,7 @@ interface HeroSectionProps {
  * The emotional anchor of the invitation.
  * Animated couple names, wedding date, subtitle, and a cinematic reveal.
  */
-export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSectionProps) {
+export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSectionContract) {
   const heroBackgroundSrc = hero.backgroundMedia?.trim();
   const hashtag = weddingHashtag?.trim();
   const weddingDate = new Date(countdown.targetDate);
@@ -52,7 +47,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
         style={{
           background: hero.backgroundMedia
             ? `rgba(0,0,0,${hero.overlayOpacity ?? 0.7})`
-            : "radial-gradient(ellipse at center, rgba(212,175,55,0.08) 0%, transparent 70%)",
+            : "radial-gradient(ellipse at center, color-mix(in srgb, var(--template-primary) 8%, transparent) 0%, transparent 70%)",
         }}
       />
 
@@ -67,8 +62,8 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-          className="w-24 h-px bg-gradient-to-r from-transparent via-champagne-gold to-transparent mb-8"
+          transition={{ ...templateMotion.curtain, duration: 0.8, delay: 0.2 }}
+          className="w-24 h-px bg-gradient-to-r from-transparent via-[var(--template-primary)] to-transparent mb-8"
         />
 
         {/* Overlay text (e.g. "Save the Date") */}
@@ -77,7 +72,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="font-[family-name:var(--font-body)] text-[10px] md:text-xs uppercase tracking-[0.4em] text-champagne-gold/50 mb-4"
+            className="font-[family-name:var(--font-body)] text-[10px] md:text-xs uppercase tracking-[0.4em] text-[color-mix(in_srgb,var(--template-primary)_50%,transparent)] mb-4"
           >
             {hero.overlayText}
           </motion.p>
@@ -88,7 +83,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="font-[family-name:var(--font-body)] text-[10px] md:text-xs uppercase tracking-[0.4em] text-champagne-gold/70 mb-6"
+          className="font-[family-name:var(--font-body)] text-[10px] md:text-xs uppercase tracking-[0.4em] text-[color-mix(in_srgb,var(--template-primary)_70%,transparent)] mb-6"
         >
           Wedding Invitation
         </motion.p>
@@ -98,7 +93,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5 }}
-          className="font-[family-name:var(--font-heading)] text-4xl md:text-6xl lg:text-7xl text-ivory font-bold leading-tight"
+          className="font-[family-name:var(--font-heading)] text-4xl md:text-6xl lg:text-7xl text-[var(--template-text)] font-bold leading-tight"
         >
           {couple.groom.name.split(" ")[0]}
         </motion.h1>
@@ -108,7 +103,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.7 }}
-          className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-champagne-gold my-3 italic"
+          className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-[var(--template-primary)] my-3 italic"
         >
           &amp;
         </motion.span>
@@ -118,7 +113,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.9 }}
-          className="font-[family-name:var(--font-heading)] text-4xl md:text-6xl lg:text-7xl text-ivory font-bold leading-tight"
+          className="font-[family-name:var(--font-heading)] text-4xl md:text-6xl lg:text-7xl text-[var(--template-text)] font-bold leading-tight"
         >
           {couple.bride.name.split(" ")[0]}
         </motion.h1>
@@ -129,7 +124,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.1 }}
-            className="font-[family-name:var(--font-body)] text-xs md:text-sm text-on-surface-variant/70 mt-4 max-w-md leading-relaxed"
+            className="font-[family-name:var(--font-body)] text-xs md:text-sm text-[color-mix(in_srgb,var(--template-text-muted)_70%,transparent)] mt-4 max-w-md leading-relaxed"
           >
             {hero.subtitle}
           </motion.p>
@@ -139,26 +134,30 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
         <motion.div
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
-          className="w-16 h-px bg-gradient-to-r from-transparent via-champagne-gold to-transparent my-8"
+          transition={{ ...templateMotion.curtain, duration: 0.8, delay: 1.2 }}
+          className="w-16 h-px bg-gradient-to-r from-transparent via-[var(--template-primary)] to-transparent my-8"
         />
 
-        {/* Wedding date */}
-        <motion.p
+        {/* Wedding date — scratch to reveal */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1.4 }}
-          className="font-[family-name:var(--font-body)] text-sm md:text-base text-champagne-gold/80 tracking-widest uppercase"
+          className="w-full max-w-xs mx-auto"
         >
-          {formattedDate}
-        </motion.p>
+          <ScratchReveal label="Scratch to reveal the date">
+            <p className="font-[family-name:var(--font-body)] text-sm md:text-base text-[color-mix(in_srgb,var(--template-primary)_80%,transparent)] tracking-widest uppercase py-3">
+              {formattedDate}
+            </p>
+          </ScratchReveal>
+        </motion.div>
 
         {hashtag && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 1.55 }}
-            className="mt-3 font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.28em] text-champagne-gold/55"
+            className="mt-3 font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.28em] text-[color-mix(in_srgb,var(--template-primary)_55%,transparent)]"
           >
             {hashtag.startsWith("#") ? hashtag : `#${hashtag}`}
           </motion.p>
@@ -174,9 +173,9 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="w-5 h-8 rounded-full border border-champagne-gold/30 flex items-start justify-center pt-1.5"
+            className="w-5 h-8 rounded-full border border-[color-mix(in_srgb,var(--template-primary)_30%,transparent)] flex items-start justify-center pt-1.5"
           >
-            <div className="w-1 h-1.5 rounded-full bg-champagne-gold/60" />
+            <div className="w-1 h-1.5 rounded-full bg-[color-mix(in_srgb,var(--template-primary)_60%,transparent)]" />
           </motion.div>
         </motion.div>
       </div>

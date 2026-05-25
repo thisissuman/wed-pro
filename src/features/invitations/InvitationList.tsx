@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, Edit3, Eye, Globe2, Loader2, Plus, Send, Trash2, Users } from "lucide-react";
+import { Check, Copy, Edit3, Eye, Globe2, Loader2, Plus, Send, Trash2, Undo2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmDeleteDialog } from "@/features/invitations/ConfirmDeleteDialog";
+import { ConfirmUnpublishDialog } from "@/features/invitations/ConfirmUnpublishDialog";
 import {
   getInvitationDateLabel,
   getInvitationTitle,
@@ -14,6 +15,7 @@ import {
   type InvitationRow,
 } from "@/lib/invitations";
 import { toast } from "@/lib/toast";
+import { describeSlugAdjustment, publishInvitation, unpublishInvitation } from "@/lib/publish";
 import type { WeddingData } from "@/types/wedding.types";
 
 interface InvitationListProps {
@@ -25,7 +27,9 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<WeddingData | null>(null);
+  const [unpublishTarget, setUnpublishTarget] = useState<WeddingData | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const invitations = useMemo(() => rows.map(normalizeInvitationRow), [rows]);
 
   const updateRow = (id: string, patch: Partial<InvitationRow>) => {
@@ -34,44 +38,56 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
     );
   };
 
-  const publishInvitation = async (data: WeddingData) => {
+  const publishRow = async (data: WeddingData) => {
     setBusyId(data.id);
     const supabase = createClient();
-    const publishedAt = new Date().toISOString();
-    const content: WeddingData = {
-      ...data,
+    const result = await publishInvitation(supabase, data);
+
+    if (!result.ok) {
+      toast.error("Publish failed", result.message);
+      setBusyId(null);
+      return;
+    }
+
+    updateRow(data.id, {
       status: "published",
-      meta: {
-        ...data.meta,
-        publishedAt,
-        updatedAt: publishedAt,
-      },
-    };
+      slug: result.resolvedSlug,
+      published_at: result.publishedAt,
+      updated_at: result.updatedAt,
+      content: result.content,
+    });
 
-    const { data: updated, error } = await supabase
-      .from("invitations")
-      .update({
-        status: "published",
-        published_at: publishedAt,
-        content,
-      })
-      .eq("id", data.id)
-      .select("updated_at,published_at,status,content")
-      .single();
-
-    if (error) {
-      toast.error("Publish failed", error.message);
-    } else if (updated) {
-      updateRow(data.id, {
-        status: "published",
-        published_at: updated.published_at,
-        updated_at: updated.updated_at,
-        content: updated.content,
-      });
-      toast.success("Invitation published");
+    toast.success(result.slugAdjusted ? "Published with adjusted link" : "Invitation published");
+    if (result.slugAdjusted) {
+      toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
     }
 
     setBusyId(null);
+  };
+
+  const confirmUnpublish = async () => {
+    if (!unpublishTarget) return;
+
+    setIsUnpublishing(true);
+    const supabase = createClient();
+    const result = await unpublishInvitation(supabase, unpublishTarget);
+
+    if (!result.ok) {
+      toast.error("Unpublish failed", result.message);
+      setIsUnpublishing(false);
+      return;
+    }
+
+    updateRow(unpublishTarget.id, {
+      status: "draft",
+      published_at: null,
+      updated_at: result.updatedAt,
+      content: result.content,
+    });
+
+    toast.success("Invitation unpublished");
+    setUnpublishTarget(null);
+    setIsUnpublishing(false);
   };
 
   const copyShareLink = async (data: WeddingData) => {
@@ -190,13 +206,6 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                       <Eye size={14} />
                       Preview
                     </Link>
-                    <Link
-                      href={`/dashboard/invitations/${invitation.id}/guests`}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-champagne-gold transition hover:bg-champagne-gold/10"
-                    >
-                      <Users size={14} />
-                      Guests
-                    </Link>
                     {isPublished ? (
                       <button
                         type="button"
@@ -209,7 +218,7 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => publishInvitation(invitation)}
+                        onClick={() => void publishRow(invitation)}
                         disabled={isBusy}
                         className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
                       >
@@ -218,13 +227,23 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                       </button>
                     )}
                     {isPublished && (
-                      <Link
-                        href={getPublicInvitationPath(invitation.slug)}
-                        className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-charcoal-black transition active:scale-95"
-                      >
-                        <Globe2 size={14} />
-                        Open
-                      </Link>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setUnpublishTarget(invitation)}
+                          className="inline-flex items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15"
+                        >
+                          <Undo2 size={14} />
+                          Unpublish
+                        </button>
+                        <Link
+                          href={getPublicInvitationPath(invitation.slug)}
+                          className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-charcoal-black transition active:scale-95"
+                        >
+                          <Globe2 size={14} />
+                          Open
+                        </Link>
+                      </>
                     )}
                     <button
                       type="button"
@@ -251,6 +270,15 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
         onClose={() => !isDeleting && setDeleteTarget(null)}
         onConfirm={() => void confirmDelete()}
         isDeleting={isDeleting}
+      />
+
+      <ConfirmUnpublishDialog
+        open={unpublishTarget !== null}
+        title={unpublishTarget ? getInvitationTitle(unpublishTarget) : ""}
+        slug={unpublishTarget?.slug ?? ""}
+        onClose={() => !isUnpublishing && setUnpublishTarget(null)}
+        onConfirm={() => void confirmUnpublish()}
+        isUnpublishing={isUnpublishing}
       />
     </>
   );

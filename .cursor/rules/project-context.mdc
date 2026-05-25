@@ -113,6 +113,7 @@ Users should be able to:
 - edit drafts safely
 - preview before publishing
 - republish updates later
+- unpublish to take the public link offline (status returns to `draft`, `published_at` cleared)
 
 ---
 
@@ -331,6 +332,8 @@ Public invitation links should feel shareable and premium.
 Example:
 - /w/rahul-weds-ananya
 
+Slug uniqueness is global across all users. On publish, `findAvailableSlug()` in `lib/publish.ts` assigns the next free variant (`rahul-weds-ananya-2`, etc.) when the base slug is taken.
+
 Avoid ugly IDs in URLs.
 
 ---
@@ -467,11 +470,99 @@ The system should naturally connect related flows:
 
 ---
 
-# Additional Project Guidelines
+# Documentation Map (what to read, when to run it)
 
-For detailed technical and workflow guidelines, refer to Cursor project rules in `.cursor/rules/`:
-- **performance.mdc** + **template-architecture.mdc**: Rendering strategies, lazy loading, scalability, and avoiding premature abstractions.
-- **git-conventions.mdc**: Git branching, conventional commits, and `.gitignore` policies.
+There are three kinds of markdown in this repo. They are **not** interchangeable.
+
+## 1. Human runbooks — `docs/` (you run these)
+
+Use these when **you** want a checklist or commands before shipping, security review, mobile QA, or a new template.
+
+| File | Use when | What you do |
+|------|----------|-------------|
+| [`docs/hardening-security.md`](../../docs/hardening-security.md) | Before open beta launch; after auth, RLS, publish, or upload changes | Walk the security checklist; run lint, build, E2E, `db:status` |
+| [`docs/qa-mobile.md`](../../docs/qa-mobile.md) | Before shipping editor/marketing/public-invite polish; after layout or image changes | Manual pass on 360px + real phone; same commands as below |
+| [`docs/add-template.md`](../../docs/add-template.md) | When you add template #2 or #3 from your designs | Follow scaffold → theme → registry → preview wiring checklist |
+
+**Typical command flow (most tasks):**
+
+```bash
+npm run lint
+npm run build
+npx playwright install chromium   # first time only (or after Playwright upgrade)
+npm run test:e2e                  # all smoke tests
+npm run test:e2e -- --project=mobile-chrome   # mobile viewport only
+npm run db:status                 # confirm Supabase migrations applied
+```
+
+**Optional authenticated E2E** (create draft → editor) — set in shell or CI secrets:
+
+```bash
+PLAYWRIGHT_TEST_EMAIL="your-test-user@example.com"
+PLAYWRIGHT_TEST_PASSWORD="your-password"
+npm run test:e2e
+```
+
+**Supabase migration** (e.g. drop `rsvps` table) — apply linked project migrations, not only the SQL file in git:
+
+```bash
+npm run db:push
+```
+
+## 2. Database reference — `supabase-db.md` (read, do not “run”)
+
+| File | Use when |
+|------|----------|
+| [`supabase-db.md`](../../supabase-db.md) | Understanding why invitations use JSONB, how public publish works, and schema philosophy |
+
+No commands — architecture reference only.
+
+## 3. Cursor rules — `.cursor/rules/*.mdc` (conventions for humans + AI)
+
+These are **product/engineering policy**, not step-by-step runbooks. Cursor applies some automatically (`alwaysApply: true` on this file, `performance.mdc`, `mobile-first.mdc`). Others apply when you edit matching paths (see each file’s `globs`).
+
+| Rule | Topic | When to open it |
+|------|--------|-----------------|
+| **project-context.mdc** (this file) | Product scope, MVP status, doc map | Starting any feature; onboarding |
+| **performance.mdc** | RSC, images, motion, bundles | Performance or animation work |
+| **mobile-first.mdc** | Touch, layout, mobile UX | Any UI change |
+| **template-architecture.mdc** | Templates = presentation only | Work under `src/templates/` |
+| **public-invitation.mdc** | `/w/[slug]`, OG, hydration | Public guest pages |
+| **git-conventions.mdc** | Branches, commits, migrations | Git / Supabase schema changes |
+| **auth-security.mdc** | Auth, sessions, RLS mindset | Login, dashboard guards |
+| **animations.mdc** | Framer Motion limits, Royal cinematic kit | Template motion |
+| **design-language.mdc**, **content-tone.mdc** | Visual and copy voice | Marketing or template copy |
+| **dashboard-ui.mdc**, **ui-components.mdc** | Editor/dashboard patterns | Dashboard features |
+| **state-management.mdc**, **typescript-strictness.mdc**, **coding-standards.mdc** | Zustand, types, style | Refactors |
+
+You do **not** “run” `.mdc` files — you follow them while coding, or rely on Cursor to load them.
+
+## 4. Cursor skills — `.cursor/skills/` (agent workflows)
+
+Skills are **procedures for the AI** when you ask for a specific kind of work. They complement `docs/` and `.cursor/rules/`.
+
+| Skill | Use when you ask Cursor to… |
+|-------|-----------------------------|
+| [create-template/SKILL.md](../skills/create-template/SKILL.md) | Scaffold a new template, register it, wire preview |
+| [dashboard-section-pattern/SKILL.md](../skills/dashboard-section-pattern/SKILL.md) | Add or extend an editor step/panel |
+
+## 5. Not documentation (ignore unless debugging tests)
+
+| Path | What it is |
+|------|------------|
+| `test-results/**/*.md` | Playwright failure dumps — generated; not committed on purpose |
+| `README.md` (repo root) | Default Next.js starter text — **not** updated for Wed Pro; use this file + `docs/` instead |
+
+## Quick “which doc do I need?”
+
+| Your task | Open first |
+|-----------|------------|
+| “Is it safe to ship?” | `docs/hardening-security.md` |
+| “Does it feel good on phone?” | `docs/qa-mobile.md` |
+| “I’m adding a new template design” | `docs/add-template.md` + `template-architecture.mdc` |
+| “How does data live in Supabase?” | `supabase-db.md` |
+| “What’s the product allowed to do?” | This file (`project-context.mdc`) |
+| “How should the AI implement X?” | Relevant `.cursor/rules/*.mdc` + skills above |
 
 ---
 
@@ -479,26 +570,50 @@ For detailed technical and workflow guidelines, refer to Cursor project rules in
 
 ## Shipped
 - **Template:** Royal Rajputana (single template; registry ready for more).
+- **Cinematic interactions (Royal):** Curtain intro (`CinematicIntro`), scratch-to-reveal wedding date (`ScratchReveal`), ambient sparkles (`SparkleOverlay`); respects `prefers-reduced-motion`.
 - **Auth:** Email/password, Google OAuth, forgot/reset password; dashboard guards; `proxy.ts` session refresh.
 - **Editor:** 9-step flow (includes **Share Preview** for WhatsApp/OG), debounced autosave, Zustand store, live preview, Cloudinary uploads.
-- **Publish:** Publish/republish, share dialogs, public `/w/[slug]` for published invites only.
-- **RSVP:** WhatsApp link, external link, or in-app form; guest list at `/dashboard/invitations/[id]/guests`.
+- **Blessing / Thank you copy editors:** Inline content panels in Optional Sections step.
+- **Publish & share:** Publish/republish/unpublish, slug suffix on conflict (`lib/publish.ts`), share dialogs, public `/w/[slug]`; couples share via copied WhatsApp link (primary India flow).
+- **RSVP (WhatsApp-first):** Editor configures WhatsApp number/message or optional external link — **no** in-app form, guest database, CSV export, or `/dashboard/.../guests` route.
 - **SEO runtime:** `generateMetadata` on public pages via `buildInvitationShareMetadata()`; absolute OG URLs via `NEXT_PUBLIC_SITE_URL`.
+- **Marketing:** Live Demo → `/preview/royal`; open **Free Beta** messaging with no checkout or payment gate.
+- **Testing & CI:** Playwright smoke tests under `tests/e2e/`, GitHub Actions CI, and `docs/hardening-security.md`.
+- **Template foundations:** Shared theme provider/tokens, motion presets, section contracts, and `docs/add-template.md` for upcoming templates.
+- **Mobile QA:** `docs/qa-mobile.md` documents mobile, image, and public invite checks.
 
 ## Gaps (prioritize before scaling)
-- ~~**WhatsApp/OG editor UI**~~ — Share Preview step in editor (`seo.pageTitle`, `metaDescription`, `ogImage`, `whatsappPreviewImage`).
-- **Blessing / Thank you** — sections toggle on/off but lack dedicated copy editors.
-- ~~**Session middleware**~~ — `src/proxy.ts` refreshes cookies; `AuthProvider` keep-alive for idle tabs.
-- **Guest utilities** — list is read-only; no export or delete in UI.
-- **Payments** — Razorpay not implemented (marketing mentions premium; decide ship or defer).
-- **CI / smoke tests** — no GitHub Actions; `playwright-core` in devDeps unused.
+- ~~**WhatsApp/OG editor UI**~~ — Share Preview step in editor.
+- ~~**Blessing / Thank you**~~ — inline copy editors in Optional Sections.
+- ~~**Session middleware**~~ — `src/proxy.ts` + `AuthProvider` keep-alive.
+- ~~**Publish hardening**~~ — slug suffix, unpublish dialogs.
+- ~~**In-app RSVP / guest list**~~ — removed; WhatsApp + link only (`supabase/migrations/20260525120000_drop_rsvps_table.sql`).
+- ~~**30-day auto-private marketing claim**~~ — removed until the feature is intentionally built.
+- **Payments** — Deferred. Product is an open **Free Beta** while the experience is perfected; no payment flow or publish gate is required.
+- ~~**CI / smoke tests**~~ — Playwright runner, smoke tests, and GitHub Actions workflow added.
 
-## Recommended next build order
-1. ~~WhatsApp preview editor (OG image + description)~~ — **Share Preview** editor step (`SharePreviewPanel`).
-2. ~~Session middleware~~ — `src/proxy.ts` + `utils/supabase/proxy.ts`; client keep-alive in `AuthProvider`.
-3. In-app RSVP as clearer default + end-to-end guest flow polish.
-4. Blessing / Thank you content panels.
-5. Publish hardening (slug conflicts, optional unpublish).
-6. Guest CSV export + delete.
-7. Playwright smoke test on PR.
-8. Razorpay or remove payment promises from marketing until ready.
+## Recommended next build order (Free Beta Phase)
+1. ~~**Free Beta Pivot**~~ — Marketing now advertises open Free Beta and zero checkout friction.
+2. ~~**Automated Testing**~~ — E2E smoke tests protect free beta, auth guard, template preview, and optional authenticated draft creation.
+3. ~~**Unified Theme Tokens**~~ — Shared `TemplateThemeProvider`, token merging, and Royal defaults are in place.
+4. ~~**Section Variant System**~~ — Shared section contracts and motion presets are ready for `floral` / `minimal` templates.
+5. ~~**Mobile & Image Optimization Baseline**~~ — QA checklist and upload guidance are documented; continue real-device polish before launch.
+
+## Verification Commands
+
+See **Documentation Map** above for which `docs/` runbook to use with these commands.
+
+```bash
+npm run lint
+npm run build
+npx playwright install chromium
+npm run test:e2e
+npm run test:e2e -- --project=mobile-chrome
+```
+
+Authenticated Playwright coverage is optional locally and in CI. Set these when a Supabase test user exists:
+
+```bash
+PLAYWRIGHT_TEST_EMAIL="test@example.com"
+PLAYWRIGHT_TEST_PASSWORD="strong-password"
+```

@@ -233,3 +233,32 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Royal template — ambient sparkle particles (transform/opacity only) */
+@keyframes royal-sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+}
+
+.royal-sparkle {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.85);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+  animation: royal-sparkle-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .royal-sparkle {
+    animation: none;
+    opacity: 0.35;
+  }
+}

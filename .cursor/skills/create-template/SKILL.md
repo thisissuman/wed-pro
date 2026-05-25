@@ -18,8 +18,8 @@ disable-model-invocation: false
 - [ ] 1. Scaffold folder
 - [ ] 2. Implement <Name>Template.tsx
 - [ ] 3. Build sections (storytelling order)
-- [ ] 4. Theme/config (MVP: template-local tokens OK)
-- [ ] 5. Motion (transform/opacity only)
+- [ ] 4. Theme tokens + TemplateThemeProvider
+- [ ] 5. Motion presets (transform/opacity only)
 - [ ] 6. Images & lazy sections
 - [ ] 7. Register in TemplateRenderer
 - [ ] 8. Wire preview route if needed
@@ -31,6 +31,8 @@ disable-model-invocation: false
 ```
 src/templates/<template-id>/
   <Pascal>Template.tsx
+  components/     # optional: intro, scratch reveal, sparkles
+  hooks/          # optional: usePrefersReducedMotion
   sections/
     HeroSection.tsx
     CountdownSection.tsx
@@ -81,8 +83,13 @@ Sections live **inside** `src/templates/<id>/sections/` — bespoke styling allo
 
 Extract reusable logic to hooks in `src/hooks/` or `src/utils/` (e.g. `useWeddingCountdown`), not duplicated per section.
 
+Use shared section contracts from `src/templates/shared/sections/types.ts` so new templates consume the same `WeddingData` slices without changing the editor.
+
+Use `src/templates/shared/theme/ThemeProvider.tsx` and `src/templates/shared/theme/tokens.ts` for runtime CSS variables. Each template owns a local `theme.ts` with default `TemplateThemeTokens`; `WeddingData.theme` is an override layer, not a separate implementation path.
+
 ## Step 5 — Motion
 
+- Prefer presets from `src/templates/shared/motion/presets.ts`
 - Framer Motion; `transform` + `opacity` only on mobile
 - Respect `prefers-reduced-motion`
 - Durations per animations rule (max 800ms)
@@ -90,7 +97,7 @@ Extract reusable logic to hooks in `src/hooks/` or `src/utils/` (e.g. `useWeddin
 ## Step 6 — Performance
 
 - `next/image` with `sizes` for all photos
-- `next/dynamic` for Gallery, RSVP forms, Maps
+- `next/dynamic` for Gallery, Maps (heavy sections)
 - Countdown: server placeholder → client `useEffect` update
 
 ## Step 7 — Register Renderer
@@ -118,3 +125,5 @@ Verify on narrow viewport first: scroll performance, touch targets, image LCP, n
 - Template renders full `WeddingData` without crashes on empty/partial data
 - No DB or store coupling
 - Registered in `TemplateRenderer` and previewable
+- Card exists in `src/data/templates.ts`
+- Mobile QA checklist in `docs/qa-mobile.md` passes

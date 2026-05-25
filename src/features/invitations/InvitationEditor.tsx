@@ -18,7 +18,7 @@ import {
   Monitor,
   Save,
   Smartphone,
-  Users,
+  Undo2,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,12 @@ import {
   withEssentialSections,
 } from "@/lib/invitations";
 import { PublishShareDialog } from "@/features/invitations/PublishShareDialog";
+import { ConfirmUnpublishDialog } from "@/features/invitations/ConfirmUnpublishDialog";
+import {
+  describeSlugAdjustment,
+  publishInvitation,
+  unpublishInvitation,
+} from "@/lib/publish";
 import { useInvitationEditorStore } from "@/stores/invitation-editor-store";
 import { WeddingDetailsPanel } from "@/features/dashboard/wedding-details/WeddingDetailsPanel";
 import { EventsPanel } from "@/features/dashboard/events/EventsPanel";
@@ -83,7 +89,10 @@ const editorSteps = [
 type EditorStepId = (typeof editorSteps)[number]["id"];
 
 export function InvitationEditor({ initialData }: InvitationEditorProps) {
-  const supabase = useMemo(() => createClient(), []);
+  const supabase = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return createClient();
+  }, []);
   const draft = useInvitationEditorStore((state) => state.draft);
   const saveState = useInvitationEditorStore((state) => state.saveState);
   const saveMessage = useInvitationEditorStore((state) => state.saveMessage);
@@ -98,6 +107,10 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showPublishShareDialog, setShowPublishShareDialog] = useState(false);
+  const [publishSlugAdjusted, setPublishSlugAdjusted] = useState(false);
+  const [publishRequestedSlug, setPublishRequestedSlug] = useState<string | undefined>();
+  const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [mobileStepIndex, setMobileStepIndex] = useState(0);
@@ -119,6 +132,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
   const saveDraft = useCallback(
     async (nextDraft: WeddingData) => {
+      if (!supabase) return;
       if (inFlight.current) {
         // Save in progress — queue the latest snapshot and let the active save
         // flush it when done. Newer edits overwrite older queued snapshots.
@@ -237,55 +251,70 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   }, []);
 
   const publish = async () => {
-    if (!draft) return;
+    if (!draft || !supabase) return;
 
     setIsPublishing(true);
-    const publishedAt = new Date().toISOString();
-    const content: WeddingData = {
-      ...draft,
-      status: "published",
-      slug: resolveInvitationSlug(draft),
-      sections: withEssentialSections(draft.sections),
-      meta: {
-        ...draft.meta,
-        publishedAt,
-        updatedAt: publishedAt,
-      },
-    };
+    setPublishSlugAdjusted(false);
+    setPublishRequestedSlug(undefined);
 
-    const { data, error } = await supabase
-      .from("invitations")
-      .update({
-        slug: content.slug,
-        status: "published",
-        published_at: publishedAt,
-        content,
-      })
-      .eq("id", content.id)
-      .select("updated_at,published_at")
-      .single();
+    const result = await publishInvitation(supabase, draft);
 
-    if (error) {
-      setSaveState("error", error.message);
-      toast.error("Publish failed", error.message);
+    if (!result.ok) {
+      setSaveState("error", result.message);
+      toast.error("Publish failed", result.message);
       setIsPublishing(false);
       return;
     }
 
+    const wasPublished = draft.status === "published";
     toast.success(
-      draft.status === "published" ? "Invitation republished" : "Invitation published"
+      result.slugAdjusted
+        ? "Published with adjusted link"
+        : wasPublished
+          ? "Invitation republished"
+          : "Invitation published"
     );
 
+    if (result.slugAdjusted) {
+      toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
+    }
+
     replaceDraft({
-      ...content,
+      ...result.content,
       meta: {
-        ...content.meta,
-        updatedAt: data?.updated_at ?? publishedAt,
-        publishedAt: data?.published_at ?? publishedAt,
+        ...result.content.meta,
+        updatedAt: result.updatedAt,
+        publishedAt: result.publishedAt,
       },
     });
+    setPublishSlugAdjusted(result.slugAdjusted);
+    setPublishRequestedSlug(result.requestedSlug);
     setShowPublishShareDialog(true);
     setIsPublishing(false);
+  };
+
+  const unpublish = async () => {
+    if (!draft || !supabase) return;
+
+    setIsUnpublishing(true);
+    const result = await unpublishInvitation(supabase, draft);
+
+    if (!result.ok) {
+      toast.error("Unpublish failed", result.message);
+      setIsUnpublishing(false);
+      return;
+    }
+
+    replaceDraft({
+      ...result.content,
+      meta: {
+        ...result.content.meta,
+        updatedAt: result.updatedAt,
+      },
+    });
+    setShowUnpublishDialog(false);
+    toast.success("Invitation unpublished");
+    setIsUnpublishing(false);
   };
 
   const updateCoupleNamesFromShare = (groomName: string, brideName: string) => {
@@ -416,13 +445,17 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             </button>
           )}
 
-          <Link
-            href={`/dashboard/invitations/${draft.id}/guests`}
-            className="hidden items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 lg:inline-flex"
-          >
-            <Users size={15} />
-            Guests
-          </Link>
+          {canShare && (
+            <button
+              type="button"
+              onClick={() => setShowUnpublishDialog(true)}
+              className="hidden items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15 lg:inline-flex"
+            >
+              <Undo2 size={15} />
+              Unpublish
+            </button>
+          )}
+
         </div>
       </header>
 
@@ -598,7 +631,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               className="inline-flex min-h-11 flex-[1.4] items-center justify-center gap-2 rounded-full gold-gradient px-4 text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
             >
               {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
-              Publish
+              {draft.status === "published" ? "Republish" : "Publish"}
             </button>
           ) : (
             <button
@@ -680,8 +713,19 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
       <PublishShareDialog
         draft={draft}
         open={showPublishShareDialog}
+        slugAdjusted={publishSlugAdjusted}
+        requestedSlug={publishRequestedSlug}
         onClose={() => setShowPublishShareDialog(false)}
         onUpdateNames={updateCoupleNamesFromShare}
+      />
+
+      <ConfirmUnpublishDialog
+        open={showUnpublishDialog}
+        title={getInvitationTitle(draft)}
+        slug={draft.slug}
+        onClose={() => !isUnpublishing && setShowUnpublishDialog(false)}
+        onConfirm={() => void unpublish()}
+        isUnpublishing={isUnpublishing}
       />
     </main>
   );

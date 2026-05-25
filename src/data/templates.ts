@@ -12,7 +12,3 @@ export const templates: Template[] = [
     badge: "Bestseller",
   },
 ];
-
-export const demoTemplates = [
-  { id: "demo-palace", name: "The Palace Heritage", imageUrl: templates[0].imageUrl },
-];
