@@ -62,12 +62,12 @@ function PublishShareDialogContent({
 
   useEffect(() => {
     const candidate = buildInvitationSlug(groomName, brideName) || slug;
-    if (!candidate) {
-      setSlugConflict(false);
-      return;
-    }
-
     const timeout = window.setTimeout(() => {
+      if (!candidate) {
+        setSlugConflict(false);
+        return;
+      }
+
       const supabase = createClient();
       void isSlugAvailable(supabase, candidate, draft.id)
         .then((available) => setSlugConflict(!available))

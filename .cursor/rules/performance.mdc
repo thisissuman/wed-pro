@@ -13,7 +13,7 @@ Fast, smooth, responsive, lightweight. Performance beats visual complexity. Prio
 ## Rendering
 
 - Prefer **React Server Components** and server actions
-- Reduce client JS; use `next/dynamic` for below-the-fold: Gallery, RSVP, Maps
+- Reduce client JS; use `next/dynamic` for below-the-fold: Gallery and Maps
 - Avoid unnecessary `"use client"` boundaries
 
 ## Bundles

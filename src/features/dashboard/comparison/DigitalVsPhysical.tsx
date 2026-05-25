@@ -46,7 +46,7 @@ export function DigitalVsPhysical() {
             <div className="p-6 text-center bg-champagne-gold/5 border-l border-champagne-gold/10 font-[family-name:var(--font-heading)] text-xl text-champagne-gold uppercase tracking-widest relative font-semibold">
               Digital
               <div className="absolute top-0 right-0 p-1 bg-champagne-gold/20 font-[family-name:var(--font-body)] text-[10px] text-champagne-gold px-2 font-bold uppercase tracking-wider">
-                Best Value
+                Free Beta
               </div>
             </div>
           </div>
@@ -69,10 +69,10 @@ export function DigitalVsPhysical() {
             </div>
             <div className="p-6 md:p-8 flex flex-col justify-center items-center bg-champagne-gold/5 border-l border-champagne-gold/10">
               <span className="font-[family-name:var(--font-heading)] text-xl text-champagne-gold font-semibold">
-                ₹1,499
+                Free
               </span>
               <span className="font-[family-name:var(--font-body)] text-[10px] font-semibold text-on-surface-variant/60 mt-1 uppercase tracking-wider">
-                One-time Payment
+                Open Beta
               </span>
             </div>
           </div>

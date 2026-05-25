@@ -3,10 +3,22 @@ import type {
   CoupleFamilyData,
   GalleryImage,
   InvitationStatus,
+  RSVPData,
   StoryMilestone,
   WeddingData,
   WeddingEvent,
 } from "@/types/wedding.types";
+
+/** Legacy drafts may still store `form` in JSONB; map to WhatsApp-first flow. */
+export function normalizeRsvpData(rsvp: RSVPData): RSVPData {
+  if ((rsvp.type as string) !== "form") {
+    return rsvp;
+  }
+  if (rsvp.formUrl?.trim()) {
+    return { ...rsvp, type: "link" };
+  }
+  return { ...rsvp, type: "whatsapp" };
+}
 
 export interface InvitationRow {
   id: string;
@@ -307,6 +319,10 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
     sections: withEssentialSections({
       ...base.sections,
       ...(content.sections ?? {}),
+    }),
+    rsvp: normalizeRsvpData({
+      ...base.rsvp,
+      ...(content.rsvp ?? {}),
     }),
     meta: {
       ...base.meta,

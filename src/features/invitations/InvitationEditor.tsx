@@ -19,7 +19,6 @@ import {
   Save,
   Smartphone,
   Undo2,
-  Users,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -453,13 +452,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             </button>
           )}
 
-          <Link
-            href={`/dashboard/invitations/${draft.id}/guests`}
-            className="hidden items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 lg:inline-flex"
-          >
-            <Users size={15} />
-            Guests
-          </Link>
         </div>
       </header>
 

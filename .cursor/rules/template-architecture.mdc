@@ -19,10 +19,16 @@ Templates are **presentation only**. They render UI from `WeddingData`; they nev
 ```
 src/templates/
   TemplateRenderer.tsx
-  /<template-id>/
-    <Name>Template.tsx
+  shared/
+    motion/
     sections/
     theme/
+  /<template-id>/
+    <Name>Template.tsx
+    components/
+    hooks/
+    sections/
+    theme.ts
     config/
 ```
 
@@ -48,7 +54,11 @@ Support Indian events (Mehendi, Haldi, Wedding, Reception, Sangeet). Event shape
 
 ## Theme (Phase 2)
 
-`ThemeConfig` (colors, fonts) injected via `:root` CSS variables later. MVP: hardcoded template tokens OK; migrate to `var(--theme-primary)` when customizer ships. No section re-ordering in MVP — different layout = different template.
+`ThemeConfig` is injected through `TemplateThemeProvider` as CSS variables. Each template owns default `TemplateThemeTokens` in `<template-id>/theme.ts`; `WeddingData.theme` is an override layer. Prefer `var(--template-primary)`, `var(--template-text)`, and related runtime variables over scattering literal colors.
+
+## Section Contracts
+
+Shared contracts live in `src/templates/shared/sections/types.ts`. New templates can keep bespoke section UI, but they should consume the same props so editor and publish logic remain stable.
 
 ## Animations
 
@@ -56,7 +66,7 @@ Framer Motion; modular; viewport reveals; subtle parallax-lite only. No GSAP-hea
 
 ## Performance
 
-`next/image` + `sizes`; lazy gallery/maps/RSVP; no unoptimized video heroes.
+`next/image` + `sizes`; lazy gallery/maps; no unoptimized video heroes.
 
 ## Editor Compatibility
 

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Leaf, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const DIGITAL_PRICE = 1499;
+const DIGITAL_PRICE = 0;
 
 interface SavingsCalculatorSheetProps {
   open: boolean;
@@ -127,9 +127,9 @@ export function SavingsCalculatorSheet({ open, onClose }: SavingsCalculatorSheet
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-on-surface-variant">Vivaha digital invite</span>
+                  <span className="text-on-surface-variant">Vivaha digital invite (beta)</span>
                   <span className="font-semibold text-champagne-gold">
-                    ₹{DIGITAL_PRICE.toLocaleString("en-IN")}
+                    Free
                   </span>
                 </div>
                 <div className="border-t border-champagne-gold/15 pt-3 flex justify-between">

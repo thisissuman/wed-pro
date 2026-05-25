@@ -33,13 +33,13 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
 
   useEffect(() => {
     const normalized = slugify(draft.slug);
-    if (!normalized) {
-      setSlugTaken(false);
-      setSuggestedSlug(null);
-      return;
-    }
-
     const timeout = window.setTimeout(() => {
+      if (!normalized) {
+        setSlugTaken(false);
+        setSuggestedSlug(null);
+        return;
+      }
+
       const supabase = createClient();
       void (async () => {
         try {

@@ -7,7 +7,6 @@ import type { RSVPType } from "@/types/wedding.types";
 
 const rsvpTypeOptions: { value: RSVPType; label: string }[] = [
   { value: "whatsapp", label: "WhatsApp" },
-  { value: "form", label: "In-App Form" },
   { value: "link", label: "External Link" },
 ];
 
@@ -32,11 +31,7 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
         label="Button Label"
         value={rsvp.buttonText ?? ""}
         placeholder={
-          rsvp.type === "whatsapp"
-            ? "Confirm via WhatsApp"
-            : rsvp.type === "form"
-            ? "Fill RSVP Form"
-            : "Confirm Attendance"
+          rsvp.type === "whatsapp" ? "Confirm via WhatsApp" : "Confirm Attendance"
         }
         onChange={(value) =>
           update((current) => ({
@@ -75,17 +70,13 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
         </>
       )}
 
-      {(rsvp.type === "form" || rsvp.type === "link") && (
+      {rsvp.type === "link" && (
         <TextInput
-          label={rsvp.type === "form" ? "Form URL" : "External Link"}
+          label="External Link"
           value={rsvp.formUrl ?? ""}
           inputMode="url"
           placeholder="https://"
-          helperText={
-            rsvp.type === "form"
-              ? "Until the built-in form ships, link to your Google Form or Typeform."
-              : "Any HTTPS URL works — Notion page, RSVP service, etc."
-          }
+          helperText="Optional — Google Form, Typeform, or any HTTPS RSVP page."
           onChange={(value) =>
             update((current) => ({
               ...current,
@@ -102,7 +93,7 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
   return (
     <EditorPanel
       title="RSVP"
-      description="Pick how guests will confirm — WhatsApp, an in-app form, or an external link."
+      description="Guests confirm via WhatsApp (recommended in India) or an optional external link."
     >
       {content}
     </EditorPanel>

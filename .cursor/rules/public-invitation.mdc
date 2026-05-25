@@ -37,6 +37,12 @@ Countdown and time-sensitive values: render placeholder on server; update in `us
 
 Guest opens link from WhatsApp on mobile data — prioritize fast LCP, minimal client JS, optimized hero image.
 
+## Interactions (Royal)
+
+- **Cinematic intro:** tap-to-open curtains; once per browser session; disabled in editor preview.
+- **Scratch reveal:** hero wedding date; touch-friendly; skipped when `prefers-reduced-motion`.
+- **RSVP:** WhatsApp deep link or external URL only — no server-side guest storage on public pages.
+
 ## Access
 
 - Published invitations: public read via RLS

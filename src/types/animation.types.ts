@@ -5,6 +5,9 @@
  * This config will later be editable from the dashboard.
  */
 
+/** Interactive effects on public invitations (Royal template) */
+export type CinematicEffect = "curtain-intro" | "scratch-reveal" | "sparkle";
+
 /** Reveal animation style presets */
 export type RevealStyle =
   | "fade"
@@ -40,6 +43,8 @@ export interface SectionAnimation {
  * Individual sections can override via their own SectionAnimation.
  */
 export interface AnimationConfig {
+  /** Cinematic overlays enabled on first visit (per session) */
+  cinematic?: CinematicEffect[];
   /** Master toggle — disable all animations (e.g. for low-end devices) */
   enabled?: boolean;
   /** Default reveal style for all sections */

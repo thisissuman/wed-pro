@@ -17,7 +17,7 @@ export function HeroSection() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <span className="inline-block font-[family-name:var(--font-body)] text-[10px] md:text-xs text-champagne-gold uppercase tracking-[0.3em] font-semibold bg-champagne-gold/5 border border-champagne-gold/15 px-4 py-1.5 rounded-full">
-          Premium Digital Wedding Invitations
+          Open Beta · Free Digital Wedding Invitations
         </span>
       </motion.div>
 
@@ -40,8 +40,8 @@ export function HeroSection() {
         className="font-[family-name:var(--font-body)] text-body-md md:text-body-lg text-on-surface-variant max-w-xl mx-auto leading-relaxed"
       >
         Create cinematic digital invitations that capture the elegance and
-        emotion of your royal celebration. Share instantly through WhatsApp &
-        Instagram.
+        emotion of your royal celebration. Free during beta, with instant
+        sharing through WhatsApp and Instagram.
       </motion.p>
 
       {/* CTA Buttons */}
@@ -61,12 +61,13 @@ export function HeroSection() {
         </Link>
 
         {/* Secondary CTA */}
-        <button
+        <Link
+          href="/preview/royal"
           className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-champagne-gold/25 text-champagne-gold font-[family-name:var(--font-body)] text-sm font-medium tracking-wide hover:bg-champagne-gold/5 hover:border-champagne-gold/40 active:scale-[0.98] transition-all duration-300"
         >
           <Play size={14} fill="currentColor" />
           Live Demo
-        </button>
+        </Link>
       </motion.div>
     </section>
   );

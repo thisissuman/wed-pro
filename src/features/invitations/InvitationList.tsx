@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, Copy, Edit3, Eye, Globe2, Loader2, Plus, Send, Trash2, Undo2, Users } from "lucide-react";
+import { Check, Copy, Edit3, Eye, Globe2, Loader2, Plus, Send, Trash2, Undo2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { ConfirmDeleteDialog } from "@/features/invitations/ConfirmDeleteDialog";
 import { ConfirmUnpublishDialog } from "@/features/invitations/ConfirmUnpublishDialog";
@@ -205,13 +205,6 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                     >
                       <Eye size={14} />
                       Preview
-                    </Link>
-                    <Link
-                      href={`/dashboard/invitations/${invitation.id}/guests`}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-champagne-gold/20 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-champagne-gold transition hover:bg-champagne-gold/10"
-                    >
-                      <Users size={14} />
-                      Guests
                     </Link>
                     {isPublished ? (
                       <button
