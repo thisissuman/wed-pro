@@ -78,3 +78,26 @@ export function getUploadPreset(): string | undefined {
 export function isCloudinaryConfigured(): boolean {
   return Boolean(getCloudName() && getUploadPreset());
 }
+
+const UPLOAD_SEGMENT = "/upload/";
+
+/** Insert a Cloudinary transformation segment (skips if already present). */
+export function withCloudinaryTransform(url: string, transformation: string): string {
+  if (!isCloudinaryUrl(url) || !transformation) return url;
+  if (url.includes(`${UPLOAD_SEGMENT}${transformation}/`)) return url;
+
+  const index = url.indexOf(UPLOAD_SEGMENT);
+  if (index === -1) return url;
+
+  const prefix = url.slice(0, index + UPLOAD_SEGMENT.length);
+  const suffix = url.slice(index + UPLOAD_SEGMENT.length);
+  return `${prefix}${transformation}/${suffix}`;
+}
+
+/** WhatsApp / Open Graph — landscape 1.91:1 center crop from any hero aspect. */
+export function getOgShareImageUrl(url: string | undefined | null): string {
+  const value = url?.trim() ?? "";
+  if (!value || !isValidDisplayUrl(value)) return "";
+  if (!isCloudinaryUrl(value)) return value;
+  return withCloudinaryTransform(value, "c_fill,w_1200,h_630,g_auto,f_auto,q_auto");
+}

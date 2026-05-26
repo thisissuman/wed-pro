@@ -205,7 +205,7 @@ export interface SectionVisibility {
 
 /** Editor-controlled text scale for the public invitation (not app theme). */
 export interface InvitationTypography {
-  scale?: "default" | "large";
+  scale?: "small" | "default" | "large";
 }
 
 /* ── Invitation Metadata ── */

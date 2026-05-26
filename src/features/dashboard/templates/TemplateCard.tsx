@@ -86,7 +86,6 @@ export function TemplateCard({ template, index = 0, recommended = false }: Templ
     }
 
     router.push(`/dashboard/invitations/${id}/edit`);
-    router.refresh();
   };
 
   return (

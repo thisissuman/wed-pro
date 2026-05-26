@@ -6,6 +6,7 @@ export const PANEL_PREVIEW_SECTION: Record<string, string> = {
   "wedding-details": PREVIEW_SECTION_IDS.hero,
   couple: PREVIEW_SECTION_IDS.couple,
   countdown: PREVIEW_SECTION_IDS.countdown,
+  blessing: PREVIEW_SECTION_IDS.blessing,
   media: PREVIEW_SECTION_IDS.hero,
   events: PREVIEW_SECTION_IDS.events,
   story: PREVIEW_SECTION_IDS.story,

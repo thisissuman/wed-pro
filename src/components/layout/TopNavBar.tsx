@@ -1,7 +1,7 @@
 "use client";
 
-import { User, Sun, Moon, LogOut, LayoutDashboard } from "lucide-react";
-import { useTheme } from "next-themes";
+import { User, LogOut, LayoutDashboard } from "lucide-react";
+import { AppThemeToggler } from "@/components/magic-ui/app-theme-toggler";
 import { toast } from "@/lib/toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -24,13 +24,6 @@ export function TopNavBar() {
   const pathname = usePathname();
   const activeSection = useActiveSection();
   const isHomepage = pathname === "/";
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setMounted(true), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (!isDropdownOpen) return;
@@ -57,11 +50,6 @@ export function TopNavBar() {
     toast.success("Signed out");
     router.push("/");
     router.refresh();
-  };
-
-  const toggleTheme = () => {
-    const current = resolvedTheme ?? theme ?? "dark";
-    setTheme(current === "dark" ? "light" : "dark");
   };
 
   const handleSectionClick = useCallback(
@@ -114,19 +102,11 @@ export function TopNavBar() {
         </nav>
 
         <div className="flex items-center gap-3 md:gap-4">
-          {mounted && (
-            <button
-              type="button"
-              onClick={toggleTheme}
-              aria-label={resolvedTheme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-champagne-gold/20 text-champagne-gold transition hover:bg-champagne-gold/10 active:scale-95"
-            >
-              {resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-          )}
+          <AppThemeToggler />
 
           <Link
             href={user ? "/dashboard" : "/template"}
+            prefetch={user ? true : undefined}
             className={cn(
               "relative z-[1] inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-xs font-semibold uppercase tracking-wider hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 transition-all duration-200",
               user && "gemini-glow-btn"

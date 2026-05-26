@@ -45,7 +45,7 @@ export function CoordinatesInput({ value, onChange, helperText }: CoordinatesInp
             value={lat}
             onChange={(event) => update({ lat: parseNumber(event.target.value) })}
             placeholder="26.8553"
-            className="w-full rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-sm text-ivory outline-none transition focus:border-champagne-gold/60"
+            className="w-full rounded-xl border border-[var(--editor-field-border)] bg-[var(--editor-field-bg)] px-4 py-3 text-sm text-[var(--editor-field-text)] outline-none transition focus:border-champagne-gold/60"
           />
         </label>
         <label className="block space-y-1">
@@ -58,7 +58,7 @@ export function CoordinatesInput({ value, onChange, helperText }: CoordinatesInp
             value={lng}
             onChange={(event) => update({ lng: parseNumber(event.target.value) })}
             placeholder="75.8513"
-            className="w-full rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-sm text-ivory outline-none transition focus:border-champagne-gold/60"
+            className="w-full rounded-xl border border-[var(--editor-field-border)] bg-[var(--editor-field-bg)] px-4 py-3 text-sm text-[var(--editor-field-text)] outline-none transition focus:border-champagne-gold/60"
           />
         </label>
       </div>

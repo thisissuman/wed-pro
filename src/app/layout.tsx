@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Noto_Sans_Devanagari } from "next/font/google";
+import { Playfair_Display, Inter, Noto_Sans_Devanagari, Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AppToaster } from "@/components/providers/AppToaster";
+import { GlobalLovePointer } from "@/components/magic-ui/global-love-pointer";
 import { ChromeBodyClass } from "@/components/layout/ChromeBodyClass";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-heading",
@@ -51,7 +55,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${playfairDisplay.variable} ${inter.variable} ${notoDevanagari.variable}`}
+      className={cn(playfairDisplay.variable, inter.variable, notoDevanagari.variable, "font-sans", geist.variable)}
       suppressHydrationWarning
     >
       <head>
@@ -62,6 +66,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <ChromeBodyClass />
+            <GlobalLovePointer />
             {children}
             <AppToaster />
           </AuthProvider>

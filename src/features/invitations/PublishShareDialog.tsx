@@ -10,6 +10,7 @@ import {
   getPublicInvitationPath,
   getPublicInvitationUrl,
 } from "@/lib/invitations";
+import { firePublishConfetti } from "@/lib/fire-confetti";
 import { isSlugAvailable } from "@/lib/publish";
 import { toast } from "@/lib/toast";
 import type { WeddingData } from "@/types/wedding.types";
@@ -60,6 +61,10 @@ function PublishShareDialogContent({
   const slug = draft.slug;
   const sharePath = getPublicInvitationPath(slug);
   const shareUrl = getPublicInvitationUrl(slug, origin);
+
+  useEffect(() => {
+    firePublishConfetti();
+  }, []);
 
   useEffect(() => {
     const candidate = buildInvitationSlug(groomName, brideName) || slug;

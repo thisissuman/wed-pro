@@ -30,7 +30,7 @@ import { royalTheme } from "./theme";
  *
  * Sections are conditionally rendered based on SectionVisibility.
  */
-export function RoyalTemplate({ data, isPreview }: TemplateProps) {
+export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: TemplateProps) {
   const sections = withEssentialSections(data.sections);
 
   return (
@@ -98,7 +98,12 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
       )}
 
       {/* Floating music player (tap-to-play) */}
-      <MusicPlayer music={data.music} embedded={isPreview} />
+      <MusicPlayer
+        music={data.music}
+        embedded={isPreview}
+        invitationId={data.id}
+        suppressed={suppressMusicPlayer}
+      />
     </TemplateThemeProvider>
   );
 }

@@ -34,7 +34,7 @@ export function isUniqueViolation(error: { code?: string; message?: string } | n
 
 export function formatPublishError(error: { code?: string; message?: string } | null): string {
   if (isUniqueViolation(error)) {
-    return "This link slug is already taken. Edit the slug in Share Preview or try a different couple name.";
+    return "This link slug is already taken. Try different couple names and publish again.";
   }
   return error?.message ?? "Publish failed. Please try again.";
 }

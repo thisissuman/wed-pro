@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Plus, Trash2 } from "lucide-react";
+import { ReorderControls } from "@/features/dashboard/shared/ReorderControls";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import { createStoryMilestone } from "@/lib/invitations";
@@ -77,23 +79,28 @@ export function StoryEditorPanel({ draft, update, bare }: PanelProps) {
         onChange={(value) => updateStory({ quote: value })}
       />
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {story.timeline.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-champagne-gold/20 bg-charcoal-black/30 px-4 py-6 text-center text-xs text-on-surface-variant/60">
+          <div className="rounded-xl border border-dashed border-champagne-gold/20 bg-[var(--editor-card-bg)] px-4 py-6 text-center text-xs text-on-surface-variant/60">
             No milestones yet. Add your first chapter below.
           </div>
         ) : (
           story.timeline.map((milestone, index) => (
-            <MilestoneCard
+            <motion.div
               key={milestone.id}
-              milestone={milestone}
-              canMoveUp={index > 0}
-              canMoveDown={index < story.timeline.length - 1}
-              onChange={(patch) => updateMilestone(milestone.id, patch)}
-              onRemove={() => removeMilestone(milestone.id)}
-              onMoveUp={() => moveMilestone(milestone.id, -1)}
-              onMoveDown={() => moveMilestone(milestone.id, 1)}
-            />
+              layout
+              transition={{ type: "spring", stiffness: 520, damping: 38, mass: 0.8 }}
+            >
+              <MilestoneCard
+                milestone={milestone}
+                canMoveUp={index > 0}
+                canMoveDown={index < story.timeline.length - 1}
+                onChange={(patch) => updateMilestone(milestone.id, patch)}
+                onRemove={() => removeMilestone(milestone.id)}
+                onMoveUp={() => moveMilestone(milestone.id, -1)}
+                onMoveDown={() => moveMilestone(milestone.id, 1)}
+              />
+            </motion.div>
           ))
         )}
       </div>
@@ -141,31 +148,19 @@ function MilestoneCard({
   onMoveDown,
 }: MilestoneCardProps) {
   return (
-    <div className="rounded-xl border border-champagne-gold/10 bg-charcoal-black/30 p-4">
+    <div className="rounded-xl border border-champagne-gold/10 bg-[var(--editor-card-bg)] p-4">
       <div className="mb-3 flex items-center justify-end gap-1">
-        <button
-          type="button"
-          onClick={onMoveUp}
-          disabled={!canMoveUp}
-          aria-label="Move up"
-          className="rounded-full border border-champagne-gold/15 p-2 text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-30"
-        >
-          <ArrowUp size={14} />
-        </button>
-        <button
-          type="button"
-          onClick={onMoveDown}
-          disabled={!canMoveDown}
-          aria-label="Move down"
-          className="rounded-full border border-champagne-gold/15 p-2 text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-30"
-        >
-          <ArrowDown size={14} />
-        </button>
+        <ReorderControls
+          canMoveUp={canMoveUp}
+          canMoveDown={canMoveDown}
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+        />
         <button
           type="button"
           onClick={onRemove}
           aria-label="Remove milestone"
-          className="rounded-full border border-[#ffb4a8]/20 p-2 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-[#ffb4a8]/20 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
         >
           <Trash2 size={14} />
         </button>

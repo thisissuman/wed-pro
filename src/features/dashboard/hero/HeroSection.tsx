@@ -3,10 +3,11 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Play } from "lucide-react";
+import { BlurFade, BlurFadeText } from "@/components/magic-ui/blur-fade-text";
 
 export function HeroSection() {
   return (
-    <section className="relative text-center space-y-6 pt-8 md:pt-16 pb-8 md:pb-12">
+    <section className="relative space-y-6 pt-8 pb-8 text-center md:pt-16 md:pb-12">
       {/* Subtle ambient glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] max-w-2xl h-[300px] bg-champagne-gold/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -21,28 +22,25 @@ export function HeroSection() {
         </span>
       </motion.div>
 
-      {/* Main Heading */}
-      <motion.h1
-        initial={{ opacity: 1, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-        className="font-[family-name:var(--font-heading)] text-[2.25rem] leading-[2.75rem] md:text-display-lg text-ivory font-bold relative z-10 max-w-3xl mx-auto"
-      >
-        Your Love Story,{" "}
-        <span className="text-champagne-gold">Artfully Crafted</span>
-      </motion.h1>
+      {/* Main Heading — explicit lines so gold phrase never breaks mid-word on mobile */}
+      <h1 className="relative z-10 mx-auto max-w-3xl font-[family-name:var(--font-heading)] text-[2rem] font-bold leading-tight sm:text-[2.25rem] sm:leading-[2.75rem] md:text-display-lg">
+        <span className="block text-on-surface">
+          <BlurFadeText text="Your Love Story," className="text-on-surface" delay={0.1} />
+        </span>
+        <span className="mt-1 block text-champagne-gold">
+          <BlurFadeText text="Artfully Crafted" className="text-champagne-gold" delay={0.35} />
+        </span>
+      </h1>
 
       {/* Subheading */}
-      <motion.p
-        initial={{ opacity: 1, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+      <BlurFade
+        delay={0.5}
         className="font-[family-name:var(--font-body)] text-body-md md:text-body-lg text-on-surface-variant max-w-xl mx-auto leading-relaxed"
       >
         Create cinematic digital invitations that capture the elegance and
         emotion of your royal celebration. Free during beta, with instant
         sharing through WhatsApp and Instagram.
-      </motion.p>
+      </BlurFade>
 
       {/* CTA Buttons */}
       <motion.div

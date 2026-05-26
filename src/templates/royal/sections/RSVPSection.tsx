@@ -18,18 +18,18 @@ function RSVPSectionInner({ rsvp }: RsvpSectionContract) {
       : null;
 
   return (
-    <section id={PREVIEW_SECTION_IDS.rsvp} className="px-6 py-16 md:py-24">
+    <section id={PREVIEW_SECTION_IDS.rsvp} className="px-6 py-12 md:py-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6 }}
-        className="max-w-lg mx-auto text-center space-y-6"
+        className="max-w-lg mx-auto text-center space-y-4"
       >
         <p className="font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.3em] text-champagne-gold/60">
           We Hope to See You
         </p>
-        <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-4xl text-ivory font-semibold">
+        <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-4xl text-[var(--template-text)] font-semibold">
           RSVP
         </h2>
         <p className="font-[family-name:var(--font-body)] text-sm text-on-surface-variant/80 leading-relaxed">

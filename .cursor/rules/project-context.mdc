@@ -571,7 +571,7 @@ Skills are **procedures for the AI** when you ask for a specific kind of work. T
 
 ## Shipped
 - **Template:** Royal Rajputana (single template; registry ready for more).
-- **Cinematic interactions (Royal):** Curtain intro (`CinematicIntro`), scratch-to-reveal wedding date (`ScratchReveal`), ambient sparkles (`SparkleOverlay`); respects `prefers-reduced-motion`.
+- **Cinematic interactions (Royal):** Curtain intro (`CinematicIntro`), scratch-to-reveal wedding date (`WeddingDateScratchReveal` / Magic UI `ScratchToReveal`), ambient sparkles (`SparkleOverlay`); respects `prefers-reduced-motion`.
 - **Auth:** Email/password, Google OAuth, forgot/reset password; dashboard guards; `proxy.ts` session refresh.
 - **Editor:** 9-step flow (includes **Share Preview** for WhatsApp/OG), debounced autosave, Zustand store, live preview, Cloudinary uploads.
 - **Blessing / Thank you copy editors:** Inline content panels in Optional Sections step.
@@ -582,6 +582,7 @@ Skills are **procedures for the AI** when you ask for a specific kind of work. T
 - **Testing & CI:** Playwright smoke tests under `tests/e2e/`, GitHub Actions CI, and `docs/hardening-security.md`.
 - **Template foundations:** Shared theme provider/tokens, motion presets, section contracts, `docs/create-template-prompt.md`, and `docs/add-template.md` for upcoming templates.
 - **Mobile QA:** `docs/qa-mobile.md` documents mobile, image, and public invite checks.
+- **Editor polish (May 2026):** Theme-aware editor tokens + `.light` overrides for real Android; in-app crop uploads (`CroppedImageUploadField`, `AudioUploadField`) for hero/couple/gallery/music; typography scale via `zoom` on `TemplateThemeProvider`; arrow reorder + layout animation (events, story, gallery); fixed embedded music toggle; royal Sonner toasts; `GlobalLovePointer` in root layout (desktop fine pointer only; auth card uses glass border, not shine border).
 
 ## Gaps (prioritize before scaling)
 - ~~**WhatsApp/OG editor UI**~~ — Share Preview step in editor.

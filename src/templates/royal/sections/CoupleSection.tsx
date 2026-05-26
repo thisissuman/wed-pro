@@ -64,21 +64,21 @@ export function CoupleSection({ couple }: CoupleSectionContract) {
                 </span>
               )}
             </div>
-            <h3 className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-ivory font-semibold">
+            <h3 className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-[var(--template-text)] font-semibold">
               {groom.name}
             </h3>
             {groomParentLine && (
-              <p className="font-[family-name:var(--font-body)] text-xs text-champagne-gold/60 tracking-wide">
+              <p className="font-[family-name:var(--font-body)] text-xs text-[var(--template-text-muted)] tracking-wide">
                 {groomParentLine}
               </p>
             )}
             {showGrandparents && family?.groom.grandparentsNames && (
-              <p className="mx-auto max-w-xs font-[family-name:var(--font-body)] text-[11px] leading-relaxed text-on-surface-variant/55">
+              <p className="mx-auto max-w-xs font-[family-name:var(--font-body)] text-[11px] leading-relaxed text-[var(--template-text-muted)]">
                 Grandson of {family.groom.grandparentsNames}
               </p>
             )}
             {groom.bio && (
-              <p className="font-[family-name:var(--font-body)] text-sm text-on-surface-variant/80 leading-relaxed max-w-xs mx-auto italic">
+              <p className="font-[family-name:var(--font-body)] text-sm text-[var(--template-text-muted)] leading-relaxed max-w-xs mx-auto italic">
                 &ldquo;{groom.bio}&rdquo;
               </p>
             )}
@@ -107,21 +107,21 @@ export function CoupleSection({ couple }: CoupleSectionContract) {
                 </span>
               )}
             </div>
-            <h3 className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-ivory font-semibold">
+            <h3 className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-[var(--template-text)] font-semibold">
               {bride.name}
             </h3>
             {brideParentLine && (
-              <p className="font-[family-name:var(--font-body)] text-xs text-champagne-gold/60 tracking-wide">
+              <p className="font-[family-name:var(--font-body)] text-xs text-[var(--template-text-muted)] tracking-wide">
                 {brideParentLine}
               </p>
             )}
             {showGrandparents && family?.bride.grandparentsNames && (
-              <p className="mx-auto max-w-xs font-[family-name:var(--font-body)] text-[11px] leading-relaxed text-on-surface-variant/55">
+              <p className="mx-auto max-w-xs font-[family-name:var(--font-body)] text-[11px] leading-relaxed text-[var(--template-text-muted)]">
                 Granddaughter of {family.bride.grandparentsNames}
               </p>
             )}
             {bride.bio && (
-              <p className="font-[family-name:var(--font-body)] text-sm text-on-surface-variant/80 leading-relaxed max-w-xs mx-auto italic">
+              <p className="font-[family-name:var(--font-body)] text-sm text-[var(--template-text-muted)] leading-relaxed max-w-xs mx-auto italic">
                 &ldquo;{bride.bio}&rdquo;
               </p>
             )}

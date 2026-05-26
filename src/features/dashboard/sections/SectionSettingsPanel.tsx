@@ -2,7 +2,7 @@
 
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { ToggleRow } from "@/features/dashboard/shared/ToggleRow";
-import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
+import { TextArea } from "@/features/dashboard/shared/Inputs";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 import type { SectionVisibility } from "@/types/wedding.types";
 
@@ -56,34 +56,6 @@ export function SectionSettingsPanel({ draft, update, bare }: PanelProps) {
                 }))
               }
             />
-
-            {/* Expand Blessing input fields inline if toggled on */}
-            {toggle.key === "showBlessing" && isChecked && (
-              <div className="ml-6 pl-4 border-l border-champagne-gold/15 space-y-4 py-1">
-                <TextArea
-                  label="Blessing Message"
-                  value={draft.blessing?.message ?? ""}
-                  placeholder="With the blessings of our beloved families..."
-                  onChange={(value) =>
-                    update((current) => ({
-                      ...current,
-                      blessing: { ...current.blessing, message: value },
-                    }))
-                  }
-                />
-                <TextInput
-                  label="Blessing From"
-                  value={draft.blessing?.from ?? ""}
-                  placeholder="The Sharma & Mehta Families"
-                  onChange={(value) =>
-                    update((current) => ({
-                      ...current,
-                      blessing: { ...current.blessing, from: value },
-                    }))
-                  }
-                />
-              </div>
-            )}
 
             {/* Expand Thank You message input field inline if toggled on */}
             {toggle.key === "showThankYou" && isChecked && (

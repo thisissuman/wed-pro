@@ -6,13 +6,14 @@ import {
   GoldOrnamentDivider,
   TemplateSection,
 } from "@/templates/shared/components";
+import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 
 /**
  * Royal Template — Blessing Section
  */
 export function BlessingSection({ blessing }: BlessingSectionContract) {
   return (
-    <TemplateSection>
+    <TemplateSection id={PREVIEW_SECTION_IDS.blessing}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
