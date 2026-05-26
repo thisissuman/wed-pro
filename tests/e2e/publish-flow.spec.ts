@@ -32,6 +32,12 @@ async function loginToDashboard(page: Page) {
     { timeout: 30_000 }
   );
 
+  // Login page calls router.push(next) after sign-in — do not page.goto (races → ERR_ABORTED in CI).
+  const dashboardNavigation = page.waitForURL(/\/dashboard/, {
+    timeout: 30_000,
+    waitUntil: "domcontentloaded",
+  });
+
   await loginButton.click();
 
   const response = await authResponse;
@@ -42,8 +48,17 @@ async function loginToDashboard(page: Page) {
     throw new Error("Login failed: Supabase did not return an access token.");
   }
 
-  // Client router.push can race cookie persistence in headless CI — hard-navigate with cookies set.
-  await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+  try {
+    await dashboardNavigation;
+  } catch {
+    if (!page.url().includes("/dashboard")) {
+      await page.goto("/dashboard", { waitUntil: "load", timeout: 30_000 }).catch(
+        (err) => {
+          if (!page.url().includes("/dashboard")) throw err;
+        }
+      );
+    }
+  }
 
   if (page.url().includes("/login")) {
     throw new Error(
