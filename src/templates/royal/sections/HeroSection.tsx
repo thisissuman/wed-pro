@@ -5,7 +5,8 @@ import Image from "next/image";
 import { isValidDisplayUrl } from "@/lib/media-url";
 import type { HeroSectionContract } from "@/templates/shared/sections/types";
 import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
-import { ScratchReveal } from "../components/ScratchReveal";
+import { firstName, getOrderedCoupleMembers } from "@/lib/couple-order";
+import { TapReveal } from "../components/TapReveal";
 import { templateMotion } from "../../shared/motion/presets";
 
 /**
@@ -15,6 +16,7 @@ import { templateMotion } from "../../shared/motion/presets";
  * Animated couple names, wedding date, subtitle, and a cinematic reveal.
  */
 export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSectionContract) {
+  const [nameFirst, nameSecond] = getOrderedCoupleMembers(couple, couple.family);
   const heroBackgroundSrc = hero.backgroundMedia?.trim();
   const hashtag = weddingHashtag?.trim();
   const weddingDate = new Date(countdown.targetDate);
@@ -89,17 +91,15 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           Wedding Invitation
         </motion.p>
 
-        {/* Groom name */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.5 }}
           className="font-[family-name:var(--font-heading)] text-4xl md:text-6xl lg:text-7xl text-[var(--template-text)] font-bold leading-tight"
         >
-          {couple.groom.name.split(" ")[0]}
+          {firstName(nameFirst.person.name)}
         </motion.h1>
 
-        {/* Ampersand */}
         <motion.span
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -109,14 +109,13 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           &amp;
         </motion.span>
 
-        {/* Bride name */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.9 }}
           className="font-[family-name:var(--font-heading)] text-4xl md:text-6xl lg:text-7xl text-[var(--template-text)] font-bold leading-tight"
         >
-          {couple.bride.name.split(" ")[0]}
+          {firstName(nameSecond.person.name)}
         </motion.h1>
 
         {/* Subtitle */}
@@ -146,11 +145,11 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           transition={{ duration: 0.6, delay: 1.4 }}
           className="w-full max-w-xs mx-auto"
         >
-          <ScratchReveal label="Scratch to reveal the date">
+          <TapReveal label="Tap to reveal the date">
             <p className="font-[family-name:var(--font-body)] text-sm md:text-base text-[color-mix(in_srgb,var(--template-primary)_80%,transparent)] tracking-widest uppercase py-3">
               {formattedDate}
             </p>
-          </ScratchReveal>
+          </TapReveal>
         </motion.div>
 
         {hashtag && (

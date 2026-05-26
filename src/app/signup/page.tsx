@@ -5,8 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import { AuthBackground } from '@/components/auth/AuthBackground'
+import { AuthCard, AuthFormShell } from '@/components/auth/AuthFormShell'
 import { Eye, EyeOff, Sparkles, CheckCircle2 } from 'lucide-react'
-import { buildOAuthCallbackUrl, safeNextPath } from '@/lib/auth/redirects'
+import { buildLoginUrl, buildOAuthCallbackUrl, safeNextPath } from '@/lib/auth/redirects'
+import { AUTH_ALREADY_REGISTERED, mapAuthErrorMessage } from '@/lib/auth/messages'
 
 export default function SignupPage() {
   return (
@@ -49,15 +51,21 @@ function SignupPageInner() {
         })
 
         if (error) {
-          setErrorMsg(error.message)
+          setErrorMsg(mapAuthErrorMessage(error.message))
+          return
+        }
+
+        if (data.user && (!data.user.identities || data.user.identities.length === 0)) {
+          setErrorMsg(AUTH_ALREADY_REGISTERED)
           return
         }
 
         if (data.session) {
           router.push(nextPath)
-          router.refresh()
-        } else {
-          setSuccessMsg('A confirmation link has been sent to your email address. Please click it to complete your registration.')
+        } else if (data.user) {
+          setSuccessMsg(
+            'A confirmation link has been sent to your email address. Please click it to complete your registration.'
+          )
           setName('')
           setEmail('')
           setPassword('')
@@ -81,7 +89,7 @@ function SignupPageInner() {
         },
       })
       if (error) {
-        setErrorMsg(error.message)
+        setErrorMsg(mapAuthErrorMessage(error.message))
         setIsGooglePending(false)
       }
     } catch {
@@ -94,39 +102,49 @@ function SignupPageInner() {
     <>
       <AuthBackground />
 
-      <main className="relative z-10 flex-grow flex flex-col items-center justify-center p-6 w-full max-w-7xl mx-auto min-h-screen select-none">
-        {/* Brand Header */}
-        <div className="mb-10 text-center animate-fade-in duration-1000">
-          <h1 className="font-heading text-4xl md:text-5xl text-[#f2ca50] tracking-[0.25em] drop-shadow-lg uppercase font-semibold">
-            Vivaha Studio
-          </h1>
-          <p className="font-body text-xs md:text-sm text-[#d0c5af]/80 uppercase mt-4 tracking-[0.3em]">
-            Begin your creative journey
+      <AuthFormShell
+        tagline="Begin your creative journey"
+        footer={
+          <p className="font-body text-sm text-[#d0c5af]/80">
+            Already have an account?{' '}
+            <Link
+              href={buildLoginUrl(nextPath)}
+              className="ml-1 font-semibold text-[#f2ca50] underline underline-offset-4 decoration-[#f2ca50]/30 transition-colors hover:text-[#FFFFF0] hover:decoration-[#FFFFF0]/40"
+            >
+              Sign In
+            </Link>
           </p>
-        </div>
-
-        {/* Signup Card */}
-        <div className="w-full max-w-md bg-[#201f1f]/50 backdrop-blur-2xl rounded-2xl p-8 md:p-10 border border-[#f2ca50]/15 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] relative overflow-hidden transition-all duration-500 hover:border-[#f2ca50]/25">
-          {/* Subtle gold line on top border */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[2px] bg-gradient-to-r from-transparent via-[#f2ca50]/30 to-transparent" />
-          
-          <div className="text-center mb-8">
-            <h2 className="font-heading text-2xl text-[#FFFFF0] mb-2 font-medium">Create Account</h2>
-            <p className="font-body text-sm text-[#d0c5af]/70 font-light">Join us to design beautiful celebrations</p>
+        }
+      >
+        <AuthCard>
+          <div className="mb-8 text-center">
+            <h2 className="mb-2 font-heading text-2xl font-medium text-[#FFFFF0]">Create Account</h2>
+            <p className="font-body text-sm font-light text-[#d0c5af]/70">
+              Join us to design beautiful celebrations
+            </p>
           </div>
 
-          {/* Premium Rose error message banner */}
           {errorMsg && (
-            <div className="mb-6 p-4 rounded-xl bg-[#8f0f07]/20 border border-[#ffb4a8]/30 text-[#ffb4a8] text-xs leading-relaxed animate-in fade-in slide-in-from-top-2 duration-300">
-              <span className="font-semibold mr-1">Registration Error:</span>
+            <div className="mb-6 animate-in fade-in slide-in-from-top-2 rounded-xl border border-[#ffb4a8]/30 bg-[#8f0f07]/20 p-4 text-xs leading-relaxed text-[#ffb4a8] duration-300">
+              <span className="mr-1 font-semibold">Registration Error:</span>
               {errorMsg}
+              {errorMsg === AUTH_ALREADY_REGISTERED && (
+                <p className="mt-2">
+                  <Link href={buildLoginUrl(nextPath)} className="font-semibold text-[#f2ca50] underline">
+                    Sign in
+                  </Link>
+                  {' · '}
+                  <Link href="/forgot-password" className="font-semibold text-[#f2ca50] underline">
+                    Reset password
+                  </Link>
+                </p>
+              )}
             </div>
           )}
 
-          {/* Premium Gold success message banner */}
           {successMsg && (
-            <div className="mb-6 p-4 rounded-xl bg-[#d4af37]/10 border border-[#f2ca50]/45 text-[#f2ca50] text-xs leading-relaxed flex items-start gap-2.5 animate-in fade-in slide-in-from-top-2 duration-300">
-              <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+            <div className="mb-6 flex animate-in items-start gap-2.5 rounded-xl border border-[#f2ca50]/45 bg-[#d4af37]/10 p-4 text-xs leading-relaxed text-[#f2ca50] duration-300 fade-in slide-in-from-top-2">
+              <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
               <div>
                 <span className="font-semibold">Check Your Email:</span> {successMsg}
               </div>
@@ -134,7 +152,6 @@ function SignupPageInner() {
           )}
 
           <form onSubmit={handleSignup} className="space-y-6">
-            {/* Full Name Input */}
             <div className="relative group">
               <input
                 type="text"
@@ -145,17 +162,17 @@ function SignupPageInner() {
                 placeholder=" "
                 required
                 disabled={isPending}
-                className="peer w-full bg-transparent border-0 border-b border-[#FFFFF0]/30 py-3 px-0 text-[#FFFFF0] font-body text-sm focus:ring-0 focus:border-[#f2ca50] transition-colors placeholder-transparent focus:outline-none"
+                autoComplete="name"
+                className="peer w-full border-0 border-b border-[#FFFFF0]/30 bg-transparent px-0 py-3 font-body text-sm text-[#FFFFF0] placeholder-transparent transition-colors focus:border-[#f2ca50] focus:ring-0 focus:outline-none"
               />
               <label
                 htmlFor="name"
-                className="absolute left-0 -top-3.5 text-[#d0c5af]/60 font-body text-xs transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#f2ca50]"
+                className="absolute left-0 -top-3.5 font-body text-xs text-[#d0c5af]/60 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#f2ca50]"
               >
                 Full Name
               </label>
             </div>
 
-            {/* Email Input */}
             <div className="relative group">
               <input
                 type="email"
@@ -166,17 +183,18 @@ function SignupPageInner() {
                 placeholder=" "
                 required
                 disabled={isPending}
-                className="peer w-full bg-transparent border-0 border-b border-[#FFFFF0]/30 py-3 px-0 text-[#FFFFF0] font-body text-sm focus:ring-0 focus:border-[#f2ca50] transition-colors placeholder-transparent focus:outline-none"
+                inputMode="email"
+                autoComplete="email"
+                className="peer w-full border-0 border-b border-[#FFFFF0]/30 bg-transparent px-0 py-3 font-body text-sm text-[#FFFFF0] placeholder-transparent transition-colors focus:border-[#f2ca50] focus:ring-0 focus:outline-none"
               />
               <label
                 htmlFor="email"
-                className="absolute left-0 -top-3.5 text-[#d0c5af]/60 font-body text-xs transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#f2ca50]"
+                className="absolute left-0 -top-3.5 font-body text-xs text-[#d0c5af]/60 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-sm peer-focus:-top-3.5 peer-focus:text-xs peer-focus:text-[#f2ca50]"
               >
                 Email Address
               </label>
             </div>
 
-            {/* Password Input */}
             <div className="relative group pt-2">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -187,58 +205,57 @@ function SignupPageInner() {
                 placeholder=" "
                 required
                 disabled={isPending}
-                className="peer w-full bg-transparent border-0 border-b border-[#FFFFF0]/30 py-3 pr-10 pl-0 text-[#FFFFF0] font-body text-sm focus:ring-0 focus:border-[#f2ca50] transition-colors placeholder-transparent focus:outline-none"
+                autoComplete="new-password"
+                className="peer w-full border-0 border-b border-[#FFFFF0]/30 bg-transparent py-3 pr-12 pl-0 font-body text-sm text-[#FFFFF0] placeholder-transparent transition-colors focus:border-[#f2ca50] focus:ring-0 focus:outline-none"
               />
               <label
                 htmlFor="password"
-                className="absolute left-0 top-0 text-[#d0c5af]/60 font-body text-xs transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:top-5 peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#f2ca50]"
+                className="absolute left-0 top-0 font-body text-xs text-[#d0c5af]/60 transition-all peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#f2ca50]"
               >
                 Password
               </label>
-              
+
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
-                className="absolute right-0 top-3.5 text-[#d0c5af]/50 hover:text-[#f2ca50] transition-colors focus:outline-none"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-0 top-2 flex min-h-11 min-w-11 items-center justify-center text-[#d0c5af]/50 transition-colors hover:text-[#f2ca50] focus:outline-none"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
 
-            {/* Submit Button */}
             <div className="pt-6">
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full flex items-center justify-center py-4 px-8 rounded-full bg-gradient-to-r from-[#f2ca50] to-[#B76E79] text-[#3c2f00] font-heading font-semibold text-xs uppercase tracking-[0.15em] hover:shadow-[0_0_20px_rgba(242,202,80,0.35)] hover:scale-[1.01] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none group relative overflow-hidden"
+                className="group relative flex w-full items-center justify-center overflow-hidden rounded-full bg-gradient-to-r from-[#f2ca50] to-[#B76E79] px-8 py-4 font-heading text-xs font-semibold uppercase tracking-[0.15em] text-[#3c2f00] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_0_20px_rgba(242,202,80,0.35)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
               >
                 {isPending ? 'Registering...' : 'Create Account'}
                 {!isPending && (
-                  <Sparkles size={15} className="ml-2 group-hover:rotate-12 transition-transform" />
+                  <Sparkles size={15} className="ml-2 transition-transform group-hover:rotate-12" />
                 )}
               </button>
             </div>
           </form>
 
-          {/* Social Sign In Divider */}
-          <div className="my-6 relative flex items-center justify-center">
+          <div className="relative my-6 flex items-center justify-center">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-[#f2ca50]/15" />
             </div>
-            <div className="relative px-4 bg-[#201f1f] text-[#d0c5af]/50 font-body text-xs uppercase tracking-widest">
+            <div className="relative bg-[#201f1f] px-4 font-body text-xs uppercase tracking-widest text-[#d0c5af]/50">
               Or
             </div>
           </div>
 
-          {/* Google Auth Button */}
           <button
             type="button"
             onClick={handleGoogleLogin}
             disabled={isPending || isGooglePending}
-            className="w-full flex items-center justify-center gap-3 bg-transparent border border-[#f2ca50]/20 text-[#e5e2e1] font-body text-sm py-3.5 rounded-full hover:bg-[#f2ca50]/5 hover:border-[#f2ca50]/40 active:scale-[0.98] transition-all duration-300 disabled:opacity-50"
+            className="flex w-full min-h-11 items-center justify-center gap-3 rounded-full border border-[#f2ca50]/20 bg-transparent py-3.5 font-body text-sm text-[#e5e2e1] transition-all duration-300 hover:border-[#f2ca50]/40 hover:bg-[#f2ca50]/5 active:scale-[0.98] disabled:opacity-50"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
               <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -248,21 +265,8 @@ function SignupPageInner() {
               {isGooglePending ? 'Redirecting…' : 'Continue with Google'}
             </span>
           </button>
-        </div>
-
-        {/* Footer Redirect Link */}
-        <div className="mt-8 text-center animate-fade-in">
-          <p className="font-body text-sm text-[#d0c5af]/80">
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="text-[#f2ca50] hover:text-[#FFFFF0] ml-1 transition-colors underline underline-offset-4 decoration-[#f2ca50]/30 hover:decoration-[#FFFFF0]/40 font-semibold"
-            >
-              Sign In
-            </Link>
-          </p>
-        </div>
-      </main>
+        </AuthCard>
+      </AuthFormShell>
     </>
   )
 }

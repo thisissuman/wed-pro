@@ -203,6 +203,11 @@ export interface SectionVisibility {
   showThankYou?: boolean;
 }
 
+/** Editor-controlled text scale for the public invitation (not app theme). */
+export interface InvitationTypography {
+  scale?: "default" | "large";
+}
+
 /* ── Invitation Metadata ── */
 export interface InvitationMeta {
   /** When the invitation was created */
@@ -241,6 +246,7 @@ export interface WeddingData {
 
   /* Configuration */
   theme: ThemeConfig;
+  typography?: InvitationTypography;
   seo: SEOData;
   sections: SectionVisibility;
   meta: InvitationMeta;

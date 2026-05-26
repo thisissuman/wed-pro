@@ -39,7 +39,7 @@ publishing, uploads, or Supabase policies.
 - [ ] Slug conflicts use suffixes through `findAvailableSlug()`.
 - [ ] Draft public URLs return 404.
 - [ ] Published `/w/[slug]` pages include title, description, and OpenGraph tags.
-- [ ] `NEXT_PUBLIC_SITE_URL` is configured in production for absolute OG URLs.
+- [ ] `NEXT_PUBLIC_SITE_URL` is configured in production for absolute OG URLs (e.g. `https://wed-pro.vercel.app`, no trailing slash).
 
 ## Uploads & Media
 
@@ -56,7 +56,7 @@ Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and p
 |--------|----------------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Auth E2E only | CI uses a harmless placeholder if unset |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Auth E2E only | CI uses a harmless placeholder if unset; real value is from Supabase → Project Settings → API |
-| `NEXT_PUBLIC_SITE_URL` | Optional | Defaults to `http://127.0.0.1:3000` in CI |
+| `NEXT_PUBLIC_SITE_URL` | Production | e.g. `https://wed-pro.vercel.app`; CI defaults to `http://127.0.0.1:3000` |
 | `PLAYWRIGHT_TEST_EMAIL` | Optional auth smoke test | Skipped when empty |
 | `PLAYWRIGHT_TEST_PASSWORD` | Optional auth smoke test | Use a dedicated test user, not production. Test deletes one draft if the account already has 3 invitations. |
 

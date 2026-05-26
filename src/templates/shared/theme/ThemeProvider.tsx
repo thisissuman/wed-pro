@@ -11,6 +11,8 @@ interface TemplateThemeProviderProps {
   defaultTheme: TemplateThemeTokens;
   theme?: Partial<ThemeConfig>;
   className?: string;
+  /** Scales rem-based template copy (1 = default, ~1.06 = large). */
+  typographyScale?: "default" | "large";
 }
 
 function createThemeStyle(tokens: TemplateThemeTokens): ThemeStyle {
@@ -39,11 +41,13 @@ export function TemplateThemeProvider({
   defaultTheme,
   theme,
   className,
+  typographyScale = "default",
 }: TemplateThemeProviderProps) {
   const tokens = mergeThemeConfig(defaultTheme, theme);
+  const fontSize = typographyScale === "large" ? "106%" : "100%";
 
   return (
-    <div className={className} style={createThemeStyle(tokens)}>
+    <div className={className} style={{ ...createThemeStyle(tokens), fontSize }}>
       {children}
     </div>
   );

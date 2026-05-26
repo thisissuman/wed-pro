@@ -42,7 +42,7 @@ function TemplatePageContent() {
         </Link>
       </header>
 
-      <main className="max-w-[1200px] w-full mx-auto px-[var(--spacing-container-margin)] pt-16 md:pt-20 pb-32 space-y-8">
+      <main className="max-w-[1200px] w-full mx-auto px-[var(--spacing-container-margin)] pt-20 md:pt-24 pb-32 space-y-8">
         {/* Hero Section */}
         <section className="relative text-left space-y-3 pt-0 pb-2">
           {/* Ambient glow */}

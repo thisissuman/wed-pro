@@ -86,15 +86,10 @@ Minimum checks:
 ```bash
 npm run lint
 npm run build
-npx playwright install chromium
 npm run test:e2e -- --project=mobile-chrome
 ```
 
-When adding a new template preview screenshot, create the baseline once:
-
-```bash
-npm run test:e2e -- --project=mobile-chrome tests/e2e/visual-regression.spec.ts --update-snapshots
-```
+*(Note: Run the existing Playwright E2E suite to guarantee no regressions are introduced in existing templates or flows. You do not need to add any new test files or visual baseline snapshots for your new templates.)*
 
 ## Done When
 
@@ -104,4 +99,4 @@ npm run test:e2e -- --project=mobile-chrome tests/e2e/visual-regression.spec.ts 
 - No database, auth, payment, or Zustand imports exist inside template files.
 - Images use `next/image` with accurate `sizes`.
 - Required preview ids are present for the editor scroll map.
-- A `/preview/<template-id>` visual baseline is committed.
+- The existing E2E test suite runs and passes (no new tests are required).

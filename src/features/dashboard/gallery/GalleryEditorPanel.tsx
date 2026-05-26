@@ -52,17 +52,24 @@ export function GalleryEditorPanel({ draft, update, bare }: PanelProps) {
       };
     });
 
+  const maxGalleryPhotos = 12;
+
   const addImage = () =>
-    update((current) => ({
-      ...current,
-      gallery: {
-        ...current.gallery,
-        images: [
-          ...current.gallery.images,
-          createGalleryImage(current.gallery.images.length + 1),
-        ],
-      },
-    }));
+    update((current) => {
+      if (current.gallery.images.length >= maxGalleryPhotos) {
+        return current;
+      }
+      return {
+        ...current,
+        gallery: {
+          ...current.gallery,
+          images: [
+            ...current.gallery.images,
+            createGalleryImage(current.gallery.images.length + 1),
+          ],
+        },
+      };
+    });
 
   const sortedImages = [...gallery.images].sort((a, b) => a.order - b.order);
 
@@ -105,10 +112,11 @@ export function GalleryEditorPanel({ draft, update, bare }: PanelProps) {
       <button
         type="button"
         onClick={addImage}
-        className="mt-1 inline-flex items-center gap-2 rounded-full border border-champagne-gold/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10"
+        disabled={sortedImages.length >= maxGalleryPhotos}
+        className="mt-1 inline-flex min-h-11 items-center gap-2 rounded-full border border-champagne-gold/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-40"
       >
         <Plus size={14} />
-        Add Photo
+        Add Photo ({sortedImages.length}/{maxGalleryPhotos})
       </button>
     </>
   );
@@ -181,6 +189,9 @@ function GalleryCard({
           label="Photo"
           value={image.url}
           folder={`wed-pro/${invitationId}/gallery`}
+          cropping
+          croppingAspectRatio={4 / 5}
+          helperText="Crop for gallery grid. On mobile: Upload → Photos or Files."
           onChange={(value) => onChange({ url: value })}
         />
         <TextInput

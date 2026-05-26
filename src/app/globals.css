@@ -141,15 +141,27 @@ body {
   background-color: var(--color-background);
   color: var(--color-on-surface);
   font-family: var(--font-body);
-  padding-top: 64px; /* Space for fixed TopNavBar */
-  padding-bottom: 72px; /* Space for fixed BottomNavBar on mobile */
+  padding-top: 0;
+  padding-bottom: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Applied via ChromeBodyClass when TopNavBar is visible */
+body.marketing-chrome {
+  padding-top: 64px;
+}
+
+body.mobile-nav-chrome {
+  padding-bottom: 72px;
+}
+
 @media (min-width: 768px) {
-  body {
+  body.marketing-chrome {
     padding-top: 72px;
+  }
+
+  body.mobile-nav-chrome {
     padding-bottom: 0;
   }
 }
@@ -168,18 +180,26 @@ body {
   --color-surface-dim: #f5f0e8;
   --color-surface-bright: #ebe4d8;
   --color-surface-container-lowest: #fffdf9;
-  --color-surface-container-low: #f5f0e8;
-  --color-surface-container: #efe8dc;
-  --color-surface-container-high: #e5ddd0;
-  --color-surface-container-highest: #dbd2c4;
-  --color-surface-variant: #d4cbbd;
+  --color-surface-container-low: #f3ece2;
+  --color-surface-container: #ebe4d8;
+  --color-surface-container-high: #e0d6c8;
+  --color-surface-container-highest: #d4cbbd;
+  --color-surface-variant: #c9bfb0;
   --color-on-surface: #1a1a1a;
-  --color-on-surface-variant: #4a4540;
+  --color-on-surface-variant: #3d3832;
   --color-on-background: #1a1a1a;
-  --color-outline: #6b6358;
-  --color-outline-variant: #c4b9a8;
+  --color-outline: #5c5549;
+  --color-outline-variant: #b8ab98;
   --color-ivory: #1a1a1a;
   --color-charcoal-black: #131313;
+}
+
+.light .border-champagne-gold\/10 {
+  border-color: color-mix(in srgb, var(--color-champagne-gold) 22%, transparent);
+}
+
+.light .border-champagne-gold\/15 {
+  border-color: color-mix(in srgb, var(--color-champagne-gold) 28%, transparent);
 }
 
 /* Reserve space before lazy-loaded template media paints (reduces CLS). */

@@ -1,12 +1,19 @@
 "use client";
 
+interface SparkleOverlayProps {
+  /** When true, particles stay inside the preview scroll container. */
+  embedded?: boolean;
+}
+
 /**
  * Ambient sparkle particles — CSS only (no JS animation loop).
  */
-export function SparkleOverlay() {
+export function SparkleOverlay({ embedded = false }: SparkleOverlayProps) {
   return (
     <div
-      className="pointer-events-none fixed inset-0 z-[2] overflow-hidden opacity-40"
+      className={`pointer-events-none inset-0 z-[2] overflow-hidden opacity-40 ${
+        embedded ? "absolute" : "fixed"
+      }`}
       aria-hidden="true"
     >
       <span className="royal-sparkle absolute left-[12%] top-[18%]" />
