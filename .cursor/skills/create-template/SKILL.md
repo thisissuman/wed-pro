@@ -153,9 +153,7 @@ or `src/data/templates.ts`; the marketing gallery is derived from the registry.
 
 - Verify `/preview/<template-id>` renders sample data
 - Verify `/template` shows the card and its Preview/Select actions
-- Add a visual regression case for `/preview/<template-id>` in
-  `tests/e2e/visual-regression.spec.ts`, then create the baseline once with
-  `--update-snapshots`
+- Run `npm run test:e2e` — functional smoke in `tests/e2e/free-beta.spec.ts` covers homepage, gallery, and preview routes (no pixel baselines; they flake across macOS vs Linux CI)
 
 ## Step 9 — Mobile QA
 
