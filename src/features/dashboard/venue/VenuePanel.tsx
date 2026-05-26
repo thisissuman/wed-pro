@@ -15,7 +15,9 @@ function copyEventToVenue(event: WeddingEvent) {
 
 export function VenuePanel({ draft, update, bare }: PanelProps) {
   const copyableEvents = draft.events.filter(
-    (e) => e.venue?.trim() || e.address?.trim() || e.googleMapLink?.trim()
+    (e) =>
+      e.type !== "sangeet" &&
+      (e.venue?.trim() || e.address?.trim() || e.googleMapLink?.trim())
   );
 
   const content = (

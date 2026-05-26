@@ -1,8 +1,10 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
-import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField";
+import { motion } from "framer-motion";
+import { Plus, Trash2 } from "lucide-react";
+import { CroppedImageUploadField } from "@/components/media/CroppedImageUploadField";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
+import { ReorderControls } from "@/features/dashboard/shared/ReorderControls";
 import { TextInput } from "@/features/dashboard/shared/Inputs";
 import { createGalleryImage } from "@/lib/invitations";
 import type { PanelProps } from "@/features/dashboard/shared/types";
@@ -87,24 +89,29 @@ export function GalleryEditorPanel({ draft, update, bare }: PanelProps) {
         }
       />
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {sortedImages.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-champagne-gold/20 bg-charcoal-black/30 px-4 py-6 text-center text-xs text-on-surface-variant/60">
+          <div className="rounded-xl border border-dashed border-champagne-gold/20 bg-[var(--editor-card-bg)] px-4 py-6 text-center text-xs text-on-surface-variant/60">
             No photos yet. Add your first image below.
           </div>
         ) : (
           sortedImages.map((image, index) => (
-            <GalleryCard
+            <motion.div
               key={image.id}
-              image={image}
-              canMoveUp={index > 0}
-              canMoveDown={index < sortedImages.length - 1}
-              invitationId={draft.id}
-              onChange={(patch) => updateImage(image.id, patch)}
-              onRemove={() => removeImage(image.id)}
-              onMoveUp={() => moveImage(image.id, -1)}
-              onMoveDown={() => moveImage(image.id, 1)}
-            />
+              layout
+              transition={{ type: "spring", stiffness: 520, damping: 38, mass: 0.8 }}
+            >
+              <GalleryCard
+                image={image}
+                canMoveUp={index > 0}
+                canMoveDown={index < sortedImages.length - 1}
+                invitationId={draft.id}
+                onChange={(patch) => updateImage(image.id, patch)}
+                onRemove={() => removeImage(image.id)}
+                onMoveUp={() => moveImage(image.id, -1)}
+                onMoveDown={() => moveImage(image.id, 1)}
+              />
+            </motion.div>
           ))
         )}
       </div>
@@ -155,43 +162,30 @@ function GalleryCard({
   onMoveDown,
 }: GalleryCardProps) {
   return (
-    <div className="rounded-xl border border-champagne-gold/10 bg-charcoal-black/30 p-4">
-      <div className="mb-3 flex justify-end gap-1">
-        <button
-          type="button"
-          onClick={onMoveUp}
-          disabled={!canMoveUp}
-          aria-label="Move up"
-          className="rounded-full border border-champagne-gold/15 p-2 text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-30"
-        >
-          <ArrowUp size={14} />
-        </button>
-        <button
-          type="button"
-          onClick={onMoveDown}
-          disabled={!canMoveDown}
-          aria-label="Move down"
-          className="rounded-full border border-champagne-gold/15 p-2 text-champagne-gold transition hover:bg-champagne-gold/10 disabled:pointer-events-none disabled:opacity-30"
-        >
-          <ArrowDown size={14} />
-        </button>
+    <div className="rounded-xl border border-champagne-gold/10 bg-[var(--editor-card-bg)] p-4">
+      <div className="mb-3 flex items-center justify-end gap-1">
+        <ReorderControls
+          canMoveUp={canMoveUp}
+          canMoveDown={canMoveDown}
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+        />
         <button
           type="button"
           onClick={onRemove}
           aria-label="Remove photo"
-          className="rounded-full border border-[#ffb4a8]/20 p-2 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-[#ffb4a8]/20 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10"
         >
           <Trash2 size={14} />
         </button>
       </div>
       <div className="space-y-3">
-        <CloudinaryUploadField
+        <CroppedImageUploadField
           label="Photo"
           value={image.url}
           folder={`wed-pro/${invitationId}/gallery`}
-          cropping
-          croppingAspectRatio={4 / 5}
-          helperText="Crop for gallery grid. On mobile: Upload → Photos or Files."
+          aspect={4 / 5}
+          helperText="Crop for gallery grid. JPG or WebP under 8 MB."
           onChange={(value) => onChange({ url: value })}
         />
         <TextInput

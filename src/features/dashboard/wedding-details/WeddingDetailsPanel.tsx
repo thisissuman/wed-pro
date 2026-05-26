@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { CloudinaryUploadField } from "@/components/media/CloudinaryUploadField";
+import { CroppedImageUploadField } from "@/components/media/CroppedImageUploadField";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
 import { SelectInput, TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
@@ -182,16 +182,15 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
           description="Add portraits, family details, and a short note for each."
         />
         <div className="mt-4 space-y-6">
-          <div className="rounded-xl border border-champagne-gold/10 bg-charcoal-black/25 p-4 space-y-4">
+          <div className="rounded-xl border border-champagne-gold/10 bg-[var(--editor-card-bg)] p-4 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-gold/70">
               Groom · {draft.couple.groom.name || "Groom"}
             </p>
-            <CloudinaryUploadField
+            <CroppedImageUploadField
               label="Groom Photo"
               value={draft.couple.groom.photo ?? ""}
               folder={`wed-pro/${draft.id}/couple/groom`}
-              cropping
-              croppingAspectRatio={1}
+              aspect={1}
               helperText="Square crop fits the circular portrait frame."
               onChange={(value) =>
                 update((current) => ({
@@ -242,16 +241,15 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
             />
           </div>
 
-          <div className="rounded-xl border border-champagne-gold/10 bg-charcoal-black/25 p-4 space-y-4">
+          <div className="rounded-xl border border-champagne-gold/10 bg-[var(--editor-card-bg)] p-4 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-gold/70">
               Bride · {draft.couple.bride.name || "Bride"}
             </p>
-            <CloudinaryUploadField
+            <CroppedImageUploadField
               label="Bride Photo"
               value={draft.couple.bride.photo ?? ""}
               folder={`wed-pro/${draft.id}/couple/bride`}
-              cropping
-              croppingAspectRatio={1}
+              aspect={1}
               helperText="Square crop fits the circular portrait frame."
               onChange={(value) =>
                 update((current) => ({
@@ -373,6 +371,37 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
                 })
               : "Set wedding date in Invitation section"}
           </p>
+        </div>
+      </div>
+
+      <div onFocusCapture={() => scrollPreviewToSection("blessing")}>
+        <SectionDivider
+          title="Blessing"
+          description="Family message shown after the countdown on your invite."
+        />
+        <div className="mt-4 space-y-4">
+          <TextArea
+            label="Blessing Message"
+            value={draft.blessing?.message ?? ""}
+            placeholder="With the blessings of our beloved families..."
+            onChange={(value) =>
+              update((current) => ({
+                ...current,
+                blessing: { ...current.blessing, message: value },
+              }))
+            }
+          />
+          <TextInput
+            label="Blessing From"
+            value={draft.blessing?.from ?? ""}
+            placeholder="The Sharma & Mehta Families"
+            onChange={(value) =>
+              update((current) => ({
+                ...current,
+                blessing: { ...current.blessing, from: value },
+              }))
+            }
+          />
         </div>
       </div>
     </>

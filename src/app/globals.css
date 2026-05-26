@@ -1,11 +1,15 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ─── Design System: Royal Cinematic Editorial ─── */
 @theme inline {
   /* ── Fonts ── */
   /* Indic fallback is appended so non-Latin characters (Hindi, Marathi, etc.)
      render with Noto Sans Devanagari instead of the browser's system serif. */
-  --font-heading: "Playfair Display", "Noto Sans Devanagari", serif;
+  --font-heading: var(--font-sans);
   --font-body: "Inter", "Noto Sans Devanagari", sans-serif;
 
   /* ── Surface & Background Colors ── */
@@ -129,6 +133,80 @@
   --font-size-label-sm: 12px;
   --font-size-label-sm--line-height: 16px;
   --font-size-label-sm--letter-spacing: 0.08em;
+  --font-sans: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ─── Editor form surfaces (theme-aware) ─── */
+:root {
+  --editor-field-bg: #1c1b1b;
+  --editor-field-text: #fffff0;
+  --editor-field-border: color-mix(in srgb, var(--color-champagne-gold) 15%, transparent);
+  --editor-field-placeholder: color-mix(in srgb, var(--color-on-surface-variant) 55%, transparent);
+  --editor-toggle-bg: color-mix(in srgb, var(--color-charcoal-black) 30%, transparent);
+  --editor-toggle-track: color-mix(in srgb, var(--color-charcoal-black) 60%, transparent);
+  --editor-knob: #fffff0;
+  --editor-card-bg: color-mix(in srgb, var(--color-charcoal-black) 28%, transparent);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
 }
 
 /* ─── Base Styles ─── */
@@ -173,6 +251,10 @@ body.mobile-nav-chrome {
 }
 
 /* ─── Light theme (warm ivory / beige) ─── */
+html.light {
+  color-scheme: light;
+}
+
 .light {
   --color-background: #faf7f2;
   --color-foreground: #1a1a1a;
@@ -192,6 +274,23 @@ body.mobile-nav-chrome {
   --color-outline-variant: #b8ab98;
   --color-ivory: #1a1a1a;
   --color-charcoal-black: #131313;
+  --editor-field-bg: #ffffff;
+  --editor-field-text: #1a1a1a;
+  --editor-field-border: color-mix(in srgb, var(--color-champagne-gold) 28%, transparent);
+  --editor-field-placeholder: color-mix(in srgb, var(--color-on-surface-variant) 70%, transparent);
+  --editor-toggle-bg: color-mix(in srgb, var(--color-surface-container-high) 80%, transparent);
+  --editor-toggle-track: color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
+  --editor-knob: #fffdf9;
+  --editor-card-bg: color-mix(in srgb, var(--color-surface-container-high) 65%, transparent);
+}
+
+.light .text-on-surface-variant\/50,
+.light .text-on-surface-variant\/55,
+.light .text-on-surface-variant\/60,
+.light .text-on-surface-variant\/65,
+.light .text-on-surface-variant\/70,
+.light .text-on-surface-variant\/75 {
+  color: color-mix(in srgb, var(--color-on-surface-variant) 88%, transparent);
 }
 
 .light .border-champagne-gold\/10 {
@@ -200,6 +299,26 @@ body.mobile-nav-chrome {
 
 .light .border-champagne-gold\/15 {
   border-color: color-mix(in srgb, var(--color-champagne-gold) 28%, transparent);
+}
+
+/* Ensure semantic text tracks theme on mobile browsers (some ignore @theme token swaps). */
+.light .text-ivory {
+  color: var(--color-on-surface);
+}
+
+.light .hover\:text-ivory:hover {
+  color: var(--color-on-surface);
+}
+
+.light .bg-charcoal-black\/30,
+.light .bg-charcoal-black\/40,
+.light .bg-charcoal-black\/50 {
+  background-color: var(--editor-card-bg);
+}
+
+.light .text-on-surface-variant\/50,
+.light .text-on-surface-variant\/40 {
+  color: color-mix(in srgb, var(--color-on-surface-variant) 82%, transparent);
 }
 
 /* Reserve space before lazy-loaded template media paints (reduces CLS). */
@@ -250,7 +369,6 @@ body.mobile-nav-chrome {
   opacity: 0.9;
 }
 
-
 .gold-aura {
   box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.15);
 }
@@ -290,9 +408,81 @@ body.mobile-nav-chrome {
   animation: royal-sparkle-pulse 3s ease-in-out infinite;
 }
 
+@keyframes shine {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  to {
+    background-position: 0% 0%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .royal-sparkle {
     animation: none;
     opacity: 0.35;
+  }
+}
+
+/* Global love pointer — class toggled by GlobalLovePointer (desktop fine pointer only).
+   Placed after Tailwind so cursor utilities cannot restore the system cursor. */
+html.love-pointer-active,
+html.love-pointer-active body,
+html.love-pointer-active *,
+html.love-pointer-active *::before,
+html.love-pointer-active *::after {
+  cursor: none !important;
+}
+
+html.love-pointer-active :is(.cursor-pointer, .cursor-grab, .cursor-default, .cursor-text, [class*="cursor-"]) {
+  cursor: none !important;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }

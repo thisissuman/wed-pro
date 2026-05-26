@@ -6,7 +6,7 @@ import { isValidDisplayUrl } from "@/lib/media-url";
 import type { HeroSectionContract } from "@/templates/shared/sections/types";
 import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 import { firstName, getOrderedCoupleMembers } from "@/lib/couple-order";
-import { TapReveal } from "../components/TapReveal";
+import { WeddingDateScratchReveal } from "../components/WeddingDateScratchReveal";
 import { templateMotion } from "../../shared/motion/presets";
 
 /**
@@ -33,15 +33,16 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
     >
       {/* Background media — next/image for optimized LCP */}
       {heroBackgroundSrc && isValidDisplayUrl(heroBackgroundSrc) && (
-        <Image
-          src={heroBackgroundSrc}
-          alt=""
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, 100vw"
-          className="object-cover"
-          aria-hidden="true"
-        />
+        <div className="absolute inset-0 z-0" aria-hidden="true">
+          <Image
+            src={heroBackgroundSrc}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 100vw"
+            className="object-cover object-center"
+          />
+        </div>
       )}
 
       {/* Background overlay */}
@@ -143,13 +144,9 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1.4 }}
-          className="w-full max-w-xs mx-auto"
+          className="w-full max-w-md mx-auto"
         >
-          <TapReveal label="Tap to reveal the date">
-            <p className="font-[family-name:var(--font-body)] text-sm md:text-base text-[color-mix(in_srgb,var(--template-primary)_80%,transparent)] tracking-widest uppercase py-3">
-              {formattedDate}
-            </p>
-          </TapReveal>
+          <WeddingDateScratchReveal date={formattedDate} />
         </motion.div>
 
         {hashtag && (
@@ -163,12 +160,12 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           </motion.p>
         )}
 
-        {/* Scroll hint */}
+        {/* Scroll hint — desktop only */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 2 }}
-          className="mt-16"
+          className="mt-10 hidden md:block md:mt-12"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}

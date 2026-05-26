@@ -15,16 +15,13 @@ import {
   Loader2,
   MessageCircle,
   Monitor,
-  Moon,
   PartyPopper,
   Save,
   Smartphone,
-  Sun,
-  Type,
   Undo2,
   X,
 } from "lucide-react";
-import { useTheme } from "next-themes";
+import { AppThemeToggler } from "@/components/magic-ui/app-theme-toggler";
 import { cn } from "@/lib/utils";
 import { EditorAccordion } from "@/features/dashboard/shared/EditorAccordion";
 import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
@@ -55,6 +52,7 @@ import { GalleryEditorPanel } from "@/features/dashboard/gallery/GalleryEditorPa
 import { SectionSettingsPanel } from "@/features/dashboard/sections/SectionSettingsPanel";
 import { MediaMusicPanel } from "@/features/dashboard/media/MediaMusicPanel";
 import { SharePreviewPanel } from "@/features/dashboard/share/SharePreviewPanel";
+import { TypographyScaleMenu } from "@/features/invitations/TypographyScaleMenu";
 import type { DraftUpdater } from "@/features/dashboard/shared/types";
 import type { WeddingData } from "@/types/wedding.types";
 
@@ -113,7 +111,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const [showPublishShareDialog, setShowPublishShareDialog] = useState(false);
   const [publishSlugAdjusted, setPublishSlugAdjusted] = useState(false);
   const [publishRequestedSlug, setPublishRequestedSlug] = useState<string | undefined>();
-  const { theme, setTheme } = useTheme();
   const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -403,38 +400,24 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             Dashboard
           </Link>
           <div>
-            <h1 className="font-heading text-3xl text-ivory md:text-4xl">{getInvitationTitle(draft)}</h1>
-            <p className="mt-2 font-body text-sm text-on-surface-variant/70">
+            <h1 className="font-heading text-2xl text-on-surface md:text-3xl">{getInvitationTitle(draft)}</h1>
+            <p className="mt-1 font-body text-sm text-on-surface-variant/70">
               Autosaved draft · {lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Not saved yet"}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() =>
+          <TypographyScaleMenu
+            value={draft.typography?.scale}
+            onChange={(scale) =>
               update((current) => ({
                 ...current,
-                typography: {
-                  scale: current.typography?.scale === "large" ? "default" : "large",
-                },
+                typography: { scale },
               }))
             }
-            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-champagne-gold/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-champagne-gold transition hover:bg-champagne-gold/10"
-            aria-pressed={draft.typography?.scale === "large"}
-          >
-            <Type size={14} />
-            {draft.typography?.scale === "large" ? "Large text" : "Text size"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-champagne-gold/20 text-champagne-gold transition hover:bg-champagne-gold/10"
-            aria-label="Toggle app theme"
-          >
-            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
+          />
+          <AppThemeToggler />
           <span className="inline-flex items-center gap-2 rounded-full border border-champagne-gold/15 px-4 py-2 text-xs text-on-surface-variant">
             {saveState === "saving" && <Loader2 size={14} className="animate-spin text-champagne-gold" />}
             {saveState === "saved" && <Check size={14} className="text-champagne-gold" />}
@@ -500,7 +483,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold/70">
                   Step {mobileStepIndex + 1} of {editorSteps.length}
                 </p>
-                <h2 className="mt-1 font-heading text-xl text-ivory">
+                <h2 className="mt-1 font-heading text-xl text-on-surface">
                   {currentMobileStep.title}
                 </h2>
                 <p className="mt-1 text-xs leading-relaxed text-on-surface-variant/60">
@@ -631,7 +614,12 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             )}
           >
             {previewData && (
-              <TemplateRenderer templateId={previewData.templateId} data={previewData} isPreview />
+              <TemplateRenderer
+                templateId={previewData.templateId}
+                data={previewData}
+                isPreview
+                suppressMusicPlayer={isPublishing || showPublishShareDialog}
+              />
             )}
           </div>
         </section>
@@ -734,7 +722,12 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                 style={{ height: "calc(92dvh - var(--editor-preview-chrome-h))" }}
               >
                 {previewData && (
-                  <TemplateRenderer templateId={previewData.templateId} data={previewData} isPreview />
+                  <TemplateRenderer
+                templateId={previewData.templateId}
+                data={previewData}
+                isPreview
+                suppressMusicPlayer={isPublishing || showPublishShareDialog}
+              />
                 )}
               </div>
             </motion.section>

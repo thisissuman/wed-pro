@@ -33,12 +33,27 @@ invitation change. Mobile is the primary experience.
 
 ## Image Upload Guidance
 
-- [ ] Hero background: crop 9:16 in upload widget; under 8 MB.
-- [ ] Couple portraits: 1:1 crop in widget; under 8 MB.
-- [ ] Gallery: 4:5 crop; max 12 photos; under 8 MB each.
-- [ ] Music: MP3/M4A, under 12 MB (export from phone if upload fails).
-- [ ] Cloudinary unsigned preset allows **cropping** and size limits.
+All editor uploads use the in-app crop dialog + progress bar (`CroppedImageUploadField` / `AudioUploadField`), not the Cloudinary widget.
+
+- [ ] Hero background: crop **9:16** (not squashed); fills hero with `object-cover`; under 8 MB; progress bar completes.
+- [ ] Re-upload hero if an older build saved a square-distorted file — crop now preserves aspect ratio.
+- [ ] WhatsApp preview mock uses landscape OG crop (`1200×630`) from hero via Cloudinary transform.
+- [ ] Couple portraits: **1:1** crop; under 8 MB.
+- [ ] Gallery: **4:5** crop; max 12 photos; reorder arrows animate like Events.
+- [ ] Music: MP3/M4A via upload field; under 12 MB; progress bar completes.
 - [ ] On mobile: tap Upload → **Photos** or **Files** (system picker).
+
+## Light theme (real device)
+
+- [ ] Toggle light theme on **physical Android** (not only devtools): dashboard + editor labels, inputs, and step titles are readable on white surfaces.
+- [ ] Editor cards use `--editor-card-bg` / `--editor-field-*` tokens (no invisible ivory-on-white text).
+
+## Editor polish
+
+- [ ] Typography scale (Small / Default / Large) changes **all** invite text in live preview (hero names, RSVP, thank you, events).
+- [ ] Live Preview music button: first open may autoplay muted once; **tap unmutes** or pauses correctly.
+- [ ] Events, Love Story, and Gallery reorder use up/down arrows with layout animation.
+- [ ] Sonner toasts: gold/royal pill style (`rounded-full`), not default green/white.
 
 ## Production share test
 

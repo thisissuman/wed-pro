@@ -18,13 +18,13 @@ export function ThankYouSection({ thankYou, couple }: ThankYouSectionProps) {
   const [nameFirst, nameSecond] = getOrderedCoupleMembers(couple, couple.family);
 
   return (
-    <section className="px-6 py-20 md:py-28">
+    <section className="px-6 py-14 md:py-20">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.7 }}
-        className="max-w-xl mx-auto text-center space-y-8"
+        className="max-w-xl mx-auto text-center space-y-5"
       >
         {/* Decorative ornament */}
         <div className="w-16 h-px bg-gradient-to-r from-transparent via-champagne-gold/40 to-transparent mx-auto" />

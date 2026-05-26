@@ -6,7 +6,6 @@ import { DigitalVsPhysical } from "@/features/dashboard/comparison/DigitalVsPhys
 import { TestimonialSection } from "@/features/dashboard/testimonials/TestimonialSection";
 import { FinalCTA } from "@/features/dashboard/cta/FinalCTA";
 import { CinematicFooter } from "@/features/dashboard/footer/CinematicFooter";
-
 export default function HomePage() {
   return (
     <DashboardShell>

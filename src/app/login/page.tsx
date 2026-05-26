@@ -63,7 +63,8 @@ function LoginPageInner() {
         }
 
         toast.success('Welcome back')
-        router.push(nextPath)
+        // Full navigation so proxy/middleware receive auth cookies on the next request.
+        window.location.assign(nextPath)
       } catch {
         setErrorMsg('An unexpected error occurred. Please try again.')
       }

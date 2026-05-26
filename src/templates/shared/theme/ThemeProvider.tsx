@@ -2,7 +2,9 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import type { ThemeConfig } from "@/types/theme.types";
+import type { InvitationTypography } from "@/types/wedding.types";
 import { mergeThemeConfig, type TemplateThemeTokens } from "./tokens";
+import { resolveTypographyScale } from "./typography-scale";
 
 type ThemeStyle = CSSProperties & Record<`--template-${string}`, string>;
 
@@ -11,8 +13,7 @@ interface TemplateThemeProviderProps {
   defaultTheme: TemplateThemeTokens;
   theme?: Partial<ThemeConfig>;
   className?: string;
-  /** Scales rem-based template copy (1 = default, ~1.06 = large). */
-  typographyScale?: "default" | "large";
+  typographyScale?: InvitationTypography["scale"];
 }
 
 function createThemeStyle(tokens: TemplateThemeTokens): ThemeStyle {
@@ -44,10 +45,17 @@ export function TemplateThemeProvider({
   typographyScale = "default",
 }: TemplateThemeProviderProps) {
   const tokens = mergeThemeConfig(defaultTheme, theme);
-  const fontSize = typographyScale === "large" ? "106%" : "100%";
+  const scale = resolveTypographyScale(typographyScale);
 
   return (
-    <div className={className} style={{ ...createThemeStyle(tokens), fontSize }}>
+    <div
+      className={className}
+      style={{
+        ...createThemeStyle(tokens),
+        ["--template-content-scale" as string]: String(scale.factor),
+        zoom: scale.factor,
+      }}
+    >
       {children}
     </div>
   );

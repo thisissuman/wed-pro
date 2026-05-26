@@ -8,6 +8,7 @@ export const PREVIEW_SECTION_IDS = {
   hero: "preview-section-hero",
   couple: "preview-section-couple",
   countdown: "preview-section-countdown",
+  blessing: "preview-section-blessing",
   events: "preview-section-events",
   story: "preview-section-story",
   gallery: "preview-section-gallery",

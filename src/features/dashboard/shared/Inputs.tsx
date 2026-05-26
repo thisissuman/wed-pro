@@ -45,8 +45,8 @@ export function TextInput({
         }
         aria-invalid={Boolean(error)}
         className={cn(
-          "w-full rounded-xl border bg-charcoal-black/50 px-4 py-3 text-sm text-ivory outline-none transition focus:border-champagne-gold/60",
-          error ? "border-error/50" : "border-champagne-gold/15"
+          "w-full rounded-xl border bg-[var(--editor-field-bg)] px-4 py-3 text-sm text-[var(--editor-field-text)] outline-none transition placeholder:text-[var(--editor-field-placeholder)] focus:border-champagne-gold/60",
+          error ? "border-error/50" : "border-[var(--editor-field-border)]"
         )}
       />
       {error && (
@@ -99,8 +99,8 @@ export function TextArea({
         }
         aria-invalid={Boolean(error)}
         className={cn(
-          "w-full resize-none rounded-xl border bg-charcoal-black/50 px-4 py-3 text-sm leading-relaxed text-ivory outline-none transition focus:border-champagne-gold/60",
-          error ? "border-error/50" : "border-champagne-gold/15"
+          "w-full resize-none rounded-xl border bg-[var(--editor-field-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--editor-field-text)] outline-none transition placeholder:text-[var(--editor-field-placeholder)] focus:border-champagne-gold/60",
+          error ? "border-error/50" : "border-[var(--editor-field-border)]"
         )}
       />
       {error && (
@@ -158,7 +158,7 @@ export function SelectInput<T extends string>({
         aria-labelledby={labelId}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-3 rounded-xl border border-champagne-gold/15 bg-charcoal-black/50 px-4 py-3 text-left text-sm text-ivory outline-none transition focus:border-champagne-gold/60"
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--editor-field-border)] bg-[var(--editor-field-bg)] px-4 py-3 text-left text-sm text-[var(--editor-field-text)] outline-none transition focus:border-champagne-gold/60"
       >
         <span>{selected?.label ?? "Select"}</span>
         <ChevronDown
@@ -191,7 +191,7 @@ export function SelectInput<T extends string>({
                   "flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition",
                   isSelected
                     ? "bg-champagne-gold/15 text-champagne-gold"
-                    : "text-on-surface-variant hover:bg-champagne-gold/10 hover:text-ivory"
+                    : "text-on-surface-variant hover:bg-champagne-gold/10 hover:text-on-surface"
                 )}
               >
                 <span>{option.label}</span>

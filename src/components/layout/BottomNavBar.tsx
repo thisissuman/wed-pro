@@ -158,6 +158,7 @@ export function BottomNavBar() {
 
                 <Link
                   href="/dashboard"
+                  prefetch
                   onClick={() => setIsStudioMenuOpen(false)}
                   className="flex items-center gap-2 w-full px-3 py-2.5 text-xs rounded-lg text-on-surface hover:bg-champagne-gold/10 transition-colors font-medium"
                 >
