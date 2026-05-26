@@ -12,15 +12,19 @@ import {
   Copy,
   Eye,
   ExternalLink,
-  Globe2,
   Loader2,
   MessageCircle,
   Monitor,
+  Moon,
+  PartyPopper,
   Save,
   Smartphone,
+  Sun,
+  Type,
   Undo2,
   X,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { EditorAccordion } from "@/features/dashboard/shared/EditorAccordion";
 import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
@@ -109,6 +113,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const [showPublishShareDialog, setShowPublishShareDialog] = useState(false);
   const [publishSlugAdjusted, setPublishSlugAdjusted] = useState(false);
   const [publishRequestedSlug, setPublishRequestedSlug] = useState<string | undefined>();
+  const { theme, setTheme } = useTheme();
   const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
@@ -387,7 +392,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   };
 
   return (
-    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pt-6 pb-[calc(var(--editor-bottom-bar-h)+env(safe-area-inset-bottom)+2rem)] md:pt-10 md:pb-28 lg:pb-28">
+    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pt-4 pb-[calc(var(--editor-bottom-bar-h)+env(safe-area-inset-bottom)+2rem)] md:pt-8 md:pb-28 lg:pb-28">
       <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-4 md:flex-row md:items-end md:justify-between">
         <div className="space-y-3">
           <Link
@@ -405,7 +410,31 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() =>
+              update((current) => ({
+                ...current,
+                typography: {
+                  scale: current.typography?.scale === "large" ? "default" : "large",
+                },
+              }))
+            }
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-champagne-gold/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-champagne-gold transition hover:bg-champagne-gold/10"
+            aria-pressed={draft.typography?.scale === "large"}
+          >
+            <Type size={14} />
+            {draft.typography?.scale === "large" ? "Large text" : "Text size"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-champagne-gold/20 text-champagne-gold transition hover:bg-champagne-gold/10"
+            aria-label="Toggle app theme"
+          >
+            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
           <span className="inline-flex items-center gap-2 rounded-full border border-champagne-gold/15 px-4 py-2 text-xs text-on-surface-variant">
             {saveState === "saving" && <Loader2 size={14} className="animate-spin text-champagne-gold" />}
             {saveState === "saved" && <Check size={14} className="text-champagne-gold" />}
@@ -417,9 +446,13 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             type="button"
             onClick={() => void publish()}
             disabled={isPublishing}
-            className="hidden items-center justify-center gap-2 rounded-full gold-gradient px-5 py-3 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60 lg:inline-flex"
+            className="hidden items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_0_24px_rgba(16,185,129,0.35)] transition hover:bg-emerald-500 active:scale-95 disabled:pointer-events-none disabled:opacity-60 lg:inline-flex"
           >
-            {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
+            {isPublishing ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <PartyPopper size={15} />
+            )}
             {draft.status === "published" ? "Republish" : "Publish"}
           </button>
 
@@ -628,9 +661,13 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               type="button"
               onClick={() => void publish()}
               disabled={isPublishing}
-              className="inline-flex min-h-11 flex-[1.4] items-center justify-center gap-2 rounded-full gold-gradient px-4 text-xs font-semibold uppercase tracking-[0.14em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
+              className="inline-flex min-h-11 flex-[1.4] items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_0_20px_rgba(16,185,129,0.35)] transition hover:bg-emerald-500 active:scale-95 disabled:pointer-events-none disabled:opacity-60"
             >
-              {isPublishing ? <Loader2 size={15} className="animate-spin" /> : <Globe2 size={15} />}
+              {isPublishing ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <PartyPopper size={15} />
+              )}
               {draft.status === "published" ? "Republish" : "Publish"}
             </button>
           ) : (

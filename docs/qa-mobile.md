@@ -19,7 +19,8 @@ invitation change. Mobile is the primary experience.
 | `/dashboard` | Invitation cards fit one column; publish/copy actions remain reachable. |
 | `/dashboard/invitations/[id]/edit` | Step navigation is thumb-friendly; keyboard does not hide active inputs; autosave badge remains visible. |
 | `/preview/royal` | Demo loads quickly; no editor chrome; motion does not block scroll. |
-| `/w/[slug]` | Hero LCP is acceptable; curtain intro can be dismissed; scratch reveal works with touch; WhatsApp CTA opens. |
+| `/w/[slug]` | Hero LCP is acceptable; curtain intro can be dismissed; tap-to-reveal date works; WhatsApp CTA opens. |
+| `/login`, `/signup` | No extra top gap; duplicate-email message is clear; Google sign-in works on production. |
 
 ## Public Invitation Performance
 
@@ -32,20 +33,27 @@ invitation change. Mobile is the primary experience.
 
 ## Image Upload Guidance
 
-- [ ] Hero/background images: compressed, landscape, under 8 MB.
-- [ ] Couple portraits: square or portrait crop, under 8 MB.
-- [ ] Gallery: compressed WebP/JPEG, meaningful alt/caption where possible.
-- [ ] Music: MP3/M4A, under 12 MB.
-- [ ] Cloudinary upload preset limits file size and formats.
+- [ ] Hero background: crop 9:16 in upload widget; under 8 MB.
+- [ ] Couple portraits: 1:1 crop in widget; under 8 MB.
+- [ ] Gallery: 4:5 crop; max 12 photos; under 8 MB each.
+- [ ] Music: MP3/M4A, under 12 MB (export from phone if upload fails).
+- [ ] Cloudinary unsigned preset allows **cropping** and size limits.
+- [ ] On mobile: tap Upload → **Photos** or **Files** (system picker).
+
+## Production share test
+
+After publish, share `https://wed-pro.vercel.app/w/your-slug` in WhatsApp (not localhost).
+Set `NEXT_PUBLIC_SITE_URL=https://wed-pro.vercel.app` on Vercel.
 
 ## Commands
 
 ```bash
 npm run lint
 npm run build
-npx playwright install chromium
 npm run test:e2e -- --project=mobile-chrome
 ```
+
+*(Note: Run the existing E2E suite to guarantee no regressions are introduced in existing templates or flows. You do not need to add any new visual screenshot baseline tests for new templates; writing new visual tests is deferred.)*
 
 Optional local Lighthouse check after running `npm run build && npm run start`:
 

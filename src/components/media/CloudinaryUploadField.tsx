@@ -125,6 +125,8 @@ export function CloudinaryUploadField({
                       cropping: true,
                       croppingAspectRatio,
                       croppingDefaultSelectionRatio: 1,
+                      showSkipCropButton: false,
+                      croppingShowDimensions: true,
                     }
                   : {}),
               }}
@@ -136,9 +138,17 @@ export function CloudinaryUploadField({
                   onChange(secureUrl);
                 }
               }}
-              onError={() =>
-                setError(isAudio ? "Upload failed. Please try again." : "Upload failed. Please try again.")
-              }
+              onError={(err) => {
+                const message =
+                  typeof err === "object" && err !== null && "status" in err
+                    ? `Upload failed (${String((err as { status?: string }).status)}).`
+                    : "Upload failed.";
+                setError(
+                  isAudio
+                    ? `${message} Use MP3 or M4A under 12 MB.`
+                    : `${message} Use JPG, PNG, or WebP under 8 MB.`
+                );
+              }}
             >
               {({ open, isLoading }) => (
                 <button

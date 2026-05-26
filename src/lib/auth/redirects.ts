@@ -43,3 +43,11 @@ export function buildLoginUrl(next?: string | null): string {
   }
   return `/login?next=${encodeURIComponent(safe)}`;
 }
+
+export function buildSignupUrl(next?: string | null): string {
+  const safe = safeNextPath(next, "/dashboard");
+  if (safe === "/dashboard") {
+    return "/signup";
+  }
+  return `/signup?next=${encodeURIComponent(safe)}`;
+}

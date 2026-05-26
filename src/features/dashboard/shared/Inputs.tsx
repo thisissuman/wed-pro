@@ -4,7 +4,7 @@ import { Check, ChevronDown } from "lucide-react";
 import type { ChangeEvent } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { sanitizePlainText } from "@/lib/sanitize-text";
+import { sanitizePlainText, trimPlainTextField } from "@/lib/sanitize-text";
 
 interface TextInputProps {
   label: string;
@@ -39,6 +39,9 @@ export function TextInput({
         placeholder={placeholder}
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           onChange(sanitizePlainText(event.target.value))
+        }
+        onBlur={(event: ChangeEvent<HTMLInputElement>) =>
+          onChange(trimPlainTextField(event.target.value))
         }
         aria-invalid={Boolean(error)}
         className={cn(
@@ -90,6 +93,9 @@ export function TextArea({
         placeholder={placeholder}
         onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
           onChange(sanitizePlainText(event.target.value))
+        }
+        onBlur={(event: ChangeEvent<HTMLTextAreaElement>) =>
+          onChange(trimPlainTextField(event.target.value))
         }
         aria-invalid={Boolean(error)}
         className={cn(

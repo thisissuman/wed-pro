@@ -15,7 +15,9 @@ export function buildInvitationShareMetadata(invitation: WeddingData): Metadata 
     invitation.seo.ogImage?.trim() ||
     invitation.seo.whatsappPreviewImage?.trim() ||
     invitation.hero.backgroundMedia?.trim();
-  const imageUrl = toAbsoluteUrl(shareImage, siteUrl);
+  const imageUrl = shareImage?.startsWith("http")
+    ? shareImage
+    : toAbsoluteUrl(shareImage, siteUrl);
 
   return {
     metadataBase: new URL(siteUrl),

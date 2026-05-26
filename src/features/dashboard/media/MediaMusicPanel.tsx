@@ -16,7 +16,9 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
         label="Hero Background Image"
         value={draft.hero.backgroundMedia ?? ""}
         folder={`wed-pro/${draft.id}/hero`}
-        helperText="Use a compressed landscape image under 8 MB. Cloudinary will deliver optimized sizes for mobile guests."
+        cropping
+        croppingAspectRatio={9 / 16}
+        helperText="Crop for full-screen mobile (9:16). JPG or WebP under 8 MB. On mobile, tap Upload → Photos or Files."
         onChange={(value) =>
           update((current) => ({
             ...current,
@@ -32,7 +34,8 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
           folder={`wed-pro/${draft.id}/music`}
           resourceType="video"
           uploadLabel={draft.music.url ? "Replace music" : "Upload music"}
-          helperText="MP3 or M4A under 12 MB. Guests tap play — most mobile browsers block autoplay."
+          clientAllowedFormats={["mp3", "m4a", "wav", "aac", "ogg", "mpeg"]}
+          helperText="MP3 or M4A under 12 MB. If upload fails, export as MP3 from your music app. Guests tap play on mobile."
           onChange={(value) =>
             update((current) => ({
               ...current,

@@ -102,6 +102,13 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
           This is what guests usually see when you paste your invite link in WhatsApp or Instagram.
           Publish first, then share the public URL.
         </p>
+        {(siteUrl.includes("localhost") || siteUrl.includes("127.0.0.1")) && (
+          <p className="mt-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-[11px] leading-relaxed text-amber-100/90">
+            WhatsApp cannot load previews from localhost. Set{" "}
+            <code className="text-champagne-gold">NEXT_PUBLIC_SITE_URL</code> to your production URL
+            (e.g. https://wed-pro.vercel.app), publish, then test the share link again.
+          </p>
+        )}
 
         <div className="mt-4 overflow-hidden rounded-xl border border-champagne-gold/15 bg-charcoal-black/60">
           {isValidDisplayUrl(previewImage) ? (

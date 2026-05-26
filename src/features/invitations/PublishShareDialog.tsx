@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Check, Copy, ExternalLink, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { AlertTriangle, Check, Copy, ExternalLink, PartyPopper, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import {
   buildInvitationSlug,
@@ -110,10 +111,22 @@ function PublishShareDialogContent({
           <X size={16} />
         </button>
 
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold/70">
-          Your invitation is live
-        </p>
-        <h2 className="mt-2 font-heading text-2xl text-ivory">Share your link</h2>
+        <motion.div
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 320, damping: 22 }}
+          className="mb-4 flex items-center gap-3"
+        >
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+            <PartyPopper size={22} aria-hidden />
+          </span>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400/90">
+              Published
+            </p>
+            <h2 className="font-heading text-2xl text-ivory">Share your link</h2>
+          </div>
+        </motion.div>
         <p className="mt-2 text-sm leading-relaxed text-on-surface-variant/80">
           Your link uses the groom and bride names. Edit only the names below to update the URL
           before your next publish.

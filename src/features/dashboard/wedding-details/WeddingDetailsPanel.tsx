@@ -23,8 +23,8 @@ function SectionDivider({ title, description }: { title: string; description?: s
 }
 
 const parentDisplayOptions: { value: ParentDisplayOrder; label: string }[] = [
-  { value: "groom-first", label: "Groom's family first" },
-  { value: "bride-first", label: "Bride's family first" },
+  { value: "groom-first", label: "Groom's name first everywhere" },
+  { value: "bride-first", label: "Bride's name first everywhere" },
 ];
 
 function getParentLine(

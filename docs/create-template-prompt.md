@@ -30,9 +30,9 @@ Rules:
 - Register once in src/templates/registry.ts; /template gallery auto-wires.
 - Mirror RoyalTemplate: TemplateThemeProvider, withEssentialSections, visibility flags, MusicPlayer.
 - Use next/image + sizes, safe media URL checks, transform/opacity motion, and prefers-reduced-motion.
-- Add a Playwright visual snapshot for /preview/<template-id>.
+- (No new visual tests or baseline snapshots are required for new templates).
 
-Branch: feat/<template-id>-template. Run lint, build, and test:e2e --project=mobile-chrome when done.
+Branch: feat/<template-id>-template. Run lint, build, and test:e2e --project=mobile-chrome when done to verify existing flows.
 ```
 
 ## Design Intake
@@ -168,29 +168,7 @@ from the registry.
 
 ## Visual Regression
 
-Add one test in `tests/e2e/visual-regression.spec.ts`:
-
-```ts
-test("floral noor preview matches baseline", async ({ page }) => {
-  await page.goto("/preview/floral-noor");
-  await settleInvitationPreview(page);
-  // Use viewport screenshots for long invitation pages (fullPage height differs on CI).
-  await expect(page).toHaveScreenshot("preview-floral-noor.png");
-});
-```
-
-Regenerate baselines with a production build (same as GitHub Actions):
-
-```bash
-npm run build
-CI=true npm run test:e2e -- --project=mobile-chrome tests/e2e/visual-regression.spec.ts --update-snapshots
-```
-
-Create the baseline once:
-
-```bash
-npm run test:e2e -- --project=mobile-chrome tests/e2e/visual-regression.spec.ts --update-snapshots
-```
+*(Note: You do not need to add any new visual regression tests or baseline snapshots for your new templates. However, the existing Playwright E2E suite must always be run and pass to ensure existing templates/features remain fully functional.)*
 
 ## Verification
 
@@ -211,4 +189,4 @@ template to users.
 - Required preview ids are present.
 - No template file imports database, auth, payments, dashboard state, or Zustand.
 - All user-provided media uses safe URL checks before rendering.
-- Visual snapshot baseline is committed.
+- The existing E2E test suite runs and passes successfully (no new tests need to be added).

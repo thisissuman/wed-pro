@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { firstName, getOrderedCoupleMembers } from "@/lib/couple-order";
 import type { ThankYouData, CoupleData } from "@/types/wedding.types";
 
 interface ThankYouSectionProps {
@@ -14,6 +15,8 @@ interface ThankYouSectionProps {
  * Emotional closure with couple names and gratitude message.
  */
 export function ThankYouSection({ thankYou, couple }: ThankYouSectionProps) {
+  const [nameFirst, nameSecond] = getOrderedCoupleMembers(couple, couple.family);
+
   return (
     <section className="px-6 py-20 md:py-28">
       <motion.div
@@ -40,8 +43,7 @@ export function ThankYouSection({ thankYou, couple }: ThankYouSectionProps) {
           className="space-y-1"
         >
           <p className="font-[family-name:var(--font-heading)] text-2xl md:text-3xl text-champagne-gold font-semibold">
-            {couple.groom.name.split(" ")[0]} &amp;{" "}
-            {couple.bride.name.split(" ")[0]}
+            {firstName(nameFirst.person.name)} &amp; {firstName(nameSecond.person.name)}
           </p>
           <p className="font-[family-name:var(--font-body)] text-[10px] uppercase tracking-[0.3em] text-champagne-gold/50">
             With Love

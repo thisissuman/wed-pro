@@ -5,6 +5,7 @@ import type {
   InvitationStatus,
   RSVPData,
   StoryMilestone,
+  EventType,
   WeddingData,
   WeddingEvent,
 } from "@/types/wedding.types";
@@ -151,11 +152,29 @@ export function createGalleryImage(order: number): GalleryImage {
   };
 }
 
-export function createDefaultWeddingEvent(date: string): WeddingEvent {
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  mehendi: "Mehendi",
+  haldi: "Haldi",
+  sangeet: "Sangeet",
+  wedding: "Wedding Ceremony",
+  reception: "Reception",
+  other: "Celebration",
+};
+
+export const DEFAULT_EVENT_TITLES = new Set(Object.values(EVENT_TYPE_LABELS));
+
+export function getDefaultEventTitle(type: EventType): string {
+  return EVENT_TYPE_LABELS[type];
+}
+
+export function createDefaultWeddingEvent(
+  date: string,
+  type: EventType = "wedding"
+): WeddingEvent {
   return {
     id: generateId("event"),
-    title: "Wedding Ceremony",
-    type: "wedding",
+    title: getDefaultEventTitle(type),
+    type,
     description: "Join us for the sacred wedding ceremony and blessings.",
     date,
     time: "7:00 PM",

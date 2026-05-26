@@ -37,10 +37,11 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
     <TemplateThemeProvider
       defaultTheme={royalTheme}
       theme={data.theme}
+      typographyScale={data.typography?.scale ?? "default"}
       className="relative min-h-screen bg-[var(--template-background)] text-[var(--template-text)] selection:bg-champagne-gold/30 overflow-x-hidden"
     >
       <CinematicIntro slug={data.slug} isPreview={isPreview} />
-      <SparkleOverlay />
+      <SparkleOverlay embedded={isPreview} />
       {/* 1. Hero — Emotional anchor with couple names and date */}
       {sections.showHero !== false && (
         <HeroSection
@@ -97,7 +98,7 @@ export function RoyalTemplate({ data, isPreview }: TemplateProps) {
       )}
 
       {/* Floating music player (tap-to-play) */}
-      <MusicPlayer music={data.music} />
+      <MusicPlayer music={data.music} embedded={isPreview} />
     </TemplateThemeProvider>
   );
 }

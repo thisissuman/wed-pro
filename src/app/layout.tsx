@@ -3,6 +3,7 @@ import { Playfair_Display, Inter, Noto_Sans_Devanagari } from "next/font/google"
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AppToaster } from "@/components/providers/AppToaster";
+import { ChromeBodyClass } from "@/components/layout/ChromeBodyClass";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -60,6 +61,7 @@ export default function RootLayout({
       <body className="min-h-dvh antialiased">
         <ThemeProvider>
           <AuthProvider>
+            <ChromeBodyClass />
             {children}
             <AppToaster />
           </AuthProvider>
