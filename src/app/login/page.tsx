@@ -63,9 +63,8 @@ function LoginPageInner() {
         }
 
         toast.success('Welcome back')
-        // Refresh server components so middleware sees the new session, then navigate.
-        router.refresh()
-        router.push(nextPath)
+        // Full navigation so proxy/middleware receive auth cookies on the next request.
+        window.location.assign(nextPath)
       } catch {
         setErrorMsg('An unexpected error occurred. Please try again.')
       }
