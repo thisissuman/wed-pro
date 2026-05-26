@@ -4,7 +4,8 @@
 # GitHub repo secrets (Settings → Secrets → Actions) — optional for build, required for auth E2E:
 #   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 #   NEXT_PUBLIC_SITE_URL (optional; defaults to http://127.0.0.1:3000)
-#   PLAYWRIGHT_TEST_EMAIL, PLAYWRIGHT_TEST_PASSWORD (optional; auth test skipped if unset)
+#   PLAYWRIGHT_TEST_EMAIL, PLAYWRIGHT_TEST_PASSWORD (optional; publish E2E skipped if unset)
+#   When all four secrets above are set, authenticated publish smoke runs against your real Supabase project.
 #
 # Build and unauthenticated smoke tests use harmless Supabase placeholders if
 # repo secrets are not set. Authenticated E2E still requires real secrets.

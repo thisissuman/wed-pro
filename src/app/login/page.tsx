@@ -63,6 +63,8 @@ function LoginPageInner() {
         }
 
         toast.success('Welcome back')
+        // Refresh server components so middleware sees the new session, then navigate.
+        router.refresh()
         router.push(nextPath)
       } catch {
         setErrorMsg('An unexpected error occurred. Please try again.')

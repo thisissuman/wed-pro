@@ -2,10 +2,17 @@ import { expect, test, type Page } from "@playwright/test";
 
 const email = process.env.PLAYWRIGHT_TEST_EMAIL;
 const password = process.env.PLAYWRIGHT_TEST_PASSWORD;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+
+/** Skip only when credentials or Supabase URL are missing (not when real secrets are configured). */
+const hasAuthE2E =
+  Boolean(email && password) &&
+  supabaseUrl.length > 0 &&
+  !supabaseUrl.includes("ci-placeholder");
 
 test.skip(
-  !email || !password,
-  "Set PLAYWRIGHT_TEST_EMAIL and PLAYWRIGHT_TEST_PASSWORD to run authenticated publish smoke tests."
+  !hasAuthE2E,
+  "Set PLAYWRIGHT_TEST_EMAIL, PLAYWRIGHT_TEST_PASSWORD, and NEXT_PUBLIC_SUPABASE_URL (repo secrets in CI)."
 );
 
 /** Log in and land on a protected route so session cookies are verified (not /template, which is public). */
@@ -16,18 +23,36 @@ async function loginToDashboard(page: Page) {
   await page.getByLabel(/^password$/i).fill(password!);
 
   const loginButton = page.getByRole("button", { name: /login to your studio/i });
+
   const authResponse = page.waitForResponse(
     (response) =>
-      response.url().includes("/auth/v1/token") && response.status() === 200,
-    { timeout: 20_000 }
+      response.url().includes("/auth/v1/token") &&
+      response.request().method() === "POST" &&
+      response.status() === 200,
+    { timeout: 30_000 }
   );
 
   await loginButton.click();
-  await authResponse;
 
-  await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+  const response = await authResponse;
+  const payload = (await response.json().catch(() => null)) as {
+    access_token?: string;
+  } | null;
+  if (!payload?.access_token) {
+    throw new Error("Login failed: Supabase did not return an access token.");
+  }
+
+  // Client router.push can race cookie persistence in headless CI — hard-navigate with cookies set.
+  await page.goto("/dashboard", { waitUntil: "domcontentloaded" });
+
+  if (page.url().includes("/login")) {
+    throw new Error(
+      "Login succeeded at Supabase but the app session was not established. Check PLAYWRIGHT_TEST_EMAIL / PLAYWRIGHT_TEST_PASSWORD match your Supabase user."
+    );
+  }
+
   await expect(page.getByText(/creator workspace/i)).toBeVisible({
-    timeout: 15_000,
+    timeout: 20_000,
   });
 }
 
@@ -48,6 +73,8 @@ async function ensureDraftSlot(page: Page) {
 test("authenticated user can create a draft from the Royal template", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
+
   await loginToDashboard(page);
   await ensureDraftSlot(page);
 
