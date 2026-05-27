@@ -18,6 +18,7 @@ export function resolveMusicPlayback(music: MusicData): MusicData {
     ...music,
     url: DEFAULT_WEDDING_MUSIC_URL,
     title: music.title?.trim() || DEFAULT_WEDDING_MUSIC_TITLE,
-    autoplay: music.autoplay ?? false,
+    // Default fallback track should always start automatically (muted by player logic).
+    autoplay: true,
   };
 }

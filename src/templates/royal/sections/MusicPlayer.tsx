@@ -18,10 +18,6 @@ function isLikelyAudioUrl(url: string): boolean {
   }
 }
 
-function previewPlayKey(invitationId: string, url: string) {
-  return `wed-pro-music-preview:${invitationId}:${url}`;
-}
-
 interface MusicPlayerProps extends MusicPlayerContract {
   embedded?: boolean;
   invitationId?: string;
@@ -94,17 +90,12 @@ function MusicPlayerInner({
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (embedded && invitationId) {
-      const key = previewPlayKey(invitationId, music.url);
-      if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(key)) {
-        syncPlayingState();
-        return;
-      }
+    // Preview should also autoplay consistently on load (muted for browser policy).
+    if (embedded) {
       audio.muted = true;
       void audio
         .play()
         .then(() => {
-          sessionStorage.setItem(key, "1");
           syncPlayingState();
         })
         .catch(() => {
