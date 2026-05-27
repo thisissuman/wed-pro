@@ -72,7 +72,7 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
       />
 
       <p className="text-[11px] leading-relaxed text-on-surface-variant/60">
-        After you upload music, open Live Preview — it plays once quietly so you can check the track. Guests tap the button to play on their phone.
+        If you skip upload, guests hear our default piano track (Pehla Nasha). After you upload your own, open Live Preview — it plays once quietly so you can check. Guests tap the button to play on their phone.
       </p>
     </>
   );

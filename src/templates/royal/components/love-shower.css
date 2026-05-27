@@ -1,0 +1,106 @@
+/* GPU-only falling hearts — background layer only (pointer-events: none). */
+
+.love-shower-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  background: transparent;
+}
+
+.love-shower-bg.love-shower-embedded {
+  position: absolute;
+}
+
+.love-shower-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.love-shower-bg .heart-container {
+  position: absolute;
+  top: -60px;
+  left: var(--left, 50%);
+  width: clamp(18px, 5vw, 28px);
+  height: clamp(18px, 5vw, 28px);
+  transform: translateY(-50px);
+  will-change: transform;
+  animation: love-shower-fall calc(var(--speed, 12s) + 6s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: 0;
+}
+
+.love-shower-bg .heart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: var(--opacity, 0.75);
+  will-change: transform, opacity;
+  animation: love-shower-sway calc(var(--sway-speed, 3s) + 0.8s) ease-in-out infinite alternate;
+}
+
+@keyframes love-shower-fall {
+  0% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(100vh + 60px));
+    opacity: 0;
+  }
+}
+
+@keyframes love-shower-sway {
+  0% {
+    transform: translateX(calc(-1 * var(--sway-amount, 20px))) rotate(-15deg)
+      scale(var(--scale, 0.8));
+  }
+  100% {
+    transform: translateX(var(--sway-amount, 20px)) rotate(15deg)
+      scale(calc(var(--scale, 0.8) * 1.12));
+  }
+}
+
+/* Mobile: fewer particles */
+@media (max-width: 767px) {
+  .love-shower-bg.density-adaptive .heart-container:nth-child(n + 9) {
+    display: none !important;
+  }
+
+  .love-shower-bg .heart-container {
+    opacity: var(--opacity, 0.55);
+  }
+}
+
+/* Tablet: medium density */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .love-shower-bg.density-adaptive .heart-container:nth-child(n + 15) {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .love-shower-bg .heart-container {
+    animation: none !important;
+    top: auto !important;
+    bottom: calc(var(--left, 40%) * 0.85);
+    transform: translateY(0) scale(var(--scale, 0.75)) !important;
+    opacity: 0.22 !important;
+  }
+
+  .love-shower-bg .heart-svg {
+    animation: none !important;
+    transform: none !important;
+  }
+}

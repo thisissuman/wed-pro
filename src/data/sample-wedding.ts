@@ -247,7 +247,7 @@ export const sampleWeddingData: WeddingData = {
   /* ── Music ── */
   music: {
     autoplay: false,
-    title: "Tum Hi Ho — Arijit Singh",
+    title: "Pehla Nasha — Piano (Intro)",
   },
 
   weddingHashtag: "#RahulAnanyaWedding",

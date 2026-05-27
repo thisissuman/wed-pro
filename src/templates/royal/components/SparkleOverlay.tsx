@@ -11,7 +11,7 @@ interface SparkleOverlayProps {
 export function SparkleOverlay({ embedded = false }: SparkleOverlayProps) {
   return (
     <div
-      className={`pointer-events-none inset-0 z-[2] overflow-hidden opacity-40 ${
+      className={`pointer-events-none inset-0 z-[1] overflow-hidden opacity-30 ${
         embedded ? "absolute" : "fixed"
       }`}
       aria-hidden="true"
