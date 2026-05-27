@@ -14,7 +14,9 @@ import { RSVPSection } from "./sections/RSVPSection";
 import { ThankYouSection } from "./sections/ThankYouSection";
 import { MusicPlayer } from "./sections/MusicPlayer";
 import { CinematicIntro } from "./components/CinematicIntro";
+import { LoveShowerBackground } from "./components/LoveShowerBackground";
 import { SparkleOverlay } from "./components/SparkleOverlay";
+import { resolveMusicPlayback } from "@/lib/default-music";
 import { TemplateThemeProvider } from "../shared/theme/ThemeProvider";
 import { royalTheme } from "./theme";
 
@@ -32,6 +34,7 @@ import { royalTheme } from "./theme";
  */
 export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: TemplateProps) {
   const sections = withEssentialSections(data.sections);
+  const music = resolveMusicPlayback(data.music);
 
   return (
     <TemplateThemeProvider
@@ -40,8 +43,10 @@ export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: Template
       typographyScale={data.typography?.scale ?? "default"}
       className="relative min-h-screen bg-[var(--template-background)] text-[var(--template-text)] selection:bg-champagne-gold/30 overflow-x-hidden"
     >
+      <LoveShowerBackground embedded={isPreview} />
       <CinematicIntro slug={data.slug} isPreview={isPreview} />
       <SparkleOverlay embedded={isPreview} />
+      <div className="relative z-[2]">
       {/* 1. Hero — Emotional anchor with couple names and date */}
       {sections.showHero !== false && (
         <HeroSection
@@ -96,10 +101,11 @@ export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: Template
       {sections.showThankYou !== false && (
         <ThankYouSection thankYou={data.thankYou} couple={data.couple} />
       )}
+      </div>
 
       {/* Floating music player (tap-to-play) */}
       <MusicPlayer
-        music={data.music}
+        music={music}
         embedded={isPreview}
         invitationId={data.id}
         suppressed={suppressMusicPlayer}

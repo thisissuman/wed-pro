@@ -7,7 +7,7 @@ import type { MusicPlayerContract } from "@/templates/shared/sections/types";
 
 function isLikelyAudioUrl(url: string): boolean {
   try {
-    const pathname = new URL(url).pathname.toLowerCase();
+    const pathname = new URL(url, "https://wed-pro.local").pathname.toLowerCase();
     return (
       /\.(mp3|wav|ogg|m4a|aac|flac|webm)(\?|$)/i.test(pathname) ||
       pathname.includes("/video/upload/") ||

@@ -160,21 +160,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           </motion.p>
         )}
 
-        {/* Scroll hint — desktop only */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 2 }}
-          className="mt-10 hidden md:block md:mt-12"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="w-5 h-8 rounded-full border border-[color-mix(in_srgb,var(--template-primary)_30%,transparent)] flex items-start justify-center pt-1.5"
-          >
-            <div className="w-1 h-1.5 rounded-full bg-[color-mix(in_srgb,var(--template-primary)_60%,transparent)]" />
-          </motion.div>
-        </motion.div>
+        {/* Scroll hint removed to keep preview and published experience identical. */}
       </div>
     </section>
   );
