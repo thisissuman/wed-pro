@@ -20,6 +20,7 @@ function isLikelyAudioUrl(url: string): boolean {
 
 interface MusicPlayerProps extends MusicPlayerContract {
   embedded?: boolean;
+  /** Retained for backward compatibility; no longer used directly. */
   invitationId?: string;
   /** Hide and stop playback (e.g. during publish / share dialog). */
   suppressed?: boolean;
@@ -28,13 +29,13 @@ interface MusicPlayerProps extends MusicPlayerContract {
 /**
  * Royal Template — Music Player
  *
- * Floating tap-to-play audio control. In editor preview, pins to the viewport
- * and attempts one muted play per new upload.
+ * Floating tap-to-play audio control. Public pages try unmuted autoplay first,
+ * then fall back to muted autoplay that unmutes on the first user interaction
+ * (tap / scroll / keypress) to satisfy browser autoplay policies.
  */
 function MusicPlayerInner({
   music,
   embedded = false,
-  invitationId,
   suppressed = false,
 }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -95,25 +96,72 @@ function MusicPlayerInner({
     const audio = audioRef.current;
     if (!audio) return;
 
-    // Preview should also autoplay consistently on load (muted for browser policy).
-    if (embedded) {
-      audio.muted = true;
-      void audio
-        .play()
-        .then(() => {
-          syncPlayingState();
-        })
-        .catch(() => {
-          setIsPlaying(false);
-        });
-      return;
-    }
+    let cancelled = false;
+    let cleanupInteraction: (() => void) | null = null;
 
-    if (music.autoplay) {
-      audio.muted = true;
-      void audio.play().then(syncPlayingState).catch(() => setIsPlaying(false));
-    }
-  }, [embedded, invitationId, music.autoplay, music.url, loadFailed, suppressed, syncPlayingState]);
+    const armUnmuteOnInteraction = () => {
+      const unmute = () => {
+        const a = audioRef.current;
+        if (!a) return;
+        a.muted = false;
+        if (a.paused) {
+          void a.play().catch(() => {});
+        }
+        cleanupInteraction?.();
+        cleanupInteraction = null;
+      };
+      const opts: AddEventListenerOptions = { once: true, capture: true };
+      window.addEventListener("pointerdown", unmute, opts);
+      window.addEventListener("keydown", unmute, opts);
+      window.addEventListener("touchstart", unmute, opts);
+      window.addEventListener("scroll", unmute, { ...opts, passive: true });
+      cleanupInteraction = () => {
+        window.removeEventListener("pointerdown", unmute, opts);
+        window.removeEventListener("keydown", unmute, opts);
+        window.removeEventListener("touchstart", unmute, opts);
+        window.removeEventListener("scroll", unmute, opts);
+      };
+    };
+
+    const tryAutoplay = async () => {
+      // Editor preview: keep it muted so it doesn't blast in dashboard.
+      if (embedded) {
+        try {
+          audio.muted = true;
+          await audio.play();
+          if (!cancelled) syncPlayingState();
+        } catch {
+          if (!cancelled) setIsPlaying(false);
+        }
+        return;
+      }
+
+      // Published / public: try unmuted first; fall back to muted + first-interaction unmute.
+      try {
+        audio.muted = false;
+        await audio.play();
+        if (!cancelled) syncPlayingState();
+      } catch {
+        if (cancelled) return;
+        try {
+          audio.muted = true;
+          await audio.play();
+          if (cancelled) return;
+          syncPlayingState();
+          armUnmuteOnInteraction();
+        } catch {
+          if (!cancelled) setIsPlaying(false);
+        }
+      }
+    };
+
+    void tryAutoplay();
+
+    return () => {
+      cancelled = true;
+      cleanupInteraction?.();
+    };
+  }, [embedded, music.url, loadFailed, suppressed, syncPlayingState]);
 
   if (suppressed || !music.url || loadFailed || !isLikelyAudioUrl(music.url)) return null;
 
