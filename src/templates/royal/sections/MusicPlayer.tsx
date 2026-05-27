@@ -45,7 +45,9 @@ function MusicPlayerInner({
   const syncPlayingState = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    setIsPlaying(!audio.paused && !audio.ended);
+    // UI "playing" only when actually audible — muted autoplay counts as "paused"
+    // so the icon shows Play and the first tap unmutes (audible) rather than confusing the user.
+    setIsPlaying(!audio.paused && !audio.ended && !audio.muted);
   }, []);
 
   useEffect(() => {
@@ -70,17 +72,20 @@ function MusicPlayerInner({
     const onPause = () => syncPlayingState();
     const onEnded = () => syncPlayingState();
     const onPlaying = () => syncPlayingState();
+    const onVolumeChange = () => syncPlayingState();
 
     audio.addEventListener("play", onPlay);
     audio.addEventListener("playing", onPlaying);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("ended", onEnded);
+    audio.addEventListener("volumechange", onVolumeChange);
 
     return () => {
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("playing", onPlaying);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("volumechange", onVolumeChange);
     };
   }, [music.url, syncPlayingState]);
 
