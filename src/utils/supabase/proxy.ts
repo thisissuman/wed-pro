@@ -37,6 +37,21 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  const code = request.nextUrl.searchParams.get("code");
+  const tokenHash = request.nextUrl.searchParams.get("token_hash");
+  const type = request.nextUrl.searchParams.get("type");
+
+  // Supabase falls back to Site URL (/) when redirectTo is not allow-listed.
+  // Forward auth params to the dedicated confirm handler before the page renders.
+  if (
+    pathname === "/" &&
+    (code || (tokenHash && type === "recovery"))
+  ) {
+    const confirmUrl = request.nextUrl.clone();
+    confirmUrl.pathname = "/auth/confirm";
+    return redirectWithRefreshedCookies(confirmUrl, supabaseResponse);
+  }
+
   const isProtected = pathname.startsWith("/dashboard");
 
   if (isProtected && !user) {

@@ -30,6 +30,14 @@ export function mapAuthErrorMessage(message: string): string {
     return "Please confirm your email using the link we sent, then sign in.";
   }
 
+  if (
+    lower.includes("rate limit") ||
+    lower.includes("rate_limit") ||
+    lower.includes("email rate limit")
+  ) {
+    return "Too many reset emails were sent. Please wait about an hour before trying again.";
+  }
+
   if (lower.includes("signup is disabled")) {
     return "New signups are temporarily unavailable. Please try again later.";
   }

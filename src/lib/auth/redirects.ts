@@ -36,6 +36,11 @@ export function buildOAuthCallbackUrl(origin: string, next: string): string {
   return url.toString();
 }
 
+/** Password reset emails should redirect to a fixed path (no query params) for Supabase allow lists. */
+export function buildPasswordResetRedirectUrl(origin: string): string {
+  return new URL("/auth/confirm", origin).toString();
+}
+
 export function buildLoginUrl(next?: string | null): string {
   const safe = safeNextPath(next, "/dashboard");
   if (safe === "/dashboard") {

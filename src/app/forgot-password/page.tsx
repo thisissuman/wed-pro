@@ -1,15 +1,30 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { Suspense, useState, useTransition } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2, Send } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { AuthBackground } from '@/components/auth/AuthBackground'
-import { buildOAuthCallbackUrl } from '@/lib/auth/redirects'
+import { buildPasswordResetRedirectUrl } from '@/lib/auth/redirects'
+import { mapAuthErrorMessage } from '@/lib/auth/messages'
 
 export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ForgotPasswordPageInner />
+    </Suspense>
+  )
+}
+
+function ForgotPasswordPageInner() {
+  const searchParams = useSearchParams()
+  const linkError =
+    searchParams.get('error') === 'expired'
+      ? 'That reset link is invalid or has expired. Request a new one below.'
+      : null
   const [email, setEmail] = useState('')
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(linkError)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -22,10 +37,10 @@ export default function ForgotPasswordPage() {
       try {
         const supabase = createClient()
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: buildOAuthCallbackUrl(window.location.origin, '/reset-password'),
+          redirectTo: buildPasswordResetRedirectUrl(window.location.origin),
         })
         if (error) {
-          setErrorMsg(error.message)
+          setErrorMsg(mapAuthErrorMessage(error.message))
           return
         }
         setSuccessMsg(

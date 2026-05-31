@@ -6,6 +6,10 @@ import { DigitalVsPhysical } from "@/features/dashboard/comparison/DigitalVsPhys
 import { TestimonialSection } from "@/features/dashboard/testimonials/TestimonialSection";
 import { FinalCTA } from "@/features/dashboard/cta/FinalCTA";
 import { CinematicFooter } from "@/features/dashboard/footer/CinematicFooter";
+
+/** Marketing homepage — safe to cache at the edge between deploys. */
+export const revalidate = 3600;
+
 export default function HomePage() {
   return (
     <DashboardShell>

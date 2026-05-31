@@ -10,6 +10,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useActiveSection } from "./ScrollTracker";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { usePreventSameRouteNav } from "@/hooks/usePreventSameRouteNav";
 
 const sectionLinks = [
   { label: "Features", id: "features" },
@@ -24,6 +25,7 @@ export function TopNavBar() {
   const pathname = usePathname();
   const activeSection = useActiveSection();
   const isHomepage = pathname === "/";
+  const preventSameRouteNav = usePreventSameRouteNav();
 
   useEffect(() => {
     if (!isDropdownOpen) return;
@@ -76,6 +78,8 @@ export function TopNavBar() {
       <div className="flex justify-between items-center px-[var(--spacing-container-margin)] py-3 md:py-4 w-full max-w-[1200px] mx-auto">
         <Link
           href="/"
+          onClick={(event) => preventSameRouteNav("/", event)}
+          prefetch={pathname !== "/"}
           className="font-[family-name:var(--font-heading)] text-champagne-gold tracking-widest font-semibold text-lg md:text-headline-md shrink-0"
         >
           Vivaha Studio
@@ -106,7 +110,8 @@ export function TopNavBar() {
 
           <Link
             href={user ? "/dashboard" : "/template"}
-            prefetch={user ? true : undefined}
+            prefetch={user ? pathname !== "/dashboard" : undefined}
+            onClick={(event) => user && preventSameRouteNav("/dashboard", event)}
             className={cn(
               "relative z-[1] inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-xs font-semibold uppercase tracking-wider hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 transition-all duration-200",
               user && "gemini-glow-btn"
@@ -153,7 +158,11 @@ export function TopNavBar() {
 
                   <Link
                     href="/dashboard"
-                    onClick={() => setIsDropdownOpen(false)}
+                    prefetch={pathname !== "/dashboard"}
+                    onClick={(event) => {
+                      preventSameRouteNav("/dashboard", event);
+                      setIsDropdownOpen(false);
+                    }}
                     className="flex items-center gap-2 w-full px-3 py-2.5 text-xs rounded-lg text-on-surface hover:bg-champagne-gold/10 transition-colors font-medium"
                   >
                     <LayoutDashboard size={14} />
