@@ -482,8 +482,10 @@ Use these when **you** want a checklist or commands before shipping, security re
 |------|----------|-------------|
 | [`docs/hardening-security.md`](../../docs/hardening-security.md) | Before open beta launch; after auth, RLS, publish, or upload changes | Walk the security checklist; run lint, build, E2E, `db:status` |
 | [`docs/qa-mobile.md`](../../docs/qa-mobile.md) | Before shipping editor/marketing/public-invite polish; after layout or image changes | Manual pass on 360px + real phone; same commands as below |
-| [`docs/create-template-prompt.md`](../../docs/create-template-prompt.md) | When you want Cursor to create a new sellable template from Figma, screenshots, or a brief | Fill the short master prompt; use it with the create-template skill |
-| [`docs/add-template.md`](../../docs/add-template.md) | When you add template #2 or #3 from your designs | Follow scaffold → theme → registry → preview wiring checklist |
+| [`docs/create-new-template.md`](../../docs/create-new-template.md) | **Start here** when adding template #2+ | Doc map, scalability (10 templates), post-polish notes |
+| [`master-prompt.html`](../../master-prompt.html) | Fresh Cursor chat for a new template | Copy the short master prompt block |
+| [`docs/create-template-prompt.md`](../../docs/create-template-prompt.md) | Design intake + full prompt text (markdown) | Fill spec fields; same prompt as `master-prompt.html` |
+| [`docs/add-template.md`](../../docs/add-template.md) | Implementation checklist | Scaffold → theme → registry → QA commands |
 
 **Typical command flow (most tasks):**
 
@@ -544,7 +546,7 @@ Skills are **procedures for the AI** when you ask for a specific kind of work. T
 
 | Skill | Use when you ask Cursor to… |
 |-------|-----------------------------|
-| [create-template/SKILL.md](../skills/create-template/SKILL.md) | Scaffold a new template, register it, wire preview; starts from `docs/create-template-prompt.md` |
+| [create-template/SKILL.md](../skills/create-template/SKILL.md) | Scaffold a new template, register it, wire preview; starts from `docs/create-new-template.md` |
 | [dashboard-section-pattern/SKILL.md](../skills/dashboard-section-pattern/SKILL.md) | Add or extend an editor step/panel |
 
 ## 5. Not documentation (ignore unless debugging tests)
@@ -560,7 +562,7 @@ Skills are **procedures for the AI** when you ask for a specific kind of work. T
 |-----------|------------|
 | “Is it safe to ship?” | `docs/hardening-security.md` |
 | “Does it feel good on phone?” | `docs/qa-mobile.md` |
-| “I’m adding a new template design” | `docs/create-template-prompt.md` + `docs/add-template.md` + `template-architecture.mdc` |
+| “I’m adding a new template design” | `docs/create-new-template.md` + `master-prompt.html` + `docs/add-template.md` + `template-architecture.mdc` + create-template skill |
 | “How does data live in Supabase?” | `supabase-db.md` |
 | “What’s the product allowed to do?” | This file (`project-context.mdc`) |
 | “How should the AI implement X?” | Relevant `.cursor/rules/*.mdc` + skills above |
@@ -580,7 +582,7 @@ Skills are **procedures for the AI** when you ask for a specific kind of work. T
 - **SEO runtime:** `generateMetadata` on public pages via `buildInvitationShareMetadata()`; absolute OG URLs via `NEXT_PUBLIC_SITE_URL`.
 - **Marketing:** Live Demo → `/preview/royal`; open **Free Beta** messaging with no checkout or payment gate.
 - **Testing & CI:** Playwright smoke tests under `tests/e2e/`, GitHub Actions CI, and `docs/hardening-security.md`.
-- **Template foundations:** Shared theme provider/tokens, motion presets, section contracts, `docs/create-template-prompt.md`, and `docs/add-template.md` for upcoming templates.
+- **Template foundations:** Registry + shared theme/motion/contracts; template workflow in `docs/create-new-template.md`, `master-prompt.html`, `docs/create-template-prompt.md`, `docs/add-template.md`, and create-template skill.
 - **Mobile QA:** `docs/qa-mobile.md` documents mobile, image, and public invite checks.
 - **Editor polish (May 2026):** Theme-aware editor tokens + `.light` overrides for real Android; in-app crop uploads (`CroppedImageUploadField`, `AudioUploadField`) for hero/couple/gallery/music; typography scale via `zoom` on `TemplateThemeProvider`; arrow reorder + layout animation (events, story, gallery); fixed embedded music toggle; royal Sonner toasts; `GlobalLovePointer` in root layout (desktop fine pointer only; auth card uses glass border, not shine border).
 

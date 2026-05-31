@@ -1,12 +1,8 @@
 # Add A New Template
 
-Use this checklist when adding sellable template designs from Figma, screenshots,
-or a written design brief. The goal is to add visual variety without changing
-editor, auth, publish, or public route logic.
+**Index:** [`docs/create-new-template.md`](./create-new-template.md) · **Prompt:** [`docs/create-template-prompt.md`](./create-template-prompt.md) · **Agent:** [`.cursor/skills/create-template/SKILL.md`](../.cursor/skills/create-template/SKILL.md)
 
-For the repeatable copy-paste workflow, start with
-`docs/create-template-prompt.md`. This file is the shorter implementation
-checklist.
+Implementation checklist for a new sellable design. Does **not** change editor, auth, publish, or `/w/[slug]` logic.
 
 ## 1. Scaffold
 
@@ -14,74 +10,65 @@ checklist.
 src/templates/<template-id>/
   <PascalTemplate>.tsx
   theme.ts
-  components/     # optional, template-specific interactions and ornaments
-  hooks/          # optional, template-specific hooks
+  components/     # optional — intros, ornaments, cinematic kit
+  hooks/          # optional — e.g. usePrefersReducedMotion (copy from royal or move to shared later)
   sections/
 ```
 
-Start from `src/templates/royal/` only where useful. Do not copy business logic
-or Supabase access into a template. Templates are presentation only.
+Reference: `src/templates/royal/`. No Supabase, auth, or Zustand in template files.
 
-## 2. Theme Tokens
+## 2. Root orchestrator
 
-- Create `<template-id>/theme.ts`.
-- Export `TemplateThemeTokens`.
-- Wrap the root template in `TemplateThemeProvider`.
-- Use `WeddingData.theme` only as an override layer; template defaults stay in
-  the template folder.
+Mirror [`RoyalTemplate.tsx`](../src/templates/royal/RoyalTemplate.tsx):
 
-## 3. Section Contracts
+- `TemplateThemeProvider` with `defaultTheme`, `theme={data.theme}`, `typographyScale={data.typography?.scale ?? "default"}`.
+- `withEssentialSections(data.sections)` and `sections.show*` visibility flags.
+- Pass `WeddingData` slices into each section; accept `isPreview` / `suppressMusicPlayer` on `TemplateProps`.
+- `MusicPlayer` with `music={resolveMusicPlayback(data.music)}` if you want default fallback audio (optional).
+- Cinematic `components/` only when the design spec requires them.
 
-Import shared contracts from `src/templates/shared/sections/types.ts`:
+## 3. Theme tokens
+
+- Export `TemplateThemeTokens` in `<template-id>/theme.ts`.
+- Prefer CSS variables (`var(--template-primary)`, etc.) over hard-coded palette in sections.
+
+## 4. Section contracts
 
 ```ts
 import type { HeroSectionContract } from "@/templates/shared/sections/types";
-```
-
-New templates can keep bespoke section components, but props should match the
-shared contracts so editor data stays stable.
-
-Mapped sections must also use ids from
-`src/templates/shared/sections/preview-ids.ts` so the editor live preview can
-scroll to the active section:
-
-```ts
 import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 ```
 
-Use the matching id on each section element, for example:
-
 ```tsx
-<section id={PREVIEW_SECTION_IDS.events}>...</section>
+<section id={PREVIEW_SECTION_IDS.events}>…</section>
 ```
 
-## 4. Motion
+Mapped ids: hero, couple, countdown, events, story, gallery, venue, rsvp.
 
-- Import reusable presets from `src/templates/shared/motion/presets.ts`.
-- Animate `transform` and `opacity` only on mobile.
-- Respect `prefers-reduced-motion`.
-- Keep cinematic interactions under 800ms unless there is a clear reason.
+## 5. Media and performance
 
-## 5. Registry & Routes
+- `isValidDisplayUrl()` before rendering couple/hero/gallery URLs.
+- `next/image` + accurate `sizes` on every photo.
+- Countdown: generic/`"--"` on server, update in `useEffect` (Royal `CountdownSection`).
+- Motion from `src/templates/shared/motion/presets.ts`; `transform`/`opacity` only on mobile.
+- `prefers-reduced-motion` for any cinematic interaction.
 
-- Add the template to `src/templates/registry.ts`.
-- Do **not** add separate card data to `src/data/templates.ts`; the template
-  gallery is derived from the registry.
-- Verify `/preview/<template-id>`.
-- Verify `/template` preview/select buttons.
-- Verify editor preview still renders with `TemplateRenderer`.
+## 6. Registry and routes
 
-## 6. Mobile QA
+- One entry in [`src/templates/registry.ts`](../src/templates/registry.ts).
+- Do **not** add a second list in `src/data/templates.ts`.
+- Verify:
+  - `/preview/<template-id>`
+  - `/template` preview + select
+  - Editor live preview via `TemplateRenderer`
 
-Run the checklist in `docs/qa-mobile.md` before considering the template done.
-Minimum checks:
+## 7. Mobile QA
 
-- 360px viewport.
-- Real Android.
-- iPhone Safari.
-- Public `/w/[slug]` after publish.
+[`docs/qa-mobile.md`](./qa-mobile.md) — use your `template-id` instead of `royal` in route rows.
 
-## 7. Commands
+Minimum: 360px viewport, real Android, iPhone Safari, published `/w/[slug]` WhatsApp share test.
+
+## 8. Commands
 
 ```bash
 npm run lint
@@ -89,14 +76,12 @@ npm run build
 npm run test:e2e -- --project=mobile-chrome
 ```
 
-*(Note: Run the existing Playwright E2E suite to guarantee no regressions are introduced in existing templates or flows. You do not need to add any new test files or visual baseline snapshots for your new templates.)*
+No new visual screenshot tests. Existing smoke (`tests/e2e/free-beta.spec.ts`) must pass.
 
-## Done When
+## Done when
 
-- The template renders complete `WeddingData` without crashes.
-- The template is previewable via `/preview/<template-id>`.
-- It can be selected from `/template`.
-- No database, auth, payment, or Zustand imports exist inside template files.
-- Images use `next/image` with accurate `sizes`.
-- Required preview ids are present for the editor scroll map.
-- The existing E2E test suite runs and passes (no new tests are required).
+- Full `WeddingData` renders without crashes.
+- Registry + preview routes work.
+- Preview ids wired for editor scroll.
+- No DB/auth/payment/Zustand imports under `src/templates/`.
+- E2E + mobile QA complete.

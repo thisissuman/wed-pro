@@ -18,7 +18,7 @@ invitation change. Mobile is the primary experience.
 | `/template` | Template card preview/select buttons are easy to tap; draft-limit dialog does not clip. |
 | `/dashboard` | Invitation cards fit one column; publish/copy actions remain reachable. |
 | `/dashboard/invitations/[id]/edit` | Step navigation is thumb-friendly; keyboard does not hide active inputs; autosave badge remains visible. |
-| `/preview/royal` | Demo loads quickly; no editor chrome; motion does not block scroll. |
+| `/preview/<template-id>` | Demo loads quickly; no editor chrome; motion does not block scroll (default: `royal`). |
 | `/w/[slug]` | Hero LCP is acceptable; curtain intro can be dismissed; tap-to-reveal date works; WhatsApp CTA opens. |
 | `/login`, `/signup` | No extra top gap; duplicate-email message is clear; Google sign-in works on production. |
 
@@ -73,7 +73,7 @@ npm run test:e2e -- --project=mobile-chrome
 Optional local Lighthouse check after running `npm run build && npm run start`:
 
 ```bash
-npx lighthouse http://127.0.0.1:3000/preview/royal --preset=desktop
+npx lighthouse http://127.0.0.1:3000/preview/<template-id> --preset=desktop
 ```
 
 For real public invite testing, use a published `/w/[slug]` URL and share it into
