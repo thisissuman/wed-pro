@@ -281,6 +281,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
       toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
     }
 
+    skipAutosave.current = true;
     replaceDraft({
       ...result.content,
       meta: {
@@ -307,6 +308,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
       return;
     }
 
+    skipAutosave.current = true;
     replaceDraft({
       ...result.content,
       meta: {

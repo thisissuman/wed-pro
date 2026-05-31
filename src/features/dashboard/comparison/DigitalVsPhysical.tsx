@@ -130,37 +130,6 @@ export function DigitalVsPhysical() {
           </div>
         </div>
       </motion.div>
-
-      {/* Call to Action */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-        className="mt-20 text-center space-y-8 max-w-lg"
-      >
-        <h2 className="font-[family-name:var(--font-heading)] text-headline-lg-mobile md:text-headline-lg text-ivory font-semibold">
-          Ready to create magic?
-        </h2>
-        <button
-          type="button"
-          onClick={() => setCalculatorOpen(true)}
-          className="group relative inline-flex items-center justify-center px-8 py-4 rounded-full bg-gradient-to-r from-champagne-gold to-rose-gold text-charcoal-black font-[family-name:var(--font-body)] text-sm font-bold uppercase tracking-widest shadow-[0_0_40px_rgba(212,175,55,0.4)] hover:shadow-[0_0_60px_rgba(212,175,55,0.6)] transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <span className="relative z-10">Start Designing Now</span>
-          <ArrowRight
-            size={18}
-            strokeWidth={2.5}
-            className="ml-2 relative z-10 transition-transform group-hover:translate-x-1"
-          />
-          <div className="absolute inset-0 rounded-full border-2 border-white/20 mix-blend-overlay pointer-events-none" />
-        </button>
-      </motion.div>
-
-      <SavingsCalculatorSheet
-        open={calculatorOpen}
-        onClose={() => setCalculatorOpen(false)}
-      />
     </section>
   );
 }

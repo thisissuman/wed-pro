@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter, Noto_Sans_Devanagari, Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { AuthRecoveryHandler } from "@/components/auth/AuthRecoveryHandler";
 import { AppToaster } from "@/components/providers/AppToaster";
 import { GlobalLovePointer } from "@/components/magic-ui/global-love-pointer";
 import { ChromeBodyClass } from "@/components/layout/ChromeBodyClass";
@@ -63,8 +64,15 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
       <body className="min-h-dvh antialiased">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){var h=location.hash,p=location.pathname;if(h.indexOf('type=recovery')>-1&&p!=='/reset-password'){location.replace('/reset-password'+h);}})();",
+          }}
+        />
         <ThemeProvider>
           <AuthProvider>
+            <AuthRecoveryHandler />
             <ChromeBodyClass />
             <GlobalLovePointer />
             {children}

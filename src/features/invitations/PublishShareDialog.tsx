@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AlertTriangle, Check, Copy, ExternalLink, PartyPopper, X } from "lucide-react";
@@ -57,6 +57,8 @@ function PublishShareDialogContent({
   const [brideName, setBrideName] = useState(draft.couple.bride.name);
   const [copied, setCopied] = useState(false);
   const [slugConflict, setSlugConflict] = useState(false);
+  const initialGroomName = useRef(draft.couple.groom.name);
+  const initialBrideName = useRef(draft.couple.bride.name);
 
   const slug = draft.slug;
   const sharePath = getPublicInvitationPath(slug);
@@ -67,6 +69,13 @@ function PublishShareDialogContent({
   }, []);
 
   useEffect(() => {
+    const namesUnchanged =
+      groomName === initialGroomName.current && brideName === initialBrideName.current;
+    if (namesUnchanged) {
+      setSlugConflict(false);
+      return;
+    }
+
     const candidate = buildInvitationSlug(groomName, brideName) || slug;
     const timeout = window.setTimeout(() => {
       if (!candidate) {

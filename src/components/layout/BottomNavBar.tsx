@@ -9,6 +9,7 @@ import Link from "next/link";
 import { toast } from "@/lib/toast";
 import { useActiveSection } from "./ScrollTracker";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { usePreventSameRouteNav } from "@/hooks/usePreventSameRouteNav";
 
 const navItems = [
   { label: "Features", icon: Sparkles, sectionId: "features" },
@@ -24,6 +25,7 @@ export function BottomNavBar() {
   const activeSection = useActiveSection();
   const isHomepage = pathname === "/";
   const isAuthenticated = status === "authenticated" && Boolean(user);
+  const preventSameRouteNav = usePreventSameRouteNav();
 
   useEffect(() => {
     if (!isStudioMenuOpen) return;
@@ -158,8 +160,11 @@ export function BottomNavBar() {
 
                 <Link
                   href="/dashboard"
-                  prefetch
-                  onClick={() => setIsStudioMenuOpen(false)}
+                  prefetch={pathname !== "/dashboard"}
+                  onClick={(event) => {
+                    preventSameRouteNav("/dashboard", event);
+                    setIsStudioMenuOpen(false);
+                  }}
                   className="flex items-center gap-2 w-full px-3 py-2.5 text-xs rounded-lg text-on-surface hover:bg-champagne-gold/10 transition-colors font-medium"
                 >
                   <LayoutDashboard size={14} />

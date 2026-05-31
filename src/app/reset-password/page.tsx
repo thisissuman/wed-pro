@@ -26,13 +26,50 @@ function ResetPasswordPageInner() {
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setSessionReady(true)
-      } else {
-        setErrorMsg('This reset link is invalid or has expired. Please request a new one.')
+    let settled = false
+
+    const finish = (ready: boolean, message?: string) => {
+      if (settled) return
+      settled = true
+      setSessionReady(ready)
+      if (message) setErrorMsg(message)
+    }
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN')) {
+        finish(true)
       }
     })
+
+    void (async () => {
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type')
+
+      if (tokenHash && type === 'recovery') {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        })
+        if (error) {
+          finish(false, 'This reset link is invalid or has expired. Please request a new one.')
+          return
+        }
+        finish(true)
+        return
+      }
+
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        finish(true)
+      } else {
+        finish(false, 'This reset link is invalid or has expired. Please request a new one.')
+      }
+    })()
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
