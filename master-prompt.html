@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vivaha Studio Template Master Prompt</title>
+    <title>Vivaha Studio — New Template Master Prompt</title>
     <style>
       :root {
         color-scheme: dark;
@@ -73,54 +73,81 @@
           monospace;
         font-size: 14px;
       }
+
+      ul {
+        color: var(--muted);
+        padding-left: 1.2rem;
+      }
     </style>
   </head>
   <body>
     <main>
-      <h1>Vivaha Studio Template Master Prompt</h1>
+      <h1>New Template — Master Prompt</h1>
       <p>
-        Use this short prompt in a fresh Cursor chat when creating a new sellable
-        template from Figma, screenshots, or a written design brief.
+        Paste the block below into a <strong>fresh Cursor chat</strong>. Fill the
+        bracketed design spec. Detailed steps live in linked docs — not in this
+        prompt.
       </p>
 
       <div class="card">
-        <h2>Reference Files</h2>
-        <p>
-          The full workflow lives in <a href="./docs/create-template-prompt.md">docs/create-template-prompt.md</a>.
-          Cursor should also read
-          <a href="./.cursor/skills/create-template/SKILL.md">.cursor/skills/create-template/SKILL.md</a>,
-          <a href="./.cursor/rules/template-architecture.mdc">.cursor/rules/template-architecture.mdc</a>,
-          <a href="./.cursor/rules/animations.mdc">.cursor/rules/animations.mdc</a>,
-          and <a href="./.cursor/rules/performance.mdc">.cursor/rules/performance.mdc</a>.
-        </p>
+        <h2>Docs (read as needed)</h2>
+        <ul>
+          <li>
+            <a href="./docs/create-new-template.md">docs/create-new-template.md</a>
+            — start here / scalability
+          </li>
+          <li>
+            <a href="./docs/add-template.md">docs/add-template.md</a> — implementation
+            checklist
+          </li>
+          <li>
+            <a href="./docs/create-template-prompt.md">docs/create-template-prompt.md</a>
+            — full intake fields
+          </li>
+          <li>
+            <a href="./.cursor/skills/create-template/SKILL.md">create-template SKILL</a>
+          </li>
+          <li>
+            Rules:
+            <a href="./.cursor/rules/template-architecture.mdc">template-architecture</a>,
+            <a href="./.cursor/rules/animations.mdc">animations</a>,
+            <a href="./.cursor/rules/performance.mdc">performance</a>
+          </li>
+          <li>
+            QA: <a href="./docs/qa-mobile.md">docs/qa-mobile.md</a>
+          </li>
+        </ul>
       </div>
 
       <div class="card">
-        <h2>Copy-Paste Prompt</h2>
+        <h2>Copy-paste prompt</h2>
         <pre><code>Create Vivaha Studio template "&lt;template-id&gt;" from my design spec.
 
-Read and follow: docs/create-template-prompt.md, .cursor/skills/create-template/SKILL.md, .cursor/rules/template-architecture.mdc, .cursor/rules/animations.mdc, .cursor/rules/performance.mdc.
+Read: docs/create-new-template.md, docs/add-template.md, .cursor/skills/create-template/SKILL.md, .cursor/rules/template-architecture.mdc, .cursor/rules/animations.mdc, .cursor/rules/performance.mdc.
 
 Design spec:
-- Source: &lt;Figma link, screenshots, or written brief&gt;
+- Source: &lt;Figma / screenshots / brief&gt;
 - Name: &lt;display name&gt;
 - Category: &lt;royal|floral|minimal|modern&gt;
 - Colors: &lt;primary, background, text, accent&gt;
-- Fonts: &lt;heading, body&gt;
+- Fonts: &lt;heading, body — or use existing CSS variables&gt;
 - Section order: &lt;list&gt;
-- Signature motion: &lt;e.g. fade-up sections, horizontal gallery, curtain reveal, none&gt;
+- Signature motion: &lt;e.g. fade-up sections, horizontal gallery, curtain intro, none&gt;
 - Thumbnail URL: &lt;https://...&gt;
 
 Rules:
-- Use WeddingData + shared section contracts only; no Supabase/auth/Zustand in src/templates/.
-- Bespoke UI belongs in src/templates/&lt;template-id&gt;/sections/ and optional components/.
-- Use PREVIEW_SECTION_IDS on mapped sections so editor live-preview scroll works.
-- Register once in src/templates/registry.ts; /template gallery auto-wires.
-- Mirror RoyalTemplate: TemplateThemeProvider, withEssentialSections, visibility flags, MusicPlayer.
-- Use next/image + sizes, safe media URL checks, transform/opacity motion, and prefers-reduced-motion.
-- Add a Playwright visual snapshot for /preview/&lt;template-id&gt;.
+- Presentation only in src/templates/&lt;template-id&gt;/ — no Supabase, auth, Zustand, payments.
+- WeddingData + section contracts from src/templates/shared/sections/types.ts.
+- PREVIEW_SECTION_IDS on hero, couple, countdown, events, story, gallery, venue, rsvp.
+- Register once in src/templates/registry.ts (gallery auto-wires).
+- TemplateThemeProvider + local theme.ts; pass typographyScale from data.typography.
+- withEssentialSections(data.sections) + visibility flags like RoyalTemplate.
+- isValidDisplayUrl() before user images; next/image + sizes; countdown mounted guard.
+- MusicPlayer: honor isPreview and suppressMusicPlayer; optional resolveMusicPlayback().
+- Cinematic extras (intro, scratch date, sparkles) only if listed in signature motion.
+- Do not add Playwright visual snapshot tests. Run: npm run lint, npm run build, npm run test:e2e -- --project=mobile-chrome.
 
-Branch: feat/&lt;template-id&gt;-template. Run lint, build, and test:e2e --project=mobile-chrome when done.</code></pre>
+Branch: feat/&lt;template-id&gt;-template.</code></pre>
       </div>
     </main>
   </body>

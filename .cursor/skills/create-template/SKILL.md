@@ -7,163 +7,107 @@ disable-model-invocation: false
 
 # Create Template
 
-## Prerequisites
+## Start
 
-- Read `docs/create-template-prompt.md` first. It is the source of truth for
-  design intake, required preview ids, acceptance criteria, and the short master
-  prompt used for repeatable template creation.
-- Read `template-architecture` and `project-context` rules
-- `WeddingData` type in `src/types/` is the single content contract
-- Templates are presentation only: no Supabase, auth, payments, server actions,
-  Zustand, or dashboard state inside `src/templates/<template-id>/`
+1. Read [`docs/create-new-template.md`](../../../docs/create-new-template.md) — doc map and scalability.
+2. Read [`docs/create-template-prompt.md`](../../../docs/create-template-prompt.md) — design intake and master prompt text.
+3. Follow this skill + [`docs/add-template.md`](../../../docs/add-template.md) for implementation.
+4. Apply rules: `template-architecture`, `animations`, `performance`, `project-context`.
+
+`WeddingData` in `src/types/` is the single content contract. Templates are presentation only.
 
 ## Checklist
 
 ```
-- [ ] 1. Scaffold folder
-- [ ] 2. Implement <Name>Template.tsx
-- [ ] 3. Build sections with shared contracts + required preview ids
-- [ ] 4. Theme tokens + TemplateThemeProvider
-- [ ] 5. Motion presets (transform/opacity only)
-- [ ] 6. Images, media validation, and lazy heavy sections
+- [ ] 1. Scaffold folder under src/templates/<template-id>/
+- [ ] 2. theme.ts + <Name>Template.tsx (ThemeProvider, withEssentialSections, visibility)
+- [ ] 3. Sections: contracts + PREVIEW_SECTION_IDS on mapped sections
+- [ ] 4. isValidDisplayUrl + next/image + sizes; countdown mounted guard
+- [ ] 5. Motion presets; prefers-reduced-motion; cinematic components only if in spec
+- [ ] 6. MusicPlayer (isPreview, suppressMusicPlayer; optional resolveMusicPlayback)
 - [ ] 7. Register once in src/templates/registry.ts
-- [ ] 8. Add /preview/<template-id> visual snapshot
-- [ ] 9. Mobile QA
+- [ ] 8. lint, build, test:e2e --project=mobile-chrome + docs/qa-mobile.md
 ```
+
+Do **not** add Playwright visual snapshot baselines for new templates.
 
 ## Step 1 — Scaffold
 
 ```
 src/templates/<template-id>/
   <Pascal>Template.tsx
-  components/     # optional: template-specific intro, ornaments, effects
-  hooks/          # optional: usePrefersReducedMotion
-  sections/
-    HeroSection.tsx
-    CoupleSection.tsx
-    CountdownSection.tsx
-    BlessingSection.tsx
-    EventsSection.tsx
-    StorySection.tsx
-    GallerySection.tsx
-    VenueSection.tsx
-    RsvpSection.tsx
-    ThankYouSection.tsx
-    MusicPlayer.tsx
   theme.ts
-  config/         # optional static template config
+  components/     # optional
+  hooks/          # optional
+  sections/
+    HeroSection.tsx … ThankYouSection.tsx, MusicPlayer.tsx
 ```
 
-## Step 2 — Root Template Component
+## Step 2 — Root template
 
 ```tsx
-export function FloralTemplate({ data, isPreview }: TemplateProps) {
+export function FloralTemplate({ data, isPreview, suppressMusicPlayer }: TemplateProps) {
   const sections = withEssentialSections(data.sections);
+  const music = resolveMusicPlayback(data.music); // optional
 
   return (
-    <TemplateThemeProvider defaultTheme={floralTheme} theme={data.theme}>
+    <TemplateThemeProvider
+      defaultTheme={floralTheme}
+      theme={data.theme}
+      typographyScale={data.typography?.scale ?? "default"}
+    >
       {sections.showHero !== false && (
-        <HeroSection
-          couple={data.couple}
-          countdown={data.countdown}
-          hero={data.hero}
-          weddingHashtag={data.weddingHashtag}
-        />
+        <HeroSection couple={data.couple} countdown={data.countdown} hero={data.hero} … />
       )}
-      {/* ...render every content section from WeddingData */}
-      <MusicPlayer music={data.music} />
+      {/* …other sections… */}
+      {!suppressMusicPlayer && <MusicPlayer music={music} isPreview={isPreview} />}
     </TemplateThemeProvider>
   );
 }
 ```
 
-**Forbidden in templates:** `fetch`, Supabase client, auth, payments, Zustand imports.
+**Forbidden:** `fetch`, Supabase, auth, payments, Zustand in `src/templates/<id>/`.
 
 ## Step 3 — Sections
 
-Recommended flow:
+Story order (flexible visually): intro → hero → couple → countdown → blessing → events → story → gallery → venue → RSVP → thank you.
 
-1. Hero / intro reveal (optional)
-2. Couple reveal
-3. Countdown
-4. Blessing / invitation message
-5. Events (Mehendi, Haldi, Wedding, Reception, Sangeet)
-6. Story
-7. Gallery
-8. Venue (+ map CTA)
-9. RSVP
-10. Thank you
-
-Sections live **inside** `src/templates/<id>/sections/` — bespoke styling is
-expected. Each section should import its contract from
-`src/templates/shared/sections/types.ts`.
-
-For editor preview scroll sync, mapped sections must use ids from
-`src/templates/shared/sections/preview-ids.ts`:
+Bespoke UI in `sections/`; props from `src/templates/shared/sections/types.ts`.
 
 ```tsx
 import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
-
-<section id={PREVIEW_SECTION_IDS.hero}>...</section>
+<section id={PREVIEW_SECTION_IDS.hero}>…</section>
 ```
 
-## Step 4 — Shared Logic
+## Step 4 — Shared infrastructure
 
-Extract reusable logic to hooks in `src/hooks/` or `src/utils/` (e.g. `useWeddingCountdown`), not duplicated per section.
+- Theme: `TemplateThemeProvider`, `tokens.ts`, per-template `theme.ts`.
+- Motion: `src/templates/shared/motion/presets.ts`.
+- Media: `isValidDisplayUrl` from `@/lib/media-url`.
+- Reusable countdown logic: extract to `src/hooks/` if duplicated — do not import dashboard code.
 
-Use shared section contracts from `src/templates/shared/sections/types.ts` so new templates consume the same `WeddingData` slices without changing the editor.
+Royal-only reference (copy only when spec asks): `CinematicIntro`, `WeddingDateScratchReveal`, `SparkleOverlay`, `LoveShowerBackground` under `src/templates/royal/components/`.
 
-Use `src/templates/shared/theme/ThemeProvider.tsx` and `src/templates/shared/theme/tokens.ts` for runtime CSS variables. Each template owns a local `theme.ts` with default `TemplateThemeTokens`; `WeddingData.theme` is an override layer, not a separate implementation path.
+## Step 5 — Register
 
-Shared UI in `src/templates/shared/components/` is optional. Use it when it
-matches the design, but do not flatten premium templates into identical layouts.
+One entry in `src/templates/registry.ts`. Do not edit `TemplateRenderer` routing or `src/data/templates.ts`.
 
-## Step 5 — Motion
+## Step 6 — Verify
 
-- Prefer presets from `src/templates/shared/motion/presets.ts`
-- Framer Motion; `transform` + `opacity` only on mobile
-- Respect `prefers-reduced-motion`
-- Durations per animations rule (max 800ms)
-
-## Step 6 — Performance
-
-- `next/image` with `sizes` for all photos
-- `next/dynamic` for Gallery, Maps (heavy sections)
-- Countdown: server placeholder → client `useEffect` update
-- Use `isValidDisplayUrl()` before rendering user-provided media URLs
-
-## Step 7 — Register Once
-
-Add one entry to `src/templates/registry.ts`. Do not edit `TemplateRenderer.tsx`
-or `src/data/templates.ts`; the marketing gallery is derived from the registry.
-
-```tsx
-{
-  id: "floral",
-  name: "Floral Noor",
-  description: "Soft florals and graceful motion for an intimate celebration.",
-  thumbnail: "https://...",
-  category: "floral",
-  badge: "New",
-  component: FloralTemplate,
-}
+```bash
+npm run lint
+npm run build
+npm run test:e2e -- --project=mobile-chrome
 ```
 
-## Step 8 — Preview & Marketing
+- `/preview/<template-id>` with sample data
+- `/template` card preview/select
+- Editor preview scroll sync
+- [`docs/qa-mobile.md`](../../../docs/qa-mobile.md)
 
-- Verify `/preview/<template-id>` renders sample data
-- Verify `/template` shows the card and its Preview/Select actions
-- Run `npm run test:e2e` — functional smoke in `tests/e2e/free-beta.spec.ts` covers homepage, gallery, and preview routes (no pixel baselines; they flake across macOS vs Linux CI)
+## Done when
 
-## Step 9 — Mobile QA
-
-Verify on narrow viewport first: scroll performance, touch targets, image LCP, no layout shift.
-
-## Done When
-
-- Template renders full `WeddingData` without crashes on empty/partial data
-- No DB or store coupling
-- Registered in `src/templates/registry.ts` and previewable
-- Card appears on `/template` through the registry-derived gallery
-- Required `PREVIEW_SECTION_IDS` are present for live editor scroll sync
-- Mobile QA checklist in `docs/qa-mobile.md` passes
+- Renders full `WeddingData` safely (empty/partial fields).
+- Registered and previewable; no store/DB coupling.
+- Required `PREVIEW_SECTION_IDS` present.
+- Existing E2E passes; mobile QA done.

@@ -6,70 +6,74 @@ alwaysApply: false
 
 # Template Architecture
 
-## Core Rule
+## Core rule
 
 Templates are **presentation only**. They render UI from `WeddingData`; they never fetch DB, auth, payments, or business logic.
 
 ```tsx
-<TemplateRenderer template="royal" data={weddingData} />
+<TemplateRenderer templateId="royal" data={weddingData} isPreview suppressMusicPlayer />
 ```
 
-## Folder Structure
+`TemplateProps`: `data`, optional `isPreview` (editor embedded preview), optional `suppressMusicPlayer` (publish dialog).
+
+## Scalability (many templates)
+
+- Register each template **once** in `src/templates/registry.ts`.
+- Same `WeddingData` for editor, preview, DB `content` JSONB, and `/w/[slug]`.
+- Bespoke `sections/` per template is expected; shared **contracts** + **preview ids** keep the editor stable.
+- Do not duplicate marketing cards in `src/data/templates.ts`.
+
+## Folder structure
 
 ```
 src/templates/
   TemplateRenderer.tsx
-  shared/
-    components/
-    motion/
-    sections/
-    theme/
+  registry.ts
+  shared/ { components, motion, sections, theme }
   /<template-id>/
     <Name>Template.tsx
-    components/
-    hooks/
-    sections/
     theme.ts
-    config/
+    components/   # optional cinematic kit
+    hooks/          # optional
+    sections/
 ```
 
-Example: `src/templates/royal/RoyalTemplate.tsx` + `sections/HeroSection.tsx`, etc.
+Example: `src/templates/royal/RoyalTemplate.tsx`.
 
-## Shared Data
+## Shared data
 
-All templates consume **`WeddingData`** from `src/types/`. Same schema for editor, preview, DB `content` JSONB, and publish.
+All templates consume **`WeddingData`** from `src/types/`.
 
-## Reusability (Pragmatic)
+## Reusability (pragmatic)
 
-- **100% shared:** hooks (`useWeddingCountdown`), UI atoms (buttons, typography wrappers)
-- **Bespoke per template:** section components inside `src/templates/<id>/sections/` — template-specific Tailwind/colors OK for cinematic identity
-- Do not force identical section UI across all templates (anti-pattern for premium feel)
-- `src/templates/shared/components/` is optional support, not a design system cage. Use shared atoms only when they help match the design.
+- **Shared:** motion presets, theme provider, section contracts, preview ids, `isValidDisplayUrl`, optional atoms in `shared/components/`
+- **Bespoke per template:** section layouts and template-specific `components/` (cinematic intro, scratch reveal, etc.)
+- Do not force identical section UI across templates
 
-## Section Flow (Storytelling)
+## Section flow (storytelling)
 
-Optional intro → Hero → Couple reveal → Countdown → Blessing → Events → Story → Gallery → RSVP → Venue → Thank You. Pace emotionally; avoid content dumps.
+Optional intro → Hero → Couple → Countdown → Blessing → Events → Story → Gallery → RSVP → Venue → Thank You.
 
 ## Events
 
-Support Indian events (Mehendi, Haldi, Wedding, Reception, Sangeet). Event shape: title, icon, description, date, time, venue, `googleMapLink`.
+Indian events (Mehendi, Haldi, Wedding, Reception, Sangeet): title, icon, description, date, time, venue, `googleMapLink`.
 
-## Theme (Phase 2)
+## Theme
 
-`ThemeConfig` is injected through `TemplateThemeProvider` as CSS variables. Each template owns default `TemplateThemeTokens` in `<template-id>/theme.ts`; `WeddingData.theme` is an override layer. Prefer `var(--template-primary)`, `var(--template-text)`, and related runtime variables over scattering literal colors.
+`TemplateThemeProvider` + per-template `theme.ts` defaults. `WeddingData.theme` overrides. Pass `typographyScale` from `data.typography` for editor zoom.
 
-## Section Contracts
+Use `var(--template-primary)`, `var(--template-text)`, etc.
 
-Shared contracts live in `src/templates/shared/sections/types.ts`. New templates can keep bespoke section UI, but they should consume the same props so editor and publish logic remain stable.
+## Section contracts
 
-## Preview Section IDs
+`src/templates/shared/sections/types.ts` — same props shape; bespoke JSX inside each template.
 
-The editor live preview scrolls to fixed DOM ids from `src/templates/shared/sections/preview-ids.ts`.
+## Preview section IDs
 
-Every template must use these ids on matching sections:
+`src/templates/shared/sections/preview-ids.ts` — required on mapped sections:
 
-| Section | Required id |
-|---------|-------------|
+| Section | Id |
+|---------|-----|
 | Hero | `PREVIEW_SECTION_IDS.hero` |
 | Couple | `PREVIEW_SECTION_IDS.couple` |
 | Countdown | `PREVIEW_SECTION_IDS.countdown` |
@@ -79,29 +83,27 @@ Every template must use these ids on matching sections:
 | Venue | `PREVIEW_SECTION_IDS.venue` |
 | RSVP | `PREVIEW_SECTION_IDS.rsvp` |
 
-Blessing and Thank You are not mapped today; add them to the shared id map only if the editor gains matching navigation targets.
+Blessing / Thank You: not in editor scroll map unless product adds panels.
 
 ## Registry
 
-Register each template once in `src/templates/registry.ts`. The runtime renderer and marketing gallery both derive from this registry; do not create a second card entry in `src/data/templates.ts`.
-
-`/preview/<template-id>` works automatically when the registry id matches the template id.
+`/preview/<template-id>` works when registry `id` matches.
 
 ## Animations
 
-Framer Motion; modular; viewport reveals; subtle parallax-lite only. No GSAP-heavy or scroll-jacking.
+Framer Motion; `src/templates/shared/motion/presets.ts`. Royal cinematic kit lives in `royal/components/` — optional for other templates. See `animations.mdc`.
 
 ## Performance
 
-`next/image` + `sizes`; lazy gallery/maps; no unoptimized video heroes.
+- `next/image` + `sizes`
+- `isValidDisplayUrl()` before user images
+- Countdown: client `mounted` guard (no SSR/client number mismatch)
+- Lazy or lightweight gallery/maps; no unoptimized video heroes
+- Consider `next/dynamic` for heavy below-fold sections when bundle grows
 
-## Editor Compatibility
+## Docs
 
-Editable fields map to future dashboard controls — don't couple copy into layout logic.
-
-## Mobile
-
-Mobile rendering and touch are primary; desktop secondary.
+Human workflow: `docs/create-new-template.md` → `docs/create-template-prompt.md` → `docs/add-template.md` → `docs/qa-mobile.md`.
 
 ## Priority
 
