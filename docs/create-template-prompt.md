@@ -72,7 +72,7 @@ Use `src/templates/royal/` for structure:
 - `withEssentialSections(data.sections)` and per-section visibility flags.
 - `typographyScale={data.typography?.scale ?? "default"}` on `TemplateThemeProvider`.
 - `resolveMusicPlayback(data.music)` if you want the bundled default track when the couple uploads nothing.
-- Cinematic components (`CinematicIntro`, `WeddingDateScratchReveal`, `SparkleOverlay`, `LoveShowerBackground`) are **Royal-specific** unless your design spec asks for equivalents.
+- Cinematic components (`InvitationOpener` [reusable from `src/components/invitation-opener`], `WeddingDateScratchReveal`, `SparkleOverlay`, `LoveShowerBackground`) are Royal-specific unless your design spec asks for equivalents.
 
 ## Preview section IDs
 

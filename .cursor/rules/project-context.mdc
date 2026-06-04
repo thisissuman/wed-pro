@@ -573,7 +573,7 @@ Skills are **procedures for the AI** when you ask for a specific kind of work. T
 
 ## Shipped
 - **Template:** Royal Rajputana (single template; registry ready for more).
-- **Cinematic interactions (Royal):** Curtain intro (`CinematicIntro`), scratch-to-reveal wedding date (`WeddingDateScratchReveal` / Magic UI `ScratchToReveal`), ambient sparkles (`SparkleOverlay`); respects `prefers-reduced-motion`.
+- **Cinematic interactions (Royal):** Reusable invitation opener (`InvitationOpener` from `src/components/invitation-opener`), scratch-to-reveal wedding date (`WeddingDateScratchReveal` / Magic UI `ScratchToReveal`), ambient sparkles (`SparkleOverlay`); respects `prefers-reduced-motion`.
 - **Auth:** Email/password, Google OAuth, forgot/reset password; dashboard guards; `proxy.ts` session refresh.
 - **Editor:** 9-step flow (includes **Share Preview** for WhatsApp/OG), debounced autosave, Zustand store, live preview, Cloudinary uploads.
 - **Blessing / Thank you copy editors:** Inline content panels in Optional Sections step.

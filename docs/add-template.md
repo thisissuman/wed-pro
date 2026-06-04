@@ -25,7 +25,7 @@ Mirror [`RoyalTemplate.tsx`](../src/templates/royal/RoyalTemplate.tsx):
 - `withEssentialSections(data.sections)` and `sections.show*` visibility flags.
 - Pass `WeddingData` slices into each section; accept `isPreview` / `suppressMusicPlayer` on `TemplateProps`.
 - `MusicPlayer` with `music={resolveMusicPlayback(data.music)}` if you want default fallback audio (optional).
-- Cinematic `components/` only when the design spec requires them.
+- Cinematic components (such as the shared reusable `InvitationOpener` component from `src/components/invitation-opener`) only when the design spec requires them.
 
 ## 3. Theme tokens
 

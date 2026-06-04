@@ -84,9 +84,8 @@ import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 - Theme: `TemplateThemeProvider`, `tokens.ts`, per-template `theme.ts`.
 - Motion: `src/templates/shared/motion/presets.ts`.
 - Media: `isValidDisplayUrl` from `@/lib/media-url`.
-- Reusable countdown logic: extract to `src/hooks/` if duplicated — do not import dashboard code.
-
-Royal-only reference (copy only when spec asks): `CinematicIntro`, `WeddingDateScratchReveal`, `SparkleOverlay`, `LoveShowerBackground` under `src/templates/royal/components/`.
+- Shared infrastructure: Use the shared reusable `InvitationOpener` from `src/components/invitation-opener` (supporting 8 visual variants and dynamic monograms) for entrance reveals.
+- Royal-only components (copy only when spec asks): `WeddingDateScratchReveal`, `SparkleOverlay`, `LoveShowerBackground` under `src/templates/royal/components/`.
 
 ## Step 5 — Register
 

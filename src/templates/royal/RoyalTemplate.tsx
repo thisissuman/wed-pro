@@ -13,7 +13,7 @@ import { VenueSection } from "./sections/VenueSection";
 import { RSVPSection } from "./sections/RSVPSection";
 import { ThankYouSection } from "./sections/ThankYouSection";
 import { MusicPlayer } from "./sections/MusicPlayer";
-import { CinematicIntro } from "./components/CinematicIntro";
+import { InvitationOpener } from "@/components/invitation-opener";
 import { LoveShowerBackground } from "./components/LoveShowerBackground";
 import { SparkleOverlay } from "./components/SparkleOverlay";
 import { resolveMusicPlayback } from "@/lib/default-music";
@@ -36,6 +36,9 @@ export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: Template
   const sections = withEssentialSections(data.sections);
   const music = resolveMusicPlayback(data.music);
 
+  const primaryColor = data.theme?.primaryColor || royalTheme.colors.primary;
+  const secondaryColor = data.theme?.secondaryColor || royalTheme.colors.secondary;
+
   return (
     <TemplateThemeProvider
       defaultTheme={royalTheme}
@@ -43,65 +46,74 @@ export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: Template
       typographyScale={data.typography?.scale ?? "default"}
       className="relative min-h-screen bg-[var(--template-background)] text-[var(--template-text)] selection:bg-champagne-gold/30 overflow-x-hidden"
     >
-      <LoveShowerBackground embedded={isPreview} />
-      <CinematicIntro slug={data.slug} isPreview={isPreview} />
-      <SparkleOverlay embedded={isPreview} />
-      <div className="relative z-[2]">
-      {/* 1. Hero — Emotional anchor with couple names and date */}
-      {sections.showHero !== false && (
-        <HeroSection
-          couple={data.couple}
-          countdown={data.countdown}
-          hero={data.hero}
-          weddingHashtag={data.weddingHashtag}
-        />
-      )}
+      <InvitationOpener
+        variant="royal-door"
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        slug={data.slug}
+        sealType="wax-seal"
+        monogram={data.couple ? data.couple.bride.name[0] : "❦"}
+        isPreviewMode={isPreview}
+      >
+        <LoveShowerBackground embedded={isPreview} />
+        <SparkleOverlay embedded={isPreview} />
+        <div className="relative z-[2]">
+        {/* 1. Hero — Emotional anchor with couple names and date */}
+        {sections.showHero !== false && (
+          <HeroSection
+            couple={data.couple}
+            countdown={data.countdown}
+            hero={data.hero}
+            weddingHashtag={data.weddingHashtag}
+          />
+        )}
 
-      {/* 2. Couple — Bride & Groom reveal */}
-      {sections.showCouple !== false && (
-        <CoupleSection couple={data.couple} />
-      )}
+        {/* 2. Couple — Bride & Groom reveal */}
+        {sections.showCouple !== false && (
+          <CoupleSection couple={data.couple} />
+        )}
 
-      {/* 3. Countdown — Live timer */}
-      {sections.showCountdown !== false && (
-        <CountdownSection countdown={data.countdown} />
-      )}
+        {/* 3. Countdown — Live timer */}
+        {sections.showCountdown !== false && (
+          <CountdownSection countdown={data.countdown} />
+        )}
 
-      {/* 4. Blessing — Family message */}
-      {sections.showBlessing !== false && (
-        <BlessingSection blessing={data.blessing} />
-      )}
+        {/* 4. Blessing — Family message */}
+        {sections.showBlessing !== false && (
+          <BlessingSection blessing={data.blessing} />
+        )}
 
-      {/* 5. Events — Mehendi, Sangeet, Haldi, Wedding, Reception */}
-      {sections.showEvents !== false && (
-        <EventsSection events={data.events} />
-      )}
+        {/* 5. Events — Mehendi, Sangeet, Haldi, Wedding, Reception */}
+        {sections.showEvents !== false && (
+          <EventsSection events={data.events} />
+        )}
 
-      {/* 6. Story — Love timeline */}
-      {sections.showStory !== false && (
-        <StorySection story={data.story} />
-      )}
+        {/* 6. Story — Love timeline */}
+        {sections.showStory !== false && (
+          <StorySection story={data.story} />
+        )}
 
-      {/* 7. Gallery — Photo grid */}
-      {sections.showGallery !== false && (
-        <GallerySection gallery={data.gallery} />
-      )}
+        {/* 7. Gallery — Photo grid */}
+        {sections.showGallery !== false && (
+          <GallerySection gallery={data.gallery} />
+        )}
 
-      {/* 8. Venue — Location with map */}
-      {sections.showVenue !== false && (
-        <VenueSection venue={data.venue} />
-      )}
+        {/* 8. Venue — Location with map */}
+        {sections.showVenue !== false && (
+          <VenueSection venue={data.venue} />
+        )}
 
-      {/* 9. RSVP — Confirm attendance */}
-      {sections.showRSVP !== false && (
-        <RSVPSection rsvp={data.rsvp} />
-      )}
+        {/* 9. RSVP — Confirm attendance */}
+        {sections.showRSVP !== false && (
+          <RSVPSection rsvp={data.rsvp} />
+        )}
 
-      {/* 10. Thank You — Emotional closure */}
-      {sections.showThankYou !== false && (
-        <ThankYouSection thankYou={data.thankYou} couple={data.couple} />
-      )}
-      </div>
+        {/* 10. Thank You — Emotional closure */}
+        {sections.showThankYou !== false && (
+          <ThankYouSection thankYou={data.thankYou} couple={data.couple} />
+        )}
+        </div>
+      </InvitationOpener>
 
       {/* Floating music player (tap-to-play) */}
       <MusicPlayer

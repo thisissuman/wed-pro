@@ -59,13 +59,13 @@ Responsive and instant — no animation lag during typing/editing.
 
 Cinematic reveals OK; performance still #1. Not an animation showcase.
 
-### Royal template cinematic kit (`src/templates/royal/components/`)
+### Cinematic kit
 
-| Component | Behavior |
-|-----------|----------|
-| `CinematicIntro` | Curtain split on tap; once per session (`sessionStorage`); skip when `isPreview` or reduced motion |
-| `WeddingDateScratchReveal` | Magic UI `ScratchToReveal` on hero date; touch/pointer; skip when reduced motion |
-| `SparkleOverlay` | CSS `@keyframes` particles (`transform`/`opacity` only) |
+| Component | Location | Behavior |
+|-----------|----------|----------|
+| `InvitationOpener` | `src/components/invitation-opener` | Immersive visual cover locked by a center-splitting seal (wax-seal, gold-coin, none); once per session (`sessionStorage`); triggers dynamic monograms (1-2 characters); tap anywhere on viewport to open. Supports 8 style variants. |
+| `WeddingDateScratchReveal` | `src/templates/royal/components` | Magic UI `ScratchToReveal` on hero date; touch/pointer; skip when reduced motion |
+| `SparkleOverlay` | `src/templates/royal/components` | CSS `@keyframes` particles (`transform`/`opacity` only) |
 
 Use `usePrefersReducedMotion` from `src/templates/royal/hooks/`. No infinite JS animation loops.
 
