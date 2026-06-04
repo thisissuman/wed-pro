@@ -132,7 +132,7 @@ Design spec:
 - Colors: &lt;primary, background, text, accent&gt;
 - Fonts: &lt;heading, body — or use existing CSS variables&gt;
 - Section order: &lt;list&gt;
-- Signature motion: &lt;e.g. fade-up sections, horizontal gallery, curtain intro, none&gt;
+- Signature motion: &lt;e.g. fade-up sections, horizontal gallery, invitation opener, none&gt;
 - Thumbnail URL: &lt;https://...&gt;
 
 Rules:
@@ -144,7 +144,7 @@ Rules:
 - withEssentialSections(data.sections) + visibility flags like RoyalTemplate.
 - isValidDisplayUrl() before user images; next/image + sizes; countdown mounted guard.
 - MusicPlayer: honor isPreview and suppressMusicPlayer; optional resolveMusicPlayback().
-- Cinematic extras (intro, scratch date, sparkles) only if listed in signature motion.
+- Cinematic extras (invitation opener [using src/components/invitation-opener], scratch date, sparkles) only if listed in signature motion.
 - Do not add Playwright visual snapshot tests. Run: npm run lint, npm run build, npm run test:e2e -- --project=mobile-chrome.
 
 Branch: feat/&lt;template-id&gt;-template.</code></pre>
