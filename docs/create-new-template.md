@@ -41,7 +41,7 @@ Copy **patterns** from [`src/templates/royal/`](../src/templates/royal/), not ev
 | Safe media URLs | `isValidDisplayUrl()` in hero/gallery/couple | Yes for user images |
 | Countdown hydration | `CountdownSection` — `mounted` before live numbers | Yes if you show countdown |
 | Default music fallback | `resolveMusicPlayback()` from `@/lib/default-music` | Optional |
-| Cinematic intro / scratch date / sparkles | `components/*` | **Only if in your design spec** |
+| Invitation opener / scratch date / sparkles | `InvitationOpener` from `src/components/invitation-opener` | **Only if in your design spec** |
 | Love-shower ambient background | `LoveShowerBackground` | **Royal-only unless you want it** |
 
 ## What changed after the template docs (May 2026 polish)

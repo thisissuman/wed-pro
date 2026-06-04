@@ -1,6 +1,7 @@
 import type { Template } from "@/types";
 import type { TemplateRegistryEntry } from "./types";
 import { RoyalTemplate } from "./royal/RoyalTemplate";
+import { FloralEleganceTemplate } from "./floral-elegance/FloralEleganceTemplate";
 
 /**
  * Template Registry
@@ -22,6 +23,16 @@ const registry: TemplateRegistryEntry[] = [
     category: "royal",
     badge: "Bestseller",
     component: RoyalTemplate,
+  },
+  {
+    id: "floral-elegance",
+    name: "Floral Elegance",
+    description:
+      "Delicate botanical flourishes, warm soft paper textures, and a charming floral opener for a romantic celebration.",
+    thumbnail: "/media/floral-elegance-thumbnail.png",
+    category: "floral",
+    badge: "New",
+    component: FloralEleganceTemplate,
   },
 ];
 
