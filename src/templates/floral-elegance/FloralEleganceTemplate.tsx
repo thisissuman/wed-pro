@@ -25,7 +25,7 @@ import { LeafShowerBackground } from "./components/LeafShowerBackground";
  * Renders the full cinematic storytelling flow with custom botanical visuals
  * and the soft floral entrance reveal.
  */
-export function FloralEleganceTemplate({ data, isPreview, suppressMusicPlayer }: TemplateProps) {
+export function FloralEleganceTemplate({ data, isPreview, bypassOpener, suppressMusicPlayer }: TemplateProps) {
   const sections = withEssentialSections(data.sections);
   const music = resolveMusicPlayback(data.music);
 
@@ -51,8 +51,9 @@ export function FloralEleganceTemplate({ data, isPreview, suppressMusicPlayer }:
         secondaryColor={secondaryColor}
         slug={data.slug}
         sealType="wax-seal"
-        monogram={data.couple ? data.couple.bride.name[0] : "❦"}
+        monogram="❦"
         isPreviewMode={isPreview}
+        bypassOpener={bypassOpener}
       >
 
         <LeafShowerBackground embedded={isPreview} />

@@ -14,6 +14,7 @@ export interface InvitationOpenerProps {
   onComplete?: () => void;
   slug?: string;
   isPreviewMode?: boolean;
+  bypassOpener?: boolean;
   sealType?: "wax-seal" | "gold-coin" | "none";
   monogram?: string;
 }
@@ -26,17 +27,20 @@ export function InvitationOpener({
   onComplete,
   slug = "default",
   isPreviewMode = false,
+  bypassOpener = false,
   sealType = "wax-seal",
   monogram = "❦",
 }: InvitationOpenerProps) {
   const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [isOpening, setIsOpening] = useState(false);
 
   const storageKey = `${STORAGE_KEY_PREFIX}${slug}`;
 
   // 1. SSR-Safe Mounting check & Session Caching check
   useEffect(() => {
+    if (bypassOpener || isOpening) return;
+
     const timer = setTimeout(() => {
       setMounted(true);
       
@@ -59,7 +63,7 @@ export function InvitationOpener({
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [storageKey, isPreviewMode]);
+  }, [storageKey, isPreviewMode, isOpening, bypassOpener]);
 
   // 2. Open action handler
   const handleOpen = useCallback(() => {
@@ -83,15 +87,42 @@ export function InvitationOpener({
     }
   }, [onComplete]);
 
-  // If not mounted yet (during SSR) or seen in this session, render children directly
-  if (!mounted || !visible) {
+  // If we are bypassing the opener entirely, render children directly
+  if (bypassOpener) {
     return <>{children}</>;
   }
 
+  // Once mounted and visible is false, clean up and render children directly
+  if (mounted && !visible) {
+    return <>{children}</>;
+  }
+
+  const coverId = `opener-cover-${slug}`;
+  const contentId = `opener-content-${slug}`;
+
   return (
     <div className="relative min-h-screen w-full">
+      {/* Inline script to prevent hydration flash for returning users (wrapped in a hidden div to avoid React 19 warnings) */}
+      <div
+        style={{ display: "none" }}
+        dangerouslySetInnerHTML={{
+          __html: `
+            <script>
+              try {
+                if (!${isPreviewMode} && sessionStorage.getItem('${storageKey}')) {
+                  var style = document.createElement('style');
+                  style.innerHTML = '#${coverId} { display: none !important; } #${contentId} { opacity: 1 !important; pointer-events: auto !important; max-height: none !important; overflow: visible !important; }';
+                  document.head.appendChild(style);
+                }
+              } catch (e) {}
+            </script>
+          `
+        }}
+      />
+
       {/* Underlying content is rendered but kept invisible/inert until open to allow SEO indexation */}
       <div 
+        id={contentId}
         aria-hidden={visible} 
         className={`w-full ${visible ? "pointer-events-none select-none max-h-screen overflow-hidden opacity-0" : ""}`}
       >
@@ -101,6 +132,7 @@ export function InvitationOpener({
       <AnimatePresence>
         {visible && (
           <motion.div
+            id={coverId}
             role="dialog"
             aria-modal="true"
             aria-label="Wedding Invitation Opener Cover"

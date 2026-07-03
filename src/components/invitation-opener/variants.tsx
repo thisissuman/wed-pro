@@ -2,6 +2,8 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+
+const r = (n: number) => Math.round(n * 10000) / 10000;
 import { durations, easings, springPresets } from "./animations";
 import {
   RoyalArchSVG,
@@ -442,8 +444,8 @@ export const VariantRenderer: React.FC<VariantRendererProps> = ({
           {Array.from({ length: 8 }).map((_, i) => {
             const angle = (i * 45 * Math.PI) / 180;
             const radius = 110;
-            const x = radius * Math.cos(angle);
-            const y = radius * Math.sin(angle);
+            const x = r(radius * Math.cos(angle));
+            const y = r(radius * Math.sin(angle));
 
             return (
               <motion.div

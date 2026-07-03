@@ -9,6 +9,8 @@ export interface TemplateProps {
   data: WeddingData;
   /** True when rendering inside the editor preview panel */
   isPreview?: boolean;
+  /** Skip showing the invitation opener cover entirely (used in edit mode). */
+  bypassOpener?: boolean;
   /** Hide floating music control and stop playback (editor publish flow). */
   suppressMusicPlayer?: boolean;
 }

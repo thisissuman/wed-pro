@@ -7,6 +7,7 @@ interface TemplateRendererProps {
   templateId: string;
   data: WeddingData;
   isPreview?: boolean;
+  bypassOpener?: boolean;
   suppressMusicPlayer?: boolean;
 }
 
@@ -23,6 +24,7 @@ export function TemplateRenderer({
   templateId,
   data,
   isPreview = false,
+  bypassOpener = false,
   suppressMusicPlayer = false,
 }: TemplateRendererProps) {
   const entry = getTemplate(templateId);
@@ -48,6 +50,7 @@ export function TemplateRenderer({
     <TemplateComponent
       data={data}
       isPreview={isPreview}
+      bypassOpener={bypassOpener}
       suppressMusicPlayer={suppressMusicPlayer}
     />
   );
