@@ -32,7 +32,7 @@ import { royalTheme } from "./theme";
  *
  * Sections are conditionally rendered based on SectionVisibility.
  */
-export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: TemplateProps) {
+export function RoyalTemplate({ data, isPreview, bypassOpener, suppressMusicPlayer }: TemplateProps) {
   const sections = withEssentialSections(data.sections);
   const music = resolveMusicPlayback(data.music);
 
@@ -52,8 +52,9 @@ export function RoyalTemplate({ data, isPreview, suppressMusicPlayer }: Template
         secondaryColor={secondaryColor}
         slug={data.slug}
         sealType="wax-seal"
-        monogram={data.couple ? data.couple.bride.name[0] : "❦"}
+        monogram="❦"
         isPreviewMode={isPreview}
+        bypassOpener={bypassOpener}
       >
         <LoveShowerBackground embedded={isPreview} />
         <SparkleOverlay embedded={isPreview} />

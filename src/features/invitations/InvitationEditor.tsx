@@ -620,6 +620,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                 templateId={previewData.templateId}
                 data={previewData}
                 isPreview
+                bypassOpener
                 suppressMusicPlayer={isPublishing || showPublishShareDialog}
               />
             )}
@@ -725,11 +726,12 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               >
                 {previewData && (
                   <TemplateRenderer
-                templateId={previewData.templateId}
-                data={previewData}
-                isPreview
-                suppressMusicPlayer={isPublishing || showPublishShareDialog}
-              />
+                    templateId={previewData.templateId}
+                    data={previewData}
+                    isPreview
+                    bypassOpener
+                    suppressMusicPlayer={isPublishing || showPublishShareDialog}
+                  />
                 )}
               </div>
             </motion.section>

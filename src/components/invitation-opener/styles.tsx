@@ -1,5 +1,7 @@
 import React from "react";
 
+const r = (n: number) => Math.round(n * 10000) / 10000;
+
 // Ornate Mughal/Rajput arch frame for Indian vibes
 export const RoyalArchSVG: React.FC<{ primaryColor: string }> = ({ primaryColor }) => (
   <svg
@@ -30,7 +32,7 @@ export const RoyalArchSVG: React.FC<{ primaryColor: string }> = ({ primaryColor 
 export const WaxSealSVG: React.FC<{ primaryColor: string; secondaryColor: string; monogram?: string; className?: string }> = ({
   primaryColor,
   secondaryColor,
-  monogram = "W",
+  monogram = "❦",
   className = "",
 }) => (
   <svg
@@ -81,21 +83,23 @@ export const WaxSealSVG: React.FC<{ primaryColor: string; secondaryColor: string
     <circle cx="50" cy="50" r="28" fill={secondaryColor} opacity="0.4" />
     
     {/* Gold monogram character stamped in the middle */}
-    <text
-      x="50"
-      y="58"
-      textAnchor="middle"
-      fill="url(#gold-monogram)"
-      fontFamily="Georgia, serif"
-      fontSize="26"
-      fontWeight="bold"
-      letterSpacing="-0.05em"
-      style={{
-        textShadow: "0px -1px 1px rgba(0,0,0,0.5), 0px 1px 1px rgba(255,255,255,0.3)",
-      }}
-    >
-      {monogram}
-    </text>
+    {monogram && (
+      <text
+        x="50"
+        y="58"
+        textAnchor="middle"
+        fill="url(#gold-monogram)"
+        fontFamily="Georgia, serif"
+        fontSize="26"
+        fontWeight="bold"
+        letterSpacing="-0.05em"
+        style={{
+          textShadow: "0px -1px 1px rgba(0,0,0,0.5), 0px 1px 1px rgba(255,255,255,0.3)",
+        }}
+      >
+        {monogram}
+      </text>
+    )}
   </svg>
 );
 
@@ -131,10 +135,10 @@ export const RoyalCoinSVG: React.FC<{ primaryColor: string; secondaryColor: stri
     {/* Ridged border tick marks */}
     {Array.from({ length: 48 }).map((_, i) => {
       const angle = (i * 7.5 * Math.PI) / 180;
-      const x1 = 50 + 42 * Math.cos(angle);
-      const y1 = 50 + 42 * Math.sin(angle);
-      const x2 = 50 + 45 * Math.cos(angle);
-      const y2 = 50 + 45 * Math.sin(angle);
+      const x1 = r(50 + 42 * Math.cos(angle));
+      const y1 = r(50 + 42 * Math.sin(angle));
+      const x2 = r(50 + 45 * Math.cos(angle));
+      const y2 = r(50 + 45 * Math.sin(angle));
       return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#73530F" strokeWidth="1" opacity="0.6" />;
     })}
 
@@ -146,21 +150,23 @@ export const RoyalCoinSVG: React.FC<{ primaryColor: string; secondaryColor: stri
     <circle cx="50" cy="50" r="31" stroke="#ffffff" strokeWidth="0.5" strokeOpacity="0.2" fill="none" />
 
     {/* Stamped letter/motif */}
-    <text
-      x="50"
-      y="57"
-      textAnchor="middle"
-      fill="#131313"
-      fontFamily="Georgia, serif"
-      fontSize="22"
-      fontWeight="bold"
-      opacity="0.85"
-      style={{
-        textShadow: "0.5px 0.5px 0px rgba(255,255,255,0.4)",
-      }}
-    >
-      {monogram}
-    </text>
+    {monogram && (
+      <text
+        x="50"
+        y="57"
+        textAnchor="middle"
+        fill="#131313"
+        fontFamily="Georgia, serif"
+        fontSize="22"
+        fontWeight="bold"
+        opacity="0.85"
+        style={{
+          textShadow: "0.5px 0.5px 0px rgba(255,255,255,0.4)",
+        }}
+      >
+        {monogram}
+      </text>
+    )}
   </svg>
 );
 
@@ -180,14 +186,14 @@ export const MandalaSVG: React.FC<{ color: string; className?: string }> = ({ co
     {/* Mandala Petals */}
     {Array.from({ length: 12 }).map((_, i) => {
       const angle = (i * 30 * Math.PI) / 180;
-      const x1 = 100 + 30 * Math.cos(angle);
-      const y1 = 100 + 30 * Math.sin(angle);
-      const x2 = 100 + 75 * Math.cos(angle);
-      const y2 = 100 + 75 * Math.sin(angle);
-      const cx1 = 100 + 50 * Math.cos(angle - 0.2);
-      const cy1 = 100 + 50 * Math.sin(angle - 0.2);
-      const cx2 = 100 + 50 * Math.cos(angle + 0.2);
-      const cy2 = 100 + 50 * Math.sin(angle + 0.2);
+      const x1 = r(100 + 30 * Math.cos(angle));
+      const y1 = r(100 + 30 * Math.sin(angle));
+      const x2 = r(100 + 75 * Math.cos(angle));
+      const y2 = r(100 + 75 * Math.sin(angle));
+      const cx1 = r(100 + 50 * Math.cos(angle - 0.2));
+      const cy1 = r(100 + 50 * Math.sin(angle - 0.2));
+      const cx2 = r(100 + 50 * Math.cos(angle + 0.2));
+      const cy2 = r(100 + 50 * Math.sin(angle + 0.2));
       
       return (
         <path
@@ -203,8 +209,8 @@ export const MandalaSVG: React.FC<{ color: string; className?: string }> = ({ co
     {/* Small outer dots */}
     {Array.from({ length: 24 }).map((_, i) => {
       const angle = (i * 15 * Math.PI) / 180;
-      const x = 100 + 82 * Math.cos(angle);
-      const y = 100 + 82 * Math.sin(angle);
+      const x = r(100 + 82 * Math.cos(angle));
+      const y = r(100 + 82 * Math.sin(angle));
       return <circle key={i} cx={x} cy={y} r="1.5" fill={color} opacity="0.7" />;
     })}
   </svg>
