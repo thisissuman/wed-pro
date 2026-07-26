@@ -9,6 +9,10 @@ import type {
   WeddingData,
   WeddingEvent,
 } from "@/types/wedding.types";
+import {
+  applyTemplateDefaults,
+  resolveRegisteredTemplateId,
+} from "@/templates/template-defaults";
 
 /** Legacy drafts may still store `form` in JSONB; map to WhatsApp-first flow. */
 export function normalizeRsvpData(rsvp: RSVPData): RSVPData {
@@ -280,14 +284,15 @@ export function createStarterWeddingData({
     userId,
   };
 
-  return data;
+  return applyTemplateDefaults(data, templateId);
 }
 
 export function normalizeInvitationRow(row: InvitationRow): WeddingData {
+  const templateId = resolveRegisteredTemplateId(row.template_id);
   const base = createStarterWeddingData({
     id: row.id,
     slug: row.slug,
-    templateId: row.template_id,
+    templateId,
     userId: row.user_id,
     now: row.created_at,
   });
@@ -308,7 +313,7 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
     ...content,
     id: row.id,
     slug: row.slug,
-    templateId: row.template_id,
+    templateId,
     status: row.status,
     couple: {
       ...base.couple,

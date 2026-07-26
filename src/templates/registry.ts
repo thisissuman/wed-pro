@@ -2,6 +2,7 @@ import type { Template } from "@/types";
 import type { TemplateRegistryEntry } from "./types";
 import { RoyalTemplate } from "./royal/RoyalTemplate";
 import { FloralEleganceTemplate } from "./floral-elegance/FloralEleganceTemplate";
+import { Royal3DCinemaTemplate } from "./royal-3d-cinema/Royal3DCinemaTemplate";
 
 /**
  * Template Registry
@@ -33,6 +34,16 @@ const registry: TemplateRegistryEntry[] = [
     category: "floral",
     badge: "New",
     component: FloralEleganceTemplate,
+  },
+  {
+    id: "royal-3d-cinema",
+    name: "Royal 3D Wedding Cinema",
+    description:
+      "A cinematic royal invitation with scroll-led wedding films, sacred moments, and an elegant personalised finale.",
+    thumbnail: "/media/royal-3d-cinema/v1/frames/low/f_001.webp",
+    category: "royal",
+    badge: "Immersive",
+    component: Royal3DCinemaTemplate,
   },
 ];
 

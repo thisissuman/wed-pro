@@ -37,5 +37,17 @@ export default defineConfig({
       name: "desktop-chrome",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "desktop-firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "desktop-safari",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "mobile-safari",
+      use: { ...devices["iPhone 13"] },
+    },
   ],
 });
