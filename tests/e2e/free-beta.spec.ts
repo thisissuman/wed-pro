@@ -28,7 +28,9 @@ test("dashboard is protected for anonymous users", async ({ page }) => {
 test("template picker can preview the registered Royal template", async ({ page }) => {
   await page.goto("/template");
 
-  await page.getByRole("link", { name: /preview/i }).first().click();
+  const royalPreview = page.locator('a[href="/preview/royal"]');
+  await expect(royalPreview).toHaveCount(1);
+  await royalPreview.click();
   await expect(page).toHaveURL(/\/preview\/royal$/);
   await expect(page.getByText(/wedding invitation/i).first()).toBeVisible({
     timeout: 15_000,

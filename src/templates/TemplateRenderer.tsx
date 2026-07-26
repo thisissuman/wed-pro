@@ -47,11 +47,20 @@ export function TemplateRenderer({
   const TemplateComponent = entry.component;
 
   return (
-    <TemplateComponent
-      data={data}
-      isPreview={isPreview}
-      bypassOpener={bypassOpener}
-      suppressMusicPlayer={suppressMusicPlayer}
-    />
+    <div
+      className="template-renderer-shell w-full min-w-0"
+      data-template-preview={isPreview || undefined}
+      style={{
+        containerName: "template-preview",
+        containerType: "inline-size",
+      }}
+    >
+      <TemplateComponent
+        data={data}
+        isPreview={isPreview}
+        bypassOpener={bypassOpener}
+        suppressMusicPlayer={suppressMusicPlayer}
+      />
+    </div>
   );
 }
