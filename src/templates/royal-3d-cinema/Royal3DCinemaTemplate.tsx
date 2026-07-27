@@ -72,6 +72,7 @@ export function Royal3DCinemaTemplate({
             manifest={royalCinemaAssets.hero}
             ariaLabel="Cinematic wedding introduction"
             isPreview={isPreview}
+            priority
             screens={4.6}
             mobileScreens={3.35}
             className="cinema-hero"

@@ -29,6 +29,7 @@ interface AdaptiveFrameSequenceProps {
   id?: string;
   children: ReactNode;
   isPreview?: boolean;
+  priority?: boolean;
   screens?: number;
   mobileScreens?: number;
   className?: string;
@@ -163,6 +164,7 @@ export function AdaptiveFrameSequence({
   id,
   children,
   isPreview = false,
+  priority = false,
   screens = 4.4,
   mobileScreens,
   className = "",
@@ -354,7 +356,11 @@ export function AdaptiveFrameSequence({
     const desktop = window.matchMedia("(min-width: 768px)").matches;
     evictCache(desktop ? 30 : 18);
 
-    if (manifest.high && shouldUseHighTier(isPreview)) {
+    if (
+      manifest.high &&
+      shouldUseHighTier(isPreview) &&
+      progressRef.current > 0.01
+    ) {
       if (highTimerRef.current !== null) {
         window.clearTimeout(highTimerRef.current);
       }
@@ -531,6 +537,9 @@ export function AdaptiveFrameSequence({
             alt=""
             aria-hidden="true"
             className="cinema-sequence__poster"
+            decoding="async"
+            fetchPriority={priority ? "high" : "auto"}
+            loading={priority ? "eager" : "lazy"}
           />
           <div className="cinema-sequence__shade" aria-hidden="true" />
         </div>
@@ -559,6 +568,9 @@ export function AdaptiveFrameSequence({
             alt=""
             aria-hidden="true"
             className="cinema-sequence__poster"
+            decoding="async"
+            fetchPriority={priority ? "high" : "auto"}
+            loading={priority ? "eager" : "lazy"}
           />
           <canvas
             ref={canvasRef}
