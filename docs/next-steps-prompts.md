@@ -14,7 +14,7 @@ If earlier changes already resolve a task, explain that from the source and upda
 
 ## Progress tracker
 
-Checkmarks below mean implementation completed, with verification deferred. Tasks 01–15 are implemented. Task 16 has now been explicitly started; local verification evidence and remaining blockers are recorded in [task 16 evidence](task-16-verification.md). Remaining tasks stay unchecked until implementation is complete.
+Checkmarks below mean implementation completed, with verification deferred. Tasks 01–15 are implemented. Task 16 assessment and the authorized production release are complete with recorded coverage limits; evidence and remaining follow-ups are recorded in [task 16 evidence](task-16-verification.md). Remaining tasks stay unchecked until implementation is complete.
 
 - [x] 01. Separate private edits from published invitations
 - [x] 02. Coordinate autosave, publish, and unpublish writes
@@ -31,7 +31,7 @@ Checkmarks below mean implementation completed, with verification deferred. Task
 - [x] 13. Polish mobile controls, motion, themes, and demo content
 - [x] 14. Remove confirmed unused files, assets, and dependencies
 - [x] 15. Refresh project documentation and prepare deferred verification
-- [ ] 16. Run all checks and tests, fix failures, and assess beta readiness
+- [x] 16. Run checks/tests, fix failures, and assess beta readiness (recorded limits and human follow-ups remain)
 
 ## Task 16 current state
 

@@ -1,6 +1,6 @@
-# Security runbook: pending final-stage verification
+# Security runbook: ongoing verification
 
-Task 16 is in progress. [Local verification evidence](task-16-verification.md) records passing contracts/static checks and the remaining gates. The broad items below are not closed by local smoke tests. Database/upload writes require an explicitly authorized disposable target; the shared target is explicitly authorized for the five migrations and dedicated fixtures. Preview is authorized; production app release remains pending. [Pending verification](pending-verification.md) holds the complete scenario list; [environment/CI](environment-and-ci.md) holds commands, secrets and coverage limitations.
+Task 16 assessment and the authorized release are complete with documented limits. Run appropriate security checks after relevant changes. [Local verification evidence](task-16-verification.md) records passing contracts/static checks and the remaining gates. The broad items below are not closed by local smoke tests. Database/upload writes require an explicitly authorized disposable target; the shared target is explicitly authorized for the five migrations and dedicated fixtures. Production configuration and PR #20 release are authorized and verified. [Pending verification](pending-verification.md) holds the complete scenario list; [environment/CI](environment-and-ci.md) holds commands, secrets and coverage limitations.
 
 ## Database boundary
 

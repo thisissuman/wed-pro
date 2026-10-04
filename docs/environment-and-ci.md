@@ -1,6 +1,6 @@
 # Environment and CI instructions
 
-Task 16 is explicitly underway. Local commands/results and remaining prerequisites are recorded in [verification evidence](task-16-verification.md). Shared-target migration history, signed Cloudinary configuration and generated provider fixtures are confirmed. Preview configuration is saved; its HTTPS runtime verification is pending the branch release. Never paste credentials into documentation/tool output.
+Task 16 assessment and the authorized Production release are complete with recorded limits. Local commands/results and remaining prerequisites are recorded in [verification evidence](task-16-verification.md). Shared-target migration history, signed Cloudinary configuration and generated provider fixtures are confirmed. Preview and Production configuration are saved; Production editor/signing/PNG/WAV completion and public route/metadata checks pass. Never paste credentials into documentation/tool output.
 
 ## Environment ownership
 
