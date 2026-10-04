@@ -147,7 +147,7 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
         </div>
         <h2 className="font-heading text-2xl text-ivory">Create your first invitation</h2>
         <p className="mx-auto mt-3 max-w-md font-body text-sm leading-relaxed text-on-surface-variant/75">
-          Choose the Royal Rajputana template and we will open a draft editor for your wedding details.
+          Choose a template and we will open a draft editor for your wedding details.
         </p>
         <Link
           href="/template"

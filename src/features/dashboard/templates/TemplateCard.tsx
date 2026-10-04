@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { createStarterWeddingData, makeDraftSlug } from "@/lib/invitations";
 import { buildLoginUrl } from "@/lib/auth/redirects";
 import { DraftLimitDialog } from "@/features/dashboard/templates/DraftLimitDialog";
@@ -36,7 +37,7 @@ export function TemplateCard({ template, index = 0, recommended = false }: Templ
     try {
       const supabase = createClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
+      if (authError && !isAuthSessionMissingError(authError)) throw authError;
       if (!user) {
         router.push(buildLoginUrl("/template"));
         return;

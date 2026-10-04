@@ -1,6 +1,6 @@
 # Task 16 verification evidence
 
-4 October 2026. **Automated verification passed; Preview handoff in progress and public-beta release remains pending.** Tasks 01–15 are implemented. The user authorized shared-target migrations/dedicated test fixtures, commit/push to the existing codex branch, and Vercel Preview configuration. PR #20 must remain open: no merge/main/production release. Real Android/iPhone, real-user Auth and WhatsApp are the user's manual checks.
+4 October 2026. **Automated verification passed; configured Preview is available for device testing and public-beta release remains pending.** Tasks 01–15 are implemented. The user authorized shared-target migrations/dedicated test fixtures, commit/push to the existing codex branch, and Vercel Preview configuration. PR #20 must remain open: no merge/main/production release. Real Android/iPhone, real-user Auth and WhatsApp are the user's manual checks.
 
 ## Verified environment and data boundaries
 
@@ -51,7 +51,7 @@ Initial failed runs are not counted as passes. Mobile overlap failures were fixe
 | `npm audit --json` | Nine high-severity development-tool packages remain in braces/micromatch/fast-glob and dependent ESLint/shadcn/ts-morph chains. No compatible complete remedy reported; no breaking downgrade/force used. |
 | Impeccable source detector on edited fields/editor/uploads | No findings. Earlier global bounce warning was the reduced-motion rule disabling bounce, not an active animation. This is not a complete WCAG certification. |
 | `git diff --check`, focused cleanup/consumer review | Passed; all templates/active upload/maps/focus dependencies/dynamic assets preserved. |
-| GitHub Actions / fresh Vercel Preview | Pending authorized branch push; record the resulting commit/deployment/checks below. |
+| GitHub Actions / fresh Vercel Preview | Commit `97e8f20`: [Actions run 37185528643](https://github.com/thisissuman/wed-pro/actions/runs/37185528643) passed; [Vercel deployment FqC5XKethh7wHxr94A8uwEDAxRDD](https://vercel.com/thisissumans-projects/wed-pro/FqC5XKethh7wHxr94A8uwEDAxRDD) Ready. Follow-up selection fix is gated by the same CI/Preview checks. |
 
 Public coverage includes template loading/openers/preloads/skip/reveal/reduced motion, music targets, 320/360/1280px layouts, both studio themes, long-heading stress, Royal/Floral gallery keyboard/focus/Escape and immutable media/cache/range/no-auth-cookie behavior. Batched temporary screenshots were inspected without baseline snapshots. Cinema gallery remains its existing static grid. No claim of full visual/accessibility certification or hardware behavior.
 
@@ -59,7 +59,7 @@ Authenticated coverage includes real template selection, permissive private auto
 
 ## Readiness and remaining human/extended cases
 
-**Ready to hand off a configured Preview for device testing once the fresh deployment/CI gates pass; not yet a public-beta production release.** The older main deployment still uses incompatible direct database writes/public working reads. Corrected source is on PR #20's branch; do not restore insecure database policies. Matching production code/configuration must be released later with explicit merge/deployment authorization.
+**Configured Preview is available for device testing; not yet a public-beta production release.** The older main deployment still uses incompatible direct database writes/public working reads. Corrected source is on PR #20's branch; do not restore insecure database policies. Matching production code/configuration must be released later with explicit merge/deployment authorization.
 
 Pending user checks:
 
@@ -74,3 +74,11 @@ Extended cases remain unverified rather than blanket-passed: all legacy marker/n
 Use appropriate checks after changes; the implementation-only deferral is over. Keep the manual release gates open until their owner records evidence.
 
 Preview access observation: the branch alias redirects unauthenticated HTTP clients to Vercel SSO (302). Preview protection is preserved. Device testing requires authorized Vercel access; WhatsApp/public-crawler behavior must be checked on a public origin after an authorized release. No protection bypass token was extracted or protection disabled.
+
+## Preview handoff follow-up
+
+Stable device-test URL: https://wed-pro-git-codex-royal-3d-loading-becb6f-thisissumans-projects.vercel.app/ . PR #20 remains open. HTTPS Chrome login, template selection, private editor load, return to Dashboard and sign-out passed. Initial inactive controls responded after hydration/fresh navigation; no persistent navigation defect was established. The exact generated invitation `ea9b8960-4991-412d-8cc2-222ba3cc6fd4` was removed; no media was uploaded/saved there. The HTTPS file-chooser upload remains unverified because the Chrome extension lacks “Allow access to file URLs”; protection/extension permissions were not changed. Local real-provider PNG/WAV upload/cancellation/recovery passes remain valid.
+
+An anonymous selection on the immutable Preview exposed Supabase's normal AuthSessionMissingError being displayed as a creation failure. Template selection now redirects that specific missing-session case to login while retaining real auth/network errors. Added a real-browser regression: all five public profiles pass on the rebuilt normal Turbopack production server (`3103`); authenticated template creation still passes on that build. The existing 37 desktop public cases also passed on Turbopack before this small fix. Removed the remaining single-template empty-dashboard wording. Lint, typecheck and production build pass after these changes. Total distinct public scenarios now cover 190 profile cases across runs; the new five are explicitly separate from the previous 185-case combined run.
+
+GitHub Actions emitted platform notices about action Node-runtime/Ubuntu runner transitions; app Node 22 and the actual job passed. These are operational notices, not product failures.
