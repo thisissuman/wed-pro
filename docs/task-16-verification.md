@@ -1,6 +1,6 @@
 # Task 16 verification evidence
 
-4 October 2026. **Automated verification passed; configured Preview is available for device testing and public-beta release remains pending.** Tasks 01–15 are implemented. The user authorized shared-target migrations/dedicated test fixtures, commit/push to the existing codex branch, and Vercel Preview configuration. PR #20 must remain open: no merge/main/production release. Real Android/iPhone, real-user Auth and WhatsApp are the user's manual checks.
+4 October 2026. **Production Free Beta release is live; readiness assessment is complete with the documented extended/manual limits.** Tasks 01–15 are implemented. The user authorized shared-target migrations/dedicated test fixtures, commit/push to the existing codex branch, and Vercel Preview configuration. PR #20 was subsequently merged with explicit user authorization; see the final release evidence below. Real Android/iPhone, real-user Auth and WhatsApp are the user's manual checks.
 
 ## Verified environment and data boundaries
 
@@ -90,3 +90,18 @@ User clarified that the existing requirements should remain mandatory. The attem
 ## Authorized production release
 
 On 4 October 2026 the user reported the Preview looks good, then explicitly authorized production configuration, merging PR #20 and deployment. The user elected to retain the current Cloudinary secret despite the documented private tool-response exposure; no credential was rotated. Device/browser/Auth specifics were not supplied, so this acceptance is not represented as independently measured device coverage. Production WhatsApp behavior remains a human post-release check. Run appropriate checks after changes; retain the explicit extended-case/provider operational risks. No new migration or personal invitation/media operation is part of this release.
+
+## Production outcome — 4 October 2026
+
+PR #20 squash-merged to `a67c210180b82c99bdad6564b164dce3c0c5dcea` at 18:10 IST. Vercel deployment `8hNHkPS4B2rpEchMqiuE3tVBhvvo` is Ready and serves https://wed-pro.vercel.app. [PR CI 37202818414](https://github.com/thisissuman/wed-pro/actions/runs/37202818414) and [main CI 37202942048](https://github.com/thisissuman/wed-pro/actions/runs/37202942048) pass. Production now uses the matching private working/published-snapshot RPC client; the older incompatible deployment is replaced.
+
+Production Cloudinary key/secret, signed image/audio presets and fixed folder mode are scoped to Production and Preview. Production-only NEXT_PUBLIC_SITE_URL is https://wed-pro.vercel.app; the Preview value is preserved. Values stayed masked, and no credential was rotated or printed. A transient Development scope on the API-key setting was corrected before deployment; its final scope is Production/Preview. No database migration/personal-row change was part of this release.
+
+Post-release checks passed:
+
+- Four existing desktop Chrome free-beta browser cases: homepage/demo, anonymous dashboard protection, picker preview and anonymous selection/login destination.
+- All three public template routes returned 200; an existing public snapshot returned 200 with the Production canonical OG URL. Public data was read only.
+- A generated UUID under the empty designated secondary test account loaded through the authenticated Production editor. Anonymous signing returned 401 and cross-origin signing returned 400.
+- Actual signed PNG and silent WAV upload plus provider metadata completion passed against the Production endpoints. Only the two generated drafts/assets were deleted by recorded IDs; no personal data was used as disposable fixtures. The private check script and fixture ledger stay outside Git in /private/tmp.
+
+Verdict: released for a small Free Beta with user acceptance and recorded limits. The automated/deferred phase is closed; normal appropriate-checks-after-changes workflow resumes. Real WhatsApp delivery/cache behavior remains the user's post-release check; broad hardware/Auth/legacy/media-format/screen-reader/provider operational coverage and the nine development-tool advisories remain explicit follow-ups. User acceptance is not represented as independent real-device evidence. Compatible app rollback must retain the RPC/snapshot boundary; do not restore the older insecure schema/client.

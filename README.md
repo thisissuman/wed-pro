@@ -2,7 +2,7 @@
 
 A mobile-first digital wedding invitation project built with Next.js, React, TypeScript, Tailwind, Zustand, Supabase and Framer Motion. Free Beta offers three total invitations per owner, including published invitations. RSVP uses WhatsApp or an external link; there are no payments, in-app RSVP records or guest analytics.
 
-Tasks 01–15 are implemented; **task 16 verification is in progress**. See [verification evidence and remaining gates](docs/task-16-verification.md). Local passes do not establish beta readiness. Five required migrations are applied under explicit authorization. The two-owner database suite passes; 40 distinct authenticated Chrome/WebKit browser cases pass. A branch/Vercel preview is authorized for device testing; merge and production release remain pending.
+Tasks 01–15 and task 16 assessment are complete with documented limits; **the authorized Free Beta release is live** at https://wed-pro.vercel.app. See [verification evidence and remaining gates](docs/task-16-verification.md). Local passes do not establish beta readiness. Five required migrations are applied under explicit authorization. The two-owner database suite passes; 40 distinct authenticated Chrome/WebKit browser cases pass. PR #20 is merged and Production uploads/site configuration are verified. Real WhatsApp and extended hardware/Auth/provider cases remain explicit follow-ups.
 
 ## Three templates
 

@@ -1,6 +1,6 @@
 # Pending verification and rollout plan
 
-Task 16 is explicitly in progress. See [verification evidence](task-16-verification.md) for local commands/results, fixes and unresolved provider/device gates. Unchecked broad entries remain pending; partial local coverage is not a pass for the whole scenario. Historical baseline results in the roadmap predate tasks 01–14 and do not validate them.
+Task 16 assessment and the authorized Production release are complete with documented limits. Run appropriate checks after changes; the remaining entries track extended/manual follow-ups. See [verification evidence](task-16-verification.md) for local commands/results, fixes and unresolved provider/device gates. Unchecked broad entries remain pending; partial local coverage is not a pass for the whole scenario. Historical baseline results in the roadmap predate tasks 01–14 and do not validate them.
 
 ## Current target and completed prerequisites
 
@@ -9,8 +9,8 @@ Task 16 is explicitly in progress. See [verification evidence](task-16-verificat
 - [x] Shared Supabase target explicitly authorized, history/grants inspected, preservation export prepared, five October migrations applied. Five original invitation documents/links and three snapshots preserved. Do not reapply migrations.
 - [x] Two private dedicated accounts supplied; five-case database suite passes owner/anonymous isolation, direct-write denial, trusted publish validation, frozen snapshots/revision races, hidden slug collisions and concurrent quota/idempotency. Test cleanup is generated IDs only.
 - [x] Cloudinary API/Admin credentials, two signed presets and fixed-folder paths verified with generated PNG/WAV; generated remote fixtures cleaned up. Account settings/personal media were not changed.
-- [x] Vercel Preview-only server settings and explicit preview origin saved with user authorization. Commit/push and branch preview authorized; PR #20 merge/main/production release pending.
-- [ ] Fresh HTTPS Preview runtime/CI results: record after authorized push; configuration existence alone is not a runtime pass.
+- [x] Vercel Preview-only server settings and explicit preview origin saved with user authorization. PR #20 is merged; matching Production configuration/deployment is verified.
+- [x] Preview and Production CI/build gates passed. Production private editor, signed PNG/WAV upload/completion, public templates/canonical metadata, anonymous dashboard and upload protection passed.
 - [ ] Real Android/iPhone, real-user OAuth/recovery/allowlists and WhatsApp preview/cache behavior: user will test. No agent messaging/password changes.
 - [ ] Cloudinary account cost/storage ceilings, abandoned-upload handling/rate operations and Supabase leaked-password protection review: human configuration decisions; these are not enforced merely by signed presets.
 - [ ] Extended legacy/format/device cases below remain unverified where no exact result is recorded. Table estimates are not evidence of emptiness; never delete personal data for test capacity.

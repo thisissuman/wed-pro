@@ -1,6 +1,6 @@
-# Mobile QA runbook: task 16 in progress
+# Mobile QA runbook: ongoing coverage
 
-Task 16 has started. [Local evidence](task-16-verification.md) records public template/keyboard/browser checks and their limits. Authenticated editor/navigation and generated-media browser coverage pass across desktop/mobile Chrome/WebKit. Real devices, enlarged typography and broader provider/device formats remain manual checks. Broad checklist items are not passed by public-demo emulation alone. Use [pending verification](pending-verification.md), [polish contract](mobile-motion-theme-and-demos.md), [overlays](accessible-overlays.md) and [environment/CI](environment-and-ci.md) during verification and subsequent changes.
+Task 16 assessment and the authorized release are complete with recorded limits. User accepted the Preview without specifying device/browser details; preserve these unchecked cases as follow-ups. [Local evidence](task-16-verification.md) records public template/keyboard/browser checks and their limits. Authenticated editor/navigation and generated-media browser coverage pass across desktop/mobile Chrome/WebKit. Real devices, enlarged typography and broader provider/device formats remain manual checks. Broad checklist items are not passed by public-demo emulation alone. Use [pending verification](pending-verification.md), [polish contract](mobile-motion-theme-and-demos.md), [overlays](accessible-overlays.md) and [environment/CI](environment-and-ci.md) during verification and subsequent changes.
 
 ## Environments and routes
 
