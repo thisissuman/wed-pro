@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "@/lib/toast";
 import {
   ArrowLeft,
+  CircleAlert,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -243,17 +244,29 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     <PublishValidationContext.Provider value={validationIssues}>
     <main style={{ paddingBottom: keyboardInset ? keyboardInset + 112 : undefined }} className="editor-workspace min-w-0 mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pt-4 pb-[calc(var(--editor-bottom-bar-h)+env(safe-area-inset-bottom)+2rem)] md:pt-8 md:pb-28 lg:pb-28">
       <EditorNavigationGuard initialData={initialData} flush={persistence.flushForNavigation} discard={persistence.discardPending} busy={publicationBusy} />
-      {validationIssues.length > 0 && <section className="mb-4 rounded-2xl border border-error/30 bg-surface-container p-4" aria-label="Publish checklist">
-        <h2 className="font-heading text-lg text-on-surface">Finish before publishing</h2>
-        <ul className="mt-2 space-y-2">
+      {validationIssues.length > 0 && <section className="mb-4 overflow-hidden rounded-2xl border border-champagne-gold/20 bg-surface-container" aria-label="Publish checklist">
+        <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+          <CircleAlert size={20} className="mt-0.5 shrink-0 text-champagne-gold" aria-hidden="true" />
+          <div className="min-w-0">
+            <h2 className="font-body text-base font-semibold leading-6 text-on-surface">A few details before you publish</h2>
+            <p className="mt-1 text-sm leading-5 text-on-surface-variant">Complete these details to get your invitation ready to share. Select an item to edit it.</p>
+          </div>
+        </div>
+        <ul className="divide-y divide-champagne-gold/10 px-4 pb-1">
           {validationIssues.map((issue, index) => <li key={`${issue.path}-${index}`}>
-            <button type="button" className="min-h-11 text-left text-sm text-error underline" onClick={() => {
+            <button type="button" className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg py-3 text-left text-sm leading-5 text-on-surface transition-colors hover:bg-champagne-gold/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne-gold" onClick={() => {
               const stepIndex = editorSteps.findIndex(step => step.id === issue.step);
               if (stepIndex < 0) return;
               setDesktopStep(issue.step);
               goToMobileStep(stepIndex);
               if (window.matchMedia("(min-width: 1024px)").matches) setTimeout(() => document.getElementById(`editor-desktop-${issue.step}`)?.scrollIntoView({ block: "start", behavior: getPreferredScrollBehavior() }), 300);
-            }}>{issue.message}</button>
+            }}>
+              <span className="min-w-0">
+                <span className="mb-0.5 block text-xs font-medium text-champagne-gold">{editorSteps.find(step => step.id === issue.step)?.title ?? "Invitation details"}</span>
+                {issue.path === "venue.name" ? "Add your venue name." : issue.path === "venue.address" ? "Add an address, map link, or location coordinates." : issue.path === "rsvp.whatsappNumber" ? "Add your RSVP WhatsApp number, including the country code." : issue.path.endsWith(".venue") ? `Add a venue for event ${Number(issue.path.split(".")[1]) + 1}.` : issue.message}
+              </span>
+              <ChevronRight size={16} className="shrink-0 text-on-surface-variant" aria-hidden="true" />
+            </button>
             {issue.message.startsWith("Use a hosted") && <button type="button" className="ml-3 min-h-11 text-sm text-on-surface underline" onClick={() => update(current => {
               const next = structuredClone(current);
               const segments = issue.path.split(".");
@@ -272,9 +285,9 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
           </li>)}
         </ul>
       </section>}
-      {hasDemoContent(draft) && <label className="mb-4 flex gap-3 rounded-xl border border-champagne-gold/20 p-4 text-sm text-on-surface">
-        <input type="checkbox" checked={draft.demoContentAcknowledged === true} onChange={event => update(current => ({ ...current, demoContentAcknowledged: event.target.checked }))} />
-        <span>I reviewed the sample story and stock gallery photos and choose to include them. You can replace them, remove gallery photos, or hide the optional story instead.</span>
+      {hasDemoContent(draft) && <label className="mb-4 flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-champagne-gold/15 bg-surface-container p-4 text-sm leading-5 text-on-surface">
+        <input className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--color-champagne-gold)]" type="checkbox" checked={draft.demoContentAcknowledged === true} onChange={event => update(current => ({ ...current, demoContentAcknowledged: event.target.checked }))} />
+        <span><span className="block font-medium">Keep the sample story and stock photos</span><span className="mt-1 block text-xs leading-5 text-on-surface-variant">I’ve reviewed this sample content and choose to include it. You can also replace the photos, remove them, or hide the story.</span></span>
       </label>}
       <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-4 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0 flex-1 space-y-3">
