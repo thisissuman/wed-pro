@@ -3,6 +3,7 @@
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 import { LoaderCircle, Volume2 } from "lucide-react";
+import { ModalSurface } from "@/components/ui/ModalSurface";
 import { royalCinemaAssets } from "../assets";
 
 interface RoyalSealOpenerProps {
@@ -22,6 +23,7 @@ export function RoyalSealOpener({
   bypass = false,
   onOpenFromGesture,
 }: RoyalSealOpenerProps) {
+  const [interactive, setInteractive] = useState(false);
   const [visible, setVisible] = useState(!bypass);
   const [opening, setOpening] = useState(false);
   const [loadedFrames, setLoadedFrames] = useState(0);
@@ -32,6 +34,21 @@ export function RoyalSealOpener({
     (loadedFrames / OPENING_RUNWAY_FRAMES) * 100,
   );
   const assetsReady = loadedFrames >= OPENING_RUNWAY_FRAMES;
+
+  // SSR artwork is visible before the lazy runtime hydrates. Do not accept a
+  // keyboard/click gesture until React's handlers can consume it.
+  useEffect(() => {
+    const timer = window.setTimeout(() => setInteractive(true), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!interactive || !visible) return;
+    const button = buttonRef.current;
+    const focused = document.activeElement;
+    const modal = button?.closest("[role='dialog']");
+    if (button && (focused === document.body || focused === modal)) button.focus();
+  }, [interactive, visible]);
 
   useEffect(() => {
     if (bypass || !visible) return;
@@ -45,19 +62,7 @@ export function RoyalSealOpener({
       // The invitation remains usable when session storage is unavailable.
     }
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
   }, [bypass, storageKey, visible]);
-
-  useEffect(() => {
-    if (!visible) return;
-    const focusTimer = window.setTimeout(() => buttonRef.current?.focus(), 80);
-    return () => window.clearTimeout(focusTimer);
-  }, [visible]);
 
   if (!visible) return null;
 
@@ -68,7 +73,7 @@ export function RoyalSealOpener({
   };
 
   const openInvitation = () => {
-    if (opening) return;
+    if (opening || !interactive) return;
     onOpenFromGesture();
     try {
       window.sessionStorage.setItem(storageKey, "1");
@@ -83,12 +88,15 @@ export function RoyalSealOpener({
   };
 
   return (
+    <ModalSurface open={true} title={"Open the wedding invitation for " + coupleNames}
+      onOpenChange={(next) => { if (!next) openInvitation(); }} portalled={false}
+      onAfterCloseFocus={() => {
+        const heading = document.querySelector<HTMLElement>(".royal-cinema main h1, .royal-cinema main");
+        if (heading) { heading.setAttribute("tabindex", "-1"); heading.focus(); }
+      }}>
     <div
       className="cinema-opener"
       data-opening={opening || undefined}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cinema-opener-title"
     >
       <div className="cinema-opener__preload" aria-hidden="true">
         {Array.from({ length: OPENING_RUNWAY_FRAMES }, (_, index) => {
@@ -128,17 +136,19 @@ export function RoyalSealOpener({
       <div className="cinema-opener__veil" aria-hidden="true" />
       <div className="cinema-opener__content">
         <p className="cinema-eyebrow">A royal invitation</p>
-        <h1 id="cinema-opener-title">{coupleNames}</h1>
+        <h1>{coupleNames}</h1>
         <p className="cinema-opener__note">
           Together with their families, invite you to enter their celebration.
         </p>
         <button
           ref={buttonRef}
+          data-dialog-initial-focus
           type="button"
+          disabled={!interactive}
           onClick={openInvitation}
           className="cinema-seal-button"
           data-loading={!assetsReady || undefined}
-          aria-busy={!assetsReady}
+          aria-busy={!interactive || !assetsReady}
           aria-label={`Open the wedding invitation for ${coupleNames}`}
           style={
             {
@@ -177,5 +187,6 @@ export function RoyalSealOpener({
         </span>
       </div>
     </div>
+    </ModalSurface>
   );
 }

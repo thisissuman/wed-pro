@@ -27,7 +27,10 @@ Modular files — e.g. `invitation-editor-store.ts`, `preview-store.ts`, `ui-sto
 ## Editor
 
 - Live preview, autosave, fast typing
-- **Debounce autosave: 500–1500ms** — not every keystroke
+- Debounce autosave 900ms through `useInvitationPersistence`; save, publish, unpublish, and retry share one ordered queue.
+- Autosave writes private content only through revision-guarded RPCs. Preserve newer user fields when older server responses acknowledge writes.
+- User edits cannot modify authoritative slug/status/meta. Cancel obsolete timers and ignore old-session responses.
+- See [the persistence contract](../../docs/invitation-persistence.md) for the publication boundary and deferred concurrency scenarios.
 - Targeted preview updates; avoid full iframe reloads
 
 ## Component State

@@ -7,7 +7,7 @@ test("homepage presents free beta and opens the Royal demo", async ({ page }) =>
   await expect(liveDemo).toBeVisible({ timeout: 15_000 });
 
   await expect(
-    page.getByText(/open beta · free digital wedding invitations/i)
+    page.getByText(/free beta · digital wedding invitations/i)
   ).toBeVisible();
 
   await liveDemo.click();

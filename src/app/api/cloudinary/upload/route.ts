@@ -1,76 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { getCloudName, getUploadPreset } from "@/lib/media-url";
+import { isAllowedUploadFile, isUploadResourceType } from "@/lib/cloudinary-upload-policy";
+import { getUploadConfig, issueUpload, readUploadRequest } from "@/lib/cloudinary-upload-server";
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const MAX_VIDEO_BYTES = 12 * 1024 * 1024;
-
+export const runtime = "nodejs";
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const body = await readUploadRequest(request);
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: "Sign in to upload media." }, { status: 401 });
+    const match = typeof body.folder === "string" ? /^wed-pro\/([0-9a-f-]{36})\/(hero|music|gallery|couple\/bride|couple\/groom)$/.exec(body.folder) : null;
+    if (!match || !isUploadResourceType(body.resourceType) || typeof body.size !== "number" || typeof body.mimeType !== "string" || typeof body.fileName !== "string" ||
+        !isAllowedUploadFile(body.size, body.mimeType, body.fileName, body.resourceType) ||
+        ((match[2] === "music") !== (body.resourceType === "video"))) {
+      return NextResponse.json({ error: "Use a supported image up to 8 MB or audio file up to 12 MB in its matching editor field." }, { status: 400 });
+    }
+    const { data: invitation, error } = await supabase.from("invitations").select("id").eq("id", match[1]).eq("user_id", user.id).single();
+    if (error || !invitation) return NextResponse.json({ error: "This invitation is not available for uploads." }, { status: 403 });
+    const config = getUploadConfig();
+    if (!config) return NextResponse.json({ error: "Signed Cloudinary uploads need server credentials, signed image/audio presets, and folder-mode configuration. See docs/cloudinary-uploads.md." }, { status: 503 });
+    return NextResponse.json(issueUpload(config, user.id, invitation.id, match[2], body.resourceType), { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ error: "Could not authorize this upload. Use the editor and try again." }, { status: 400 });
   }
-
-  const cloudName = getCloudName();
-  const uploadPreset = getUploadPreset();
-
-  if (!cloudName || !uploadPreset) {
-    return NextResponse.json({ error: "Cloudinary is not configured" }, { status: 503 });
-  }
-
-  const formData = await request.formData();
-  const file = formData.get("file");
-  const folder = formData.get("folder");
-  const resourceTypeRaw = formData.get("resourceType");
-  const resourceType =
-    resourceTypeRaw === "video" ? "video" : "image";
-
-  if (!(file instanceof Blob)) {
-    return NextResponse.json({ error: "Missing file" }, { status: 400 });
-  }
-
-  const maxBytes = resourceType === "video" ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
-  if (file.size > maxBytes) {
-    return NextResponse.json(
-      {
-        error:
-          resourceType === "video"
-            ? "File too large (max 12 MB)"
-            : "File too large (max 8 MB)",
-      },
-      { status: 400 }
-    );
-  }
-
-  const uploadBody = new FormData();
-  uploadBody.append("file", file);
-  uploadBody.append("upload_preset", uploadPreset);
-  if (typeof folder === "string" && folder.trim()) {
-    uploadBody.append("folder", folder.trim());
-  }
-
-  const endpoint =
-    resourceType === "video"
-      ? `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`
-      : `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
-  const cloudinaryRes = await fetch(endpoint, { method: "POST", body: uploadBody });
-
-  const payload = (await cloudinaryRes.json()) as {
-    secure_url?: string;
-    error?: { message?: string };
-  };
-
-  if (!cloudinaryRes.ok || !payload.secure_url) {
-    return NextResponse.json(
-      { error: payload.error?.message ?? "Upload failed" },
-      { status: cloudinaryRes.status || 500 }
-    );
-  }
-
-  return NextResponse.json({ secure_url: payload.secure_url });
 }

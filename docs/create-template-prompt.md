@@ -1,6 +1,8 @@
+> Future template work requires its own request. The current roadmap preserves three existing designs; tasks 01–15 defer all checks/test authoring/QA to task 16. Read AGENTS.md before using a prompt from this file.
+
 # Create Template Prompt
 
-**Start here:** [`docs/create-new-template.md`](./create-new-template.md) — doc map, scalability, and what changed after the May 2026 polish pass.
+**Start here:** [`docs/create-new-template.md`](./create-new-template.md) — current three-template architecture and future development boundaries.
 
 Use this file for the **design intake** and **copy-paste master prompt** when creating a sellable template from Figma, screenshots, or a brief. Implementation steps are in [`docs/add-template.md`](./add-template.md).
 
@@ -94,8 +96,6 @@ Blessing and Thank You are not in the editor scroll map today.
 ## Registry
 
 ```tsx
-import { FloralNoorTemplate } from "./floral-noor/FloralNoorTemplate";
-
 {
   id: "floral-noor",
   name: "Floral Noor",
@@ -103,11 +103,12 @@ import { FloralNoorTemplate } from "./floral-noor/FloralNoorTemplate";
   thumbnail: "https://…",
   category: "floral",
   badge: "New",
-  component: FloralNoorTemplate,
 }
 ```
 
 Do not duplicate cards in `src/data/templates.ts` — the gallery reads the registry.
+
+The registry holds metadata only. Add a separate `dynamic<TemplateProps>(() => import("./floral-noor/FloralNoorTemplate").then(module => module.FloralNoorTemplate), { loading: TemplateLoading })` entry to the typed map in `runtime-registry.tsx`. Keep SSR enabled; do not add an eager component import to metadata. Update the database creation template allowlist deliberately for new supported IDs.
 
 ## Motion and media
 

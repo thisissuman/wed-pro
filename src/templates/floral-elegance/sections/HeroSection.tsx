@@ -1,5 +1,7 @@
 "use client";
 
+import { formatWeddingDate } from "@/lib/format-wedding-date";
+import type { CSSProperties } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { isValidDisplayUrl } from "@/lib/media-url";
@@ -13,12 +15,7 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
   const [nameFirst, nameSecond] = getOrderedCoupleMembers(couple, couple.family);
   const heroBackgroundSrc = hero.backgroundMedia?.trim();
   const hashtag = weddingHashtag?.trim();
-  const weddingDate = new Date(countdown.targetDate);
-  const formattedDate = weddingDate.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  const formattedDate = formatWeddingDate(countdown.targetDate, countdown.timezone);
 
   return (
     <section
@@ -64,7 +61,8 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
       </div>
 
       {/* Content Container */}
-      <div className="relative z-10 flex flex-col items-center max-w-lg mx-auto">
+      <div style={heroBackgroundSrc && isValidDisplayUrl(heroBackgroundSrc) ? { "--template-text": "var(--template-on-image)", "--template-text-muted": "var(--template-on-image-muted)" } as CSSProperties : undefined}
+        className="relative z-10 flex w-full min-w-0 flex-col items-center max-w-lg mx-auto">
         {/* Overlay text */}
         {hero.overlayText && (
           <motion.p
@@ -99,7 +97,8 @@ export function HeroSection({ couple, countdown, hero, weddingHashtag }: HeroSec
           </motion.div>
 
           {/* Names block */}
-          <div className="relative z-10 flex flex-col items-center">
+          <div style={heroBackgroundSrc && isValidDisplayUrl(heroBackgroundSrc) ? { "--template-text": "var(--template-on-image)", "--template-text-muted": "var(--template-on-image-muted)" } as CSSProperties : undefined}
+        className="relative z-10 flex w-full min-w-0 max-w-2xl flex-col items-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

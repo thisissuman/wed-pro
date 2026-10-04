@@ -1,92 +1,35 @@
-# Security Hardening Checklist
+# Security runbook: pending final-stage verification
 
-Use this checklist before open beta launches and after any change touching auth,
-publishing, uploads, or Supabase policies.
+Task 16 is in progress. [Local verification evidence](task-16-verification.md) records passing contracts/static checks and the remaining gates. The broad items below are not closed by local smoke tests. Database/upload writes require an explicitly authorized disposable target; the shared target is explicitly authorized for the five migrations and dedicated fixtures. Preview is authorized; production app release remains pending. [Pending verification](pending-verification.md) holds the complete scenario list; [environment/CI](environment-and-ci.md) holds commands, secrets and coverage limitations.
 
-## Current Security Model
+## Database boundary
 
-- Invitations live in `public.invitations`; dynamic invitation content is stored
-  in `content` JSONB.
-- Published invitations are public and readable by `anon`.
-- Draft invitations are owner-only.
-- Owners can insert, update, and delete only rows where `user_id = auth.uid()`.
-- Public RSVP storage has been removed; guests only use WhatsApp or external links.
-- No payment or `paid` flags exist during Free Beta, so publish is never gated by
-  client-controlled state.
+- [ ] For a new target, reconcile prior history and apply snapshots → readiness → quota → hardening → PT409. All five are already applied on the authorized shared target; do not replay them. Validate backups, preserved JSONB/slugs/public snapshots/history and PostgREST exposure.
+- [ ] profiles is owner-only; working invitations allow only owner reads/deletion; anonymous and other-owner direct REST/SELECT * cannot read private content.
+- [ ] Public snapshot SELECT is allowed; direct snapshot writes and working table/column INSERT/UPDATE are denied. No permissive dependent view/function/old policy or inherited grant bypasses this.
+- [ ] Row-locked ownership/revision RPCs and internal helper grants/search_path withstand forged lifecycle content, stale revisions, anonymous/non-owner calls and uncertain results.
+- [ ] Owner-serialized creation counts total invitations including published, is idempotent for the same request, rejects concurrent/direct bypass and retains above-cap rows.
+- [ ] Old RSVP storage is absent after reconciled earlier create/drop history; no payment/guest tracking authorization path exists. Never use client service-role keys or user_metadata as policy authority.
 
-## Supabase / RLS
+## Auth, routes and publication
 
-- [ ] `profiles` RLS is enabled and users can only select/update their own row.
-- [ ] `invitations` RLS is enabled.
-- [ ] `anon` can select only `status = 'published'` invitations.
-- [ ] `authenticated` users can select their own rows and published rows.
-- [ ] Insert/update/delete policies use `(select auth.uid()) = user_id`.
-- [ ] `public.rsvps` is dropped in every environment via
-  `supabase/migrations/20260525120000_drop_rsvps_table.sql`.
-- [ ] No authorization policy depends on `user_metadata`.
-- [ ] No `service_role` key is used in client-side code.
+- [ ] Exact dashboard root/descendants are protected; login/OAuth/recovery safe next/cookies and single shared client AuthProvider behave correctly.
+- [ ] Literal proxy matcher and session helper agree on explicit static namespaces/files without arbitrary extension/substrings. Media-like protected routes remain protected; callbacks and independent upload authorization remain intact.
+- [ ] Static MP3/MP4/frames GET/HEAD/range/cache behavior is normal without session-generated cookies; immutable v1 contract survives.
+- [ ] Autosave changes only working content; owner preview uses it; guest page/metadata share frozen published content. Unpublish yields public 404 without losing edits/history.
+- [ ] Saved-row publish validation matches shared rules for real names/dates/events/main venue/RSVP, safe URLs and demo acknowledgement; direct RPC cannot bypass. Optional omissions and accepted legacy content remain supported.
+- [ ] Stable suffix links survive renaming couple fields/republishing/unpublish; canonical origin is configured explicitly and public metadata does not disclose private edits.
+- [ ] Navigation/save-error recovery is owner/invitation-scoped; no UI/crop state persists. Best-effort local copies expire/clear appropriately, are device-local/unencrypted, and never resolve stale server conflicts silently.
 
-## Auth & Redirects
+## Upload/provider boundary
 
-- [ ] `/dashboard` redirects anonymous users to `/login`.
-- [ ] OAuth callback only accepts safe relative `next` paths.
-- [ ] `AuthProvider` remains the single client auth source for nav components.
-- [ ] `src/proxy.ts` refreshes sessions on protected routes.
+- [ ] Server-only Cloudinary credentials, signed presets, real fixed/dynamic mode and Admin read permission confirmed in authorized fixtures. No secret/unsigned widget ownership assumption or full file forwarding through Next.
+- [ ] Signing/completion enforces owner/slot/ticket/parameters/expiry/type/format/actual 8/12 MiB byte attachment limits; replay/resource-type switching cannot attach unauthorized media.
+- [ ] Timeout/cancel/unmount/replacement and late responses preserve prior media. Provider leftovers/cost and account/rate operational prerequisites are documented; presets do not impose product pre-storage byte ceilings.
+- [ ] Media/RSVP/map/share URLs reject unsupported protocols, credentials and unsafe inputs; safe legacy rendering preserves stored JSONB without unsafe HTML execution.
 
-## Publish & Public Sharing
+## CI and release gates
 
-- [ ] `publishInvitation()` checks ownership before changing status.
-- [ ] Slug conflicts use suffixes through `findAvailableSlug()`.
-- [ ] Draft public URLs return 404.
-- [ ] Published `/w/[slug]` pages include title, description, and OpenGraph tags.
-- [ ] `NEXT_PUBLIC_SITE_URL` is configured in production for absolute OG URLs (e.g. `https://wed-pro.vercel.app`, no trailing slash).
+CI runs npm ci, Chromium install, lint, TypeScript, Royal assets, contract tests, production build and mobile-Chrome public tests on PRs/main pushes. Provider-backed database/browser suites are separately guarded; they are not silently enabled against shared production by CI. The user authorized pushing the existing PR #20 branch and Preview configuration, with merge/main/production release pending. Current evidence records actual results.
 
-## Uploads & Media
-
-- [ ] Cloudinary upload preset limits file size and accepted media types.
-- [ ] Public template rendering uses URL validation before showing user-provided media.
-- [ ] Uploaded images are delivered through optimized transformations where possible.
-- [ ] Music URLs are treated as user content and never executed as HTML.
-
-## GitHub Actions CI
-
-Workflow: `.github/workflows/ci.yml` (lint → build → Playwright on PRs and pushes to `main`).
-
-| Secret | Required for | Notes |
-|--------|----------------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Auth E2E only | CI uses a harmless placeholder if unset |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Auth E2E only | CI uses a harmless placeholder if unset; real value is from Supabase → Project Settings → API |
-| `NEXT_PUBLIC_SITE_URL` | Production | e.g. `https://wed-pro.vercel.app`; CI defaults to `http://127.0.0.1:3000` |
-| `PLAYWRIGHT_TEST_EMAIL` | Optional auth smoke test | Skipped when empty |
-| `PLAYWRIGHT_TEST_PASSWORD` | Optional auth smoke test | Use a dedicated test user, not production. Test deletes one draft if the account already has 3 invitations. |
-
-Add secrets under **GitHub repo → Settings → Secrets and variables → Actions**.
-
-After adding or changing secrets, open the PR → **Checks** → **Re-run all jobs** (no code push required).
-
-### GitHub settings checklist
-
-| Where | Do you need it? |
-|-------|----------------|
-| **Secrets → Actions** (the four secrets above) | Yes — you already did this |
-| **Actions → General → Allow all actions** | Usually already default; only check if workflows never start |
-| **Branch protection on `main`** | Optional — require `lint-build-test` before merge |
-| **Environments / deployment approvals** | Not needed for this repo yet |
-| **Vercel env vars** | Yes for production — same `NEXT_PUBLIC_*` as local `.env.local` |
-
-## Verification Commands
-
-```bash
-npm run lint
-npm run build
-npx playwright install chromium
-npm run test:e2e
-npm run db:status
-```
-
-For authenticated Playwright smoke coverage, set:
-
-```bash
-PLAYWRIGHT_TEST_EMAIL="test@example.com"
-PLAYWRIGHT_TEST_PASSWORD="strong-password"
-```
+Every skipped credential/configuration/device case needs an explicit reason and readiness impact. Production migration/deployment requires separate authorization after verified nonproduction results, backup/history review, incompatible client drainage and a privacy-preserving recovery plan. Do not restore public working-table policies or direct writes to bypass rollout failures.

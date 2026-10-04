@@ -1,5 +1,7 @@
 "use client";
 
+import { Component, type ReactNode } from "react";
+import { templateRuntimes } from "./runtime-registry";
 import type { WeddingData } from "@/types/wedding.types";
 import { getTemplate } from "./registry";
 
@@ -44,7 +46,7 @@ export function TemplateRenderer({
     );
   }
 
-  const TemplateComponent = entry.component;
+  const TemplateComponent = templateRuntimes[entry.id];
 
   return (
     <div
@@ -55,12 +57,30 @@ export function TemplateRenderer({
         containerType: "inline-size",
       }}
     >
+      <TemplateRuntimeBoundary key={entry.id}>
       <TemplateComponent
         data={data}
         isPreview={isPreview}
         bypassOpener={bypassOpener}
         suppressMusicPlayer={suppressMusicPlayer}
       />
+      </TemplateRuntimeBoundary>
     </div>
   );
+}
+
+
+class TemplateRuntimeBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (this.state.failed) return (
+      <div role="alert" className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8 text-center">
+        <p>This invitation could not load. Reload to try again.</p>
+        <button type="button" onClick={() => window.location.reload()}
+          className="min-h-11 rounded-full border border-current px-6">Reload invitation</button>
+      </div>
+    );
+    return this.props.children;
+  }
 }

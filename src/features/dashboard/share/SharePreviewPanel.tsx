@@ -3,12 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, MessageCircle } from "lucide-react";
-import { useMemo } from "react";
 import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import { getInvitationTitle, getPublicInvitationPath } from "@/lib/invitations";
 import { getSiteUrl } from "@/lib/site-url";
-import { getOgShareImageUrl, isValidDisplayUrl } from "@/lib/media-url";
+import { isValidDisplayUrl } from "@/lib/media-url";
+import { getInvitationShareImageError, resolveInvitationShareImage } from "@/lib/share-image";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 
 const META_MAX = 160;
@@ -24,10 +24,7 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
   const previewDescription =
     draft.seo.metaDescription?.trim() ||
     `You are invited to celebrate ${getInvitationTitle(draft)}.`;
-  const previewImage = useMemo(() => {
-    const raw = draft.hero.backgroundMedia?.trim() || draft.seo.ogImage?.trim() || "";
-    return raw ? getOgShareImageUrl(raw) : "";
-  }, [draft.hero.backgroundMedia, draft.seo.ogImage]);
+  const previewImage = resolveInvitationShareImage(draft, siteUrl);
 
   const descriptionLength = (draft.seo.metaDescription ?? "").length;
 
@@ -45,25 +42,26 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
           WhatsApp link preview
         </p>
         <p className="mt-2 text-xs leading-relaxed text-on-surface-variant/70">
-          This is what guests usually see when you paste your invite link in WhatsApp or Instagram.
-          The image comes from your hero photo in Media &amp; Music.
+          This previews your next publication: OpenGraph image first, then WhatsApp image,
+          then your hero photo. Publish or Republish to make changes public. WhatsApp and
+          other apps may keep an older cached preview after publication.
         </p>
 
         <div className="mt-4 overflow-hidden rounded-xl border border-champagne-gold/15 bg-[var(--editor-field-bg)]">
           {isValidDisplayUrl(previewImage) ? (
             <div className="relative aspect-[1.91/1] w-full bg-surface-variant">
               <Image
-                src={previewImage}
+                src={previewImage!}
                 alt=""
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 400px"
-                unoptimized={previewImage.includes("res.cloudinary.com")}
+                unoptimized={previewImage!.includes("res.cloudinary.com")}
               />
             </div>
           ) : (
             <div className="flex aspect-[1.91/1] items-center justify-center bg-surface-variant/40 px-4 text-center text-xs text-on-surface-variant/50">
-              Add a hero image in Media &amp; Music to see the preview here.
+              Add a sharing image URL below or a hero photo in Media &amp; Music.
             </div>
           )}
           <div className="space-y-1 border-t border-champagne-gold/10 px-3 py-2.5">
@@ -80,6 +78,10 @@ export function SharePreviewPanel({ draft, update, bare }: PanelProps) {
         </div>
       </div>
 
+      <TextInput label="OpenGraph image URL" validationPath="seo.ogImage" error={getInvitationShareImageError(draft.seo.ogImage)} value={draft.seo.ogImage ?? ""} inputMode="url"
+        helperText="First choice for sharing. Use a hosted HTTP(S) image URL." onChange={value => patchSeo({ ogImage: value })} />
+      <TextInput label="WhatsApp preview image URL" validationPath="seo.whatsappPreviewImage" error={getInvitationShareImageError(draft.seo.whatsappPreviewImage)} value={draft.seo.whatsappPreviewImage ?? ""} inputMode="url"
+        helperText="Used when the OpenGraph image is empty." onChange={value => patchSeo({ whatsappPreviewImage: value })} />
       <TextInput
         label="Share link title"
         value={draft.seo.pageTitle ?? ""}

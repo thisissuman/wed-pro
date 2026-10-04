@@ -1,8 +1,9 @@
 "use client";
 
-import { Check, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import type { ChangeEvent } from "react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useId } from "react";
+import { usePublishFieldError } from "@/features/invitations/PublishValidationContext";
 import { cn } from "@/lib/utils";
 import { sanitizePlainText, trimPlainTextField } from "@/lib/sanitize-text";
 
@@ -15,6 +16,7 @@ interface TextInputProps {
   inputMode?: "text" | "tel" | "email" | "url" | "numeric" | "decimal";
   helperText?: string;
   error?: string;
+  validationPath?: string;
 }
 
 export function TextInput({
@@ -25,11 +27,15 @@ export function TextInput({
   placeholder,
   inputMode,
   helperText,
-  error,
+  error: explicitError,
+  validationPath,
 }: TextInputProps) {
+  const fieldError = usePublishFieldError(validationPath);
+  const error = fieldError || explicitError;
+  const errorId = useId();
   return (
     <label className="block space-y-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
+      <span id={errorId + "-label"} className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
         {label}
       </span>
       <input
@@ -43,19 +49,21 @@ export function TextInput({
         onBlur={(event: ChangeEvent<HTMLInputElement>) =>
           onChange(trimPlainTextField(event.target.value))
         }
+        aria-labelledby={errorId + "-label"}
         aria-invalid={Boolean(error)}
+        aria-describedby={error || helperText ? errorId : undefined}
         className={cn(
-          "w-full rounded-xl border bg-[var(--editor-field-bg)] px-4 py-3 text-sm text-[var(--editor-field-text)] outline-none transition placeholder:text-[var(--editor-field-placeholder)] focus:border-champagne-gold/60",
+          "w-full rounded-xl border bg-[var(--editor-field-bg)] px-4 py-3 text-base sm:text-sm text-[var(--editor-field-text)] outline-none transition placeholder:text-[var(--editor-field-placeholder)] focus:border-champagne-gold/60",
           error ? "border-error/50" : "border-[var(--editor-field-border)]"
         )}
       />
       {error && (
-        <span className="block text-[11px] leading-relaxed text-error" role="alert">
+        <span id={errorId} className="block break-words text-[11px] leading-relaxed text-error" role="alert">
           {error}
         </span>
       )}
       {!error && helperText && (
-        <span className="block text-[11px] leading-relaxed text-on-surface-variant/50">
+        <span id={errorId} className="block break-words text-[11px] leading-relaxed text-on-surface-variant/50">
           {helperText}
         </span>
       )}
@@ -71,6 +79,7 @@ interface TextAreaProps {
   placeholder?: string;
   helperText?: string;
   error?: string;
+  validationPath?: string;
 }
 
 export function TextArea({
@@ -80,11 +89,15 @@ export function TextArea({
   rows = 3,
   placeholder,
   helperText,
-  error,
+  error: explicitError,
+  validationPath,
 }: TextAreaProps) {
+  const fieldError = usePublishFieldError(validationPath);
+  const error = fieldError || explicitError;
+  const errorId = useId();
   return (
     <label className="block space-y-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
+      <span id={errorId + "-label"} className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
         {label}
       </span>
       <textarea
@@ -97,19 +110,21 @@ export function TextArea({
         onBlur={(event: ChangeEvent<HTMLTextAreaElement>) =>
           onChange(trimPlainTextField(event.target.value))
         }
+        aria-labelledby={errorId + "-label"}
         aria-invalid={Boolean(error)}
+        aria-describedby={error || helperText ? errorId : undefined}
         className={cn(
-          "w-full resize-none rounded-xl border bg-[var(--editor-field-bg)] px-4 py-3 text-sm leading-relaxed text-[var(--editor-field-text)] outline-none transition placeholder:text-[var(--editor-field-placeholder)] focus:border-champagne-gold/60",
+          "w-full resize-none rounded-xl border bg-[var(--editor-field-bg)] px-4 py-3 text-base sm:text-sm leading-relaxed text-[var(--editor-field-text)] outline-none transition placeholder:text-[var(--editor-field-placeholder)] focus:border-champagne-gold/60",
           error ? "border-error/50" : "border-[var(--editor-field-border)]"
         )}
       />
       {error && (
-        <span className="block text-[11px] leading-relaxed text-error" role="alert">
+        <span id={errorId} className="block break-words text-[11px] leading-relaxed text-error" role="alert">
           {error}
         </span>
       )}
       {!error && helperText && (
-        <span className="block text-[11px] leading-relaxed text-on-surface-variant/50">
+        <span id={errorId} className="block break-words text-[11px] leading-relaxed text-on-surface-variant/50">
           {helperText}
         </span>
       )}
@@ -130,77 +145,17 @@ export function SelectInput<T extends string>({
   onChange,
   options,
 }: SelectInputProps<T>) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const selected = options.find((option) => option.value === value);
-  const labelId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [open]);
-
+  const inputId = useId();
   return (
-    <div ref={rootRef} className="flex flex-col gap-2">
-      <span id={labelId} className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
-        {label}
-      </span>
-      <button
-        type="button"
-        aria-labelledby={labelId}
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--editor-field-border)] bg-[var(--editor-field-bg)] px-4 py-3 text-left text-sm text-[var(--editor-field-text)] outline-none transition focus:border-champagne-gold/60"
-      >
-        <span>{selected?.label ?? "Select"}</span>
-        <ChevronDown
-          size={16}
-          className={cn(
-            "shrink-0 text-champagne-gold/70 transition-transform duration-200",
-            open && "rotate-180"
-          )}
-        />
-      </button>
-      {open && (
-        <div
-          role="listbox"
-          aria-labelledby={labelId}
-          className="overflow-hidden rounded-xl border border-champagne-gold/15 bg-surface-container shadow-[0_18px_60px_rgba(0,0,0,0.35)]"
-        >
-          {options.map((option) => {
-            const isSelected = option.value === value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                onClick={() => {
-                  onChange(option.value);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "flex min-h-11 w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition",
-                  isSelected
-                    ? "bg-champagne-gold/15 text-champagne-gold"
-                    : "text-on-surface-variant hover:bg-champagne-gold/10 hover:text-on-surface"
-                )}
-              >
-                <span>{option.label}</span>
-                {isSelected && <Check size={14} className="text-champagne-gold" />}
-              </button>
-            );
-          })}
-        </div>
-      )}
+    <div className="flex flex-col gap-2">
+      <label htmlFor={inputId} className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">{label}</label>
+      <div className="relative">
+        <select id={inputId} value={value} onChange={(event) => onChange(event.target.value as T)}
+          className="min-h-11 w-full appearance-none rounded-xl border border-[var(--editor-field-border)] bg-[var(--editor-field-bg)] px-4 py-3 pr-10 text-base sm:text-sm text-[var(--editor-field-text)] outline-none focus:border-champagne-gold/60">
+          {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+        <ChevronDown aria-hidden size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-champagne-gold/70" />
+      </div>
     </div>
   );
 }

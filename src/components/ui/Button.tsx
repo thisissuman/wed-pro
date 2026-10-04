@@ -25,7 +25,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2",
+        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2",
         "px-6 py-3 rounded-full",
         "font-[family-name:var(--font-body)] text-sm font-medium tracking-wide",
         "transition-all duration-200 active:scale-95",

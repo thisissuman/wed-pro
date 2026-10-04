@@ -1,3 +1,4 @@
+import { getDemoDates } from "@/lib/demo-dates";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { HeroSection } from "@/features/dashboard/hero/HeroSection";
 import { PremiumFeatures } from "@/features/dashboard/features/PremiumFeatures";
@@ -11,6 +12,7 @@ import { CinematicFooter } from "@/features/dashboard/footer/CinematicFooter";
 export const revalidate = 3600;
 
 export default function HomePage() {
+  const demoDates = getDemoDates(new Date().toISOString());
   return (
     <DashboardShell>
       <main className="max-w-[1200px] mx-auto px-[var(--spacing-container-margin)] py-[var(--spacing-section-gap-md)] space-y-[var(--spacing-section-gap-lg)] pb-32">
@@ -21,7 +23,7 @@ export default function HomePage() {
         </section>
 
         <section id="how-it-works">
-          <HowItWorks />
+          <HowItWorks demoDate={demoDates.displayDate} />
         </section>
 
         <section id="comparison">

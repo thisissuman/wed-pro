@@ -210,6 +210,10 @@ export interface InvitationTypography {
 
 /* ── Invitation Metadata ── */
 export interface InvitationMeta {
+  /** Server-controlled optimistic revision for private working content. */
+  draftRevision?: number;
+  /** Permanent first-publication marker; retained when taken offline. */
+  firstPublishedAt?: string;
   /** When the invitation was created */
   createdAt?: string;
   /** When the invitation was last updated */
@@ -229,6 +233,9 @@ export interface WeddingData {
   slug: string;
   templateId: string;
   status: InvitationStatus;
+
+  /** Explicit permission to publish recognizable sample story/stock photos. */
+  demoContentAcknowledged?: boolean;
 
   /* Core content sections */
   couple: CoupleData;

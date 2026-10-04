@@ -1,5 +1,6 @@
 "use client";
 
+import { usePrefersReducedMotion } from "@/templates/royal/hooks/usePrefersReducedMotion";
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
@@ -10,8 +11,11 @@ interface BlurFadeTextProps {
 }
 
 export function BlurFadeText({ text, className, delay = 0 }: BlurFadeTextProps) {
+  const reducedMotion = usePrefersReducedMotion();
   const words = text.trim().split(/\s+/);
   let charOffset = 0;
+
+  if (reducedMotion) return <span className={className}>{text}</span>;
 
   return (
     <span className={className} aria-label={text}>
@@ -63,6 +67,8 @@ interface BlurFadeProps {
 }
 
 export function BlurFade({ children, className, delay = 0 }: BlurFadeProps) {
+  const reducedMotion = usePrefersReducedMotion();
+  if (reducedMotion) return <div className={className}>{children}</div>;
   return (
     <motion.div
       initial={{ opacity: 0, filter: "blur(6px)", y: 12 }}

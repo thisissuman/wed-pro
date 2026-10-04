@@ -51,7 +51,7 @@ export function VenuePanel({ draft, update, bare }: PanelProps) {
         </div>
       )}
       <TextInput
-        label="Venue Name"
+        label="Venue Name" validationPath="venue.name"
         value={draft.venue.name}
         onChange={(value) =>
           update((current) => ({
@@ -61,7 +61,7 @@ export function VenuePanel({ draft, update, bare }: PanelProps) {
         }
       />
       <TextArea
-        label="Venue Address"
+        label="Venue Address" validationPath="venue.address"
         value={draft.venue.address}
         onChange={(value) =>
           update((current) => ({
@@ -71,7 +71,7 @@ export function VenuePanel({ draft, update, bare }: PanelProps) {
         }
       />
       <TextInput
-        label="Google Map Link"
+        label="Google Map Link" validationPath="venue.googleMapLink"
         value={draft.venue.googleMapLink ?? ""}
         onChange={(value) =>
           update((current) => ({

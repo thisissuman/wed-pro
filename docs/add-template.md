@@ -2,7 +2,7 @@
 
 **Index:** [`docs/create-new-template.md`](./create-new-template.md) · **Prompt:** [`docs/create-template-prompt.md`](./create-template-prompt.md) · **Agent:** [`.cursor/skills/create-template/SKILL.md`](../.cursor/skills/create-template/SKILL.md)
 
-Implementation checklist for a new sellable design. Does **not** change editor, auth, publish, or `/w/[slug]` logic.
+Future implementation checklist for a separately authorized additional design. The current product supports three designs; this roadmap does not add another. Tasks 01–15 defer verification/testing to task 16. Does **not** change editor, auth, publish, or `/w/[slug]` logic.
 
 ## 1. Scaffold
 
@@ -56,13 +56,14 @@ Mapped ids: hero, couple, countdown, events, story, gallery, venue, rsvp.
 ## 6. Registry and routes
 
 - One entry in [`src/templates/registry.ts`](../src/templates/registry.ts).
+- Metadata only: no eager component import. Add its SSR-enabled dynamic loader to `src/templates/runtime-registry.tsx`, whose keys satisfy the metadata-derived TemplateId. Keep any legacy mapping in `template-ids.ts` and deliberately update the database creation allowlist when adding a supported template. See [the loading contract](sharing-and-template-loading.md).
 - Do **not** add a second list in `src/data/templates.ts`.
-- Verify:
+- Verify only during the authorized verification stage (task 16 for the current roadmap):
   - `/preview/<template-id>`
   - `/template` preview + select
   - Editor live preview via `TemplateRenderer`
 
-## 7. Mobile QA
+## 7. Mobile QA (deferred during tasks 01–15)
 
 [`docs/qa-mobile.md`](./qa-mobile.md) — use your `template-id` instead of `royal` in route rows.
 

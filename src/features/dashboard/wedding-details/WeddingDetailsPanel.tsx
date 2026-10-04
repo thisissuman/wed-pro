@@ -6,7 +6,6 @@ import { EditorPanel } from "@/features/dashboard/shared/EditorPanel";
 import { scrollPreviewToSection } from "@/features/dashboard/shared/preview-section-map";
 import { SelectInput, TextArea, TextInput } from "@/features/dashboard/shared/Inputs";
 import { ToggleRow } from "@/features/dashboard/shared/ToggleRow";
-import { buildInvitationSlug } from "@/lib/invitations";
 import { validateHashtag, validateWeddingDate } from "@/lib/validate-editor";
 import type { PanelProps } from "@/features/dashboard/shared/types";
 import type { ParentDisplayOrder, PersonData } from "@/types/wedding.types";
@@ -59,11 +58,9 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
     update((current) => {
       const groom = groomName ?? current.couple.groom.name;
       const bride = brideName ?? current.couple.bride.name;
-      const slug = buildInvitationSlug(groom, bride) || current.slug;
 
       return {
         ...current,
-        slug,
         couple: {
           ...current.couple,
           groom: { ...current.couple.groom, name: groom },
@@ -115,16 +112,16 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
       <div onFocusCapture={() => scrollPreviewToSection("wedding-details")}>
         <SectionDivider
           title="Couple names"
-          description="These names appear on your invitation and in your share link."
+          description="These names appear on your invitation. Your published link stays the same after edits."
         />
         <div className="mt-4 space-y-4">
           <TextInput
-            label="Bride Name"
+            label="Bride Name" validationPath="couple.bride.name"
             value={draft.couple.bride.name}
             onChange={(value) => patchNames(undefined, value)}
           />
           <TextInput
-            label="Groom Name"
+            label="Groom Name" validationPath="couple.groom.name"
             value={draft.couple.groom.name}
             onChange={(value) => patchNames(value, undefined)}
           />
@@ -148,7 +145,7 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
             }
           />
           <TextInput
-            label="Wedding Date"
+            label="Wedding Date" validationPath="couple.weddingDate"
             type="date"
             value={draft.couple.weddingDate ?? ""}
             error={dateError}
@@ -187,7 +184,7 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
               Groom · {draft.couple.groom.name || "Groom"}
             </p>
             <CroppedImageUploadField
-              label="Groom Photo"
+              label="Groom Photo" validationPath="couple.groom.photo"
               value={draft.couple.groom.photo ?? ""}
               folder={`wed-pro/${draft.id}/couple/groom`}
               aspect={1}
@@ -246,7 +243,7 @@ export function WeddingDetailsPanel({ draft, update, bare }: PanelProps) {
               Bride · {draft.couple.bride.name || "Bride"}
             </p>
             <CroppedImageUploadField
-              label="Bride Photo"
+              label="Bride Photo" validationPath="couple.bride.photo"
               value={draft.couple.bride.photo ?? ""}
               folder={`wed-pro/${draft.id}/couple/bride`}
               aspect={1}

@@ -16,7 +16,7 @@ alwaysApply: false
 WhatsApp/Instagram crawlers **do not run JavaScript**.
 
 - Page must be a **React Server Component**
-- Fetch invitation (`status = 'published'`) on the server from Supabase
+- Fetch the published snapshot from `published_invitations` on the server. Page rendering and metadata must share the same request-cached read. Never fall back to owner working content.
 - Pass data to client `<TemplateRenderer />` as props
 
 ## Metadata
@@ -45,8 +45,10 @@ Guest opens link from WhatsApp on mobile data — prioritize fast LCP, minimal c
 
 ## Access
 
-- Published invitations: public read via RLS
-- Drafts: never exposed on public route
+- Published copies: public SELECT via RLS; no client writes.
+- Working content in `invitations`: owner-only, even when status is published.
+- Unpublish removes the public copy and preserves private edits/link history.
+- Read [the persistence contract](../../docs/invitation-persistence.md); its migration is pending, with verification deferred to task 16.
 
 ## SEO
 

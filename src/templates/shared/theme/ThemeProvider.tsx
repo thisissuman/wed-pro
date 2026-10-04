@@ -6,7 +6,7 @@ import type { InvitationTypography } from "@/types/wedding.types";
 import { mergeThemeConfig, type TemplateThemeTokens } from "./tokens";
 import { resolveTypographyScale } from "./typography-scale";
 
-type ThemeStyle = CSSProperties & Record<`--template-${string}`, string>;
+type ThemeStyle = CSSProperties & Record<`--${string}`, string>;
 
 interface TemplateThemeProviderProps {
   children: ReactNode;
@@ -18,6 +18,18 @@ interface TemplateThemeProviderProps {
 
 function createThemeStyle(tokens: TemplateThemeTokens): ThemeStyle {
   return {
+    // Legacy semantic utilities are scoped to this invitation, never the studio mode.
+    "--color-background": tokens.colors.background,
+    "--color-surface": tokens.colors.surface,
+    "--color-surface-container": tokens.colors.surface,
+    "--color-surface-container-high": tokens.colors.surfaceElevated,
+    "--color-on-surface": tokens.colors.text,
+    "--color-on-surface-variant": tokens.colors.textMuted,
+    "--color-ivory": tokens.colors.text,
+    "--color-champagne-gold": tokens.colors.primary,
+    "--color-charcoal-black": "#131313",
+    "--template-on-image": "#fffdf9",
+    "--template-on-image-muted": "#e8e3dc",
     "--template-primary": tokens.colors.primary,
     "--template-secondary": tokens.colors.secondary,
     "--template-accent": tokens.colors.accent,
@@ -49,11 +61,12 @@ export function TemplateThemeProvider({
 
   return (
     <div
-      className={className}
+      className={["template-theme", className].filter(Boolean).join(" ")}
       style={{
         ...createThemeStyle(tokens),
         ["--template-content-scale" as string]: String(scale.factor),
         zoom: scale.factor,
+        colorScheme: "dark",
       }}
     >
       {children}

@@ -26,5 +26,4 @@ export interface TemplateRegistryEntry {
   thumbnail: string;
   category: string;
   badge?: string;
-  component: React.ComponentType<TemplateProps>;
 }

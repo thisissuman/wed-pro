@@ -1,5 +1,6 @@
 "use client";
 
+import { getPreferredScrollBehavior } from "@/lib/motion-preferences";
 import { User, LogOut, LayoutDashboard } from "lucide-react";
 import { AppThemeToggler } from "@/components/magic-ui/app-theme-toggler";
 import { toast } from "@/lib/toast";
@@ -59,7 +60,7 @@ export function TopNavBar() {
       if (isHomepage) {
         const el = document.getElementById(sectionId);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
+          el.scrollIntoView({ behavior: getPreferredScrollBehavior() });
         }
       } else {
         router.push(`/#${sectionId}`);
@@ -80,7 +81,7 @@ export function TopNavBar() {
           href="/"
           onClick={(event) => preventSameRouteNav("/", event)}
           prefetch={pathname !== "/"}
-          className="font-[family-name:var(--font-heading)] text-champagne-gold tracking-widest font-semibold text-lg md:text-headline-md shrink-0"
+          className="font-[family-name:var(--font-heading)] text-champagne-gold tracking-widest font-semibold text-lg md:text-headline-md min-w-0 truncate"
         >
           Vivaha Studio
         </Link>
@@ -93,7 +94,7 @@ export function TopNavBar() {
                 key={link.label}
                 onClick={() => handleSectionClick(link.id)}
                 className={cn(
-                  "font-[family-name:var(--font-body)] text-xs font-semibold uppercase tracking-widest transition-colors duration-300 pb-1 cursor-pointer",
+                  "min-h-11 min-w-11 font-[family-name:var(--font-body)] text-xs font-semibold uppercase tracking-widest transition-colors duration-300 pb-1 cursor-pointer",
                   isActive
                     ? "text-champagne-gold border-b-2 border-champagne-gold"
                     : "text-on-surface-variant hover:text-champagne-gold"
@@ -105,7 +106,7 @@ export function TopNavBar() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex shrink-0 items-center gap-2 md:gap-4">
           <AppThemeToggler />
 
           <Link
@@ -113,7 +114,7 @@ export function TopNavBar() {
             prefetch={user ? pathname !== "/dashboard" : undefined}
             onClick={(event) => user && preventSameRouteNav("/dashboard", event)}
             className={cn(
-              "relative z-[1] inline-flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-xs font-semibold uppercase tracking-wider hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 transition-all duration-200",
+              "relative z-[1] inline-flex min-h-11 items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-xs font-semibold uppercase tracking-wider hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] active:scale-95 transition-all duration-200",
               user && "gemini-glow-btn"
             )}
           >
@@ -124,7 +125,7 @@ export function TopNavBar() {
             <button
               onClick={handleAvatarClick}
               aria-label="Profile"
-              className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200 p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-champagne-gold/50"
+              className="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-200 min-h-11 min-w-11 p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-champagne-gold/50"
             >
               <div className="w-8 h-8 rounded-full bg-surface-variant border border-champagne-gold/20 overflow-hidden flex items-center justify-center">
                 {user ? (

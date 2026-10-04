@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Truck, Sparkles, ArrowRight } from "lucide-react";
-import { SavingsCalculatorSheet } from "./SavingsCalculatorSheet";
+import { CreditCard, Truck, Sparkles } from "lucide-react";
 
 export function DigitalVsPhysical() {
-  const [calculatorOpen, setCalculatorOpen] = useState(false);
-
   return (
     <section className="relative z-10 flex flex-col items-center justify-center">
       {/* Section Header */}
@@ -15,10 +11,10 @@ export function DigitalVsPhysical() {
         <p className="font-label-sm text-[12px] font-semibold text-champagne-gold uppercase tracking-widest">
           Why Go Digital?
         </p>
-        <h1 className="font-[family-name:var(--font-heading)] text-headline-lg md:text-[48px] md:leading-[56px] text-on-surface font-semibold">
+        <h2 className="font-[family-name:var(--font-heading)] text-headline-lg md:text-[48px] md:leading-[56px] text-on-surface font-semibold">
           Paper <span className="text-on-surface-variant italic font-light">vs</span>{" "}
           Digital Invitations
-        </h1>
+        </h2>
         <div className="w-24 h-1 bg-gradient-to-r from-transparent via-champagne-gold/50 to-transparent mx-auto mt-6 rounded-full"></div>
         <p className="font-[family-name:var(--font-body)] text-body-lg text-on-surface-variant/80 mt-6 max-w-2xl mx-auto">
           Discover the elegance of modern sharing. While paper holds tradition,
@@ -61,10 +57,10 @@ export function DigitalVsPhysical() {
             </div>
             <div className="p-6 md:p-8 flex flex-col justify-center items-center border-l border-champagne-gold/5">
               <span className="font-[family-name:var(--font-body)] text-on-surface-variant/80">
-                ₹5,000–₹50,000+
+                Printing costs vary
               </span>
               <span className="font-[family-name:var(--font-body)] text-[10px] font-semibold text-on-surface-variant/40 mt-1 uppercase tracking-wider">
-                + Shipping
+                Plus delivery costs
               </span>
             </div>
             <div className="p-6 md:p-8 flex flex-col justify-center items-center bg-champagne-gold/5 border-l border-champagne-gold/10">
@@ -87,18 +83,18 @@ export function DigitalVsPhysical() {
             </div>
             <div className="p-6 md:p-8 flex flex-col justify-center items-center border-l border-champagne-gold/5">
               <span className="font-[family-name:var(--font-body)] text-on-surface-variant/80">
-                2–4 Weeks
+                Printing & delivery
               </span>
               <span className="font-[family-name:var(--font-body)] text-[10px] font-semibold text-on-surface-variant/40 mt-1 uppercase tracking-wider">
-                Subject to delays
+                Timing varies by supplier
               </span>
             </div>
             <div className="p-6 md:p-8 flex flex-col justify-center items-center bg-champagne-gold/5 border-l border-champagne-gold/10">
               <span className="font-[family-name:var(--font-heading)] text-xl text-champagne-gold font-semibold">
-                Instant
+                Share a link
               </span>
               <span className="font-[family-name:var(--font-body)] text-[10px] font-semibold text-on-surface-variant/60 mt-1 uppercase tracking-wider">
-                WhatsApp / Link
+                After publication
               </span>
             </div>
           </div>
@@ -124,7 +120,7 @@ export function DigitalVsPhysical() {
                 Interactive
               </span>
               <span className="font-[family-name:var(--font-body)] text-[10px] font-semibold text-on-surface-variant/60 mt-1 uppercase tracking-wider">
-                Editable & Live
+                Edit & Republish
               </span>
             </div>
           </div>

@@ -7,10 +7,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Run on all app routes except static assets and common image extensions.
-     * Keeps auth cookies fresh on navigations (dashboard, editor, auth callback).
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // Explicit static namespaces/files only; app routes keep session refresh
+    // even when an invitation ID or route ends in .mp4/.png. Keep aligned with
+    // lib/auth/session-routing.ts. Next requires this matcher to be literal.
+    "/((?!_next/static(?:/|$)|_next/image(?:/|$)|media/|tap-to-open/|(?:favicon\\.ico|window\\.svg|globe\\.svg|next\\.svg|vercel\\.svg|file\\.svg)$).*)",
   ],
 };

@@ -1,3 +1,6 @@
+// Validate the complete immutable v1 archive, including historical assets that
+// the current runtime does not select. Do not prune this list based on imports;
+// retirement needs deployment evidence. See docs/cleanup-decisions.md.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";

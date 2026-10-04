@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter, Noto_Sans_Devanagari, Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { MotionPreferences } from "@/components/providers/MotionPreferences";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AuthRecoveryHandler } from "@/components/auth/AuthRecoveryHandler";
 import { AppToaster } from "@/components/providers/AppToaster";
 import { GlobalLovePointer } from "@/components/magic-ui/global-love-pointer";
 import { ChromeBodyClass } from "@/components/layout/ChromeBodyClass";
+import { EditorHistoryBoundary } from "@/components/providers/EditorHistoryBoundary";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -71,13 +73,16 @@ export default function RootLayout({
           }}
         />
         <ThemeProvider>
+          <MotionPreferences>
           <AuthProvider>
+            <EditorHistoryBoundary />
             <AuthRecoveryHandler />
             <ChromeBodyClass />
             <GlobalLovePointer />
             {children}
             <AppToaster />
           </AuthProvider>
+          </MotionPreferences>
         </ThemeProvider>
       </body>
     </html>

@@ -103,6 +103,7 @@ export function GalleryEditorPanel({ draft, update, bare }: PanelProps) {
             >
               <GalleryCard
                 image={image}
+                validationPath={`gallery.images.${gallery.images.findIndex(item => item.id === image.id)}.url`}
                 canMoveUp={index > 0}
                 canMoveDown={index < sortedImages.length - 1}
                 invitationId={draft.id}
@@ -142,6 +143,7 @@ export function GalleryEditorPanel({ draft, update, bare }: PanelProps) {
 
 interface GalleryCardProps {
   image: GalleryImage;
+  validationPath: string;
   canMoveUp: boolean;
   canMoveDown: boolean;
   invitationId: string;
@@ -153,6 +155,7 @@ interface GalleryCardProps {
 
 function GalleryCard({
   image,
+  validationPath,
   canMoveUp,
   canMoveDown,
   invitationId,
@@ -181,7 +184,7 @@ function GalleryCard({
       </div>
       <div className="space-y-3">
         <CroppedImageUploadField
-          label="Photo"
+          label="Photo" validationPath={validationPath}
           value={image.url}
           folder={`wed-pro/${invitationId}/gallery`}
           aspect={4 / 5}

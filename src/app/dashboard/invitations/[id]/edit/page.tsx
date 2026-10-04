@@ -21,7 +21,7 @@ export default async function EditInvitationPage({ params }: EditInvitationPageP
 
   const { data, error } = await supabase
     .from("invitations")
-    .select("id,user_id,slug,template_id,status,content,created_at,updated_at,published_at")
+    .select("id,user_id,slug,template_id,status,content,created_at,updated_at,published_at,draft_revision,first_published_at")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -32,7 +32,7 @@ export default async function EditInvitationPage({ params }: EditInvitationPageP
 
   return (
     <DashboardShell>
-      <InvitationEditor initialData={normalizeInvitationRow(data as InvitationRow)} />
+      <InvitationEditor key={id} initialData={normalizeInvitationRow(data as InvitationRow)} />
     </DashboardShell>
   );
 }

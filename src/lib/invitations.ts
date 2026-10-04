@@ -1,3 +1,5 @@
+import { getDemoDates } from "@/lib/demo-dates";
+import { getSiteUrl } from "@/lib/site-url";
 import { sampleWeddingData } from "@/data/sample-wedding";
 import type {
   CoupleFamilyData,
@@ -35,6 +37,8 @@ export interface InvitationRow {
   created_at: string;
   updated_at: string;
   published_at: string | null;
+  draft_revision?: number;
+  first_published_at?: string | null;
 }
 
 interface StarterWeddingDataInput {
@@ -79,31 +83,25 @@ export function slugify(value: string): string {
 
 /** Public URL slug from couple names, e.g. `rahul-weds-ananya`. */
 export function buildInvitationSlug(groomName: string, brideName: string): string {
-  const groomFirst = slugify(groomName.split(/\s+/)[0] || groomName);
-  const brideFirst = slugify(brideName.split(/\s+/)[0] || brideName);
+  const groomFirst = slugify(groomName.trim().split(/\s+/)[0] || groomName);
+  const brideFirst = slugify(brideName.trim().split(/\s+/)[0] || brideName);
 
   if (groomFirst && brideFirst) {
-    return `${groomFirst}-weds-${brideFirst}`.slice(0, 64);
+    return `${groomFirst}-weds-${brideFirst}`.slice(0, 64).replace(/-+$/, "");
   }
   if (groomFirst) return `${groomFirst}-wedding`.slice(0, 64);
   if (brideFirst) return `${brideFirst}-wedding`.slice(0, 64);
   return "";
 }
 
-export function resolveInvitationSlug(data: Pick<WeddingData, "slug" | "templateId" | "couple">): string {
-  const fromNames = buildInvitationSlug(data.couple.groom.name, data.couple.bride.name);
-  if (fromNames) return fromNames;
-  if (data.slug?.trim()) return slugify(data.slug);
-  return makeDraftSlug(data.templateId);
-}
 
 export function makeDraftSlug(templateId = FALLBACK_TEMPLATE_ID): string {
   const randomPart =
     typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID().slice(0, 8)
+      ? crypto.randomUUID().replace(/-/g, "")
       : Math.random().toString(36).slice(2, 10);
 
-  return `${slugify(templateId || FALLBACK_TEMPLATE_ID)}-${randomPart}`;
+  return `${slugify(templateId || FALLBACK_TEMPLATE_ID).slice(0, 31)}-${randomPart}`;
 }
 
 function generateId(prefix: string): string {
@@ -195,9 +193,7 @@ export function createStarterWeddingData({
   userId,
   now = new Date().toISOString(),
 }: StarterWeddingDataInput): WeddingData {
-  const weddingDate = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .slice(0, 10);
+  const weddingDate = getDemoDates(now).weddingDate;
   const data = cloneSampleWeddingData();
 
   data.id = id;
@@ -298,8 +294,6 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
   });
   const content = isRecord(row.content) ? (row.content as Partial<WeddingData>) : {};
   const contentMeta = isRecord(content.meta) ? content.meta : {};
-  const contentPublishedAt =
-    typeof contentMeta.publishedAt === "string" ? contentMeta.publishedAt : undefined;
   const baseFamily: CoupleFamilyData = base.couple.family ?? {
     bride: {},
     groom: {},
@@ -315,9 +309,12 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
     slug: row.slug,
     templateId,
     status: row.status,
+    story: { ...base.story, ...content.story, timeline: content.story?.timeline ?? [] },
+    gallery: { ...base.gallery, ...content.gallery, images: content.gallery?.images ?? [] },
     couple: {
       ...base.couple,
       ...(content.couple ?? {}),
+      weddingDate: content.couple?.weddingDate || content.events?.[0]?.date || content.countdown?.targetDate?.slice(0, 10) || "",
       bride: {
         ...base.couple.bride,
         ...(content.couple?.bride ?? {}),
@@ -354,7 +351,9 @@ export function normalizeInvitationRow(row: InvitationRow): WeddingData {
       userId: row.user_id,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
-      publishedAt: row.published_at ?? contentPublishedAt,
+      publishedAt: row.published_at ?? undefined,
+      firstPublishedAt: row.first_published_at ?? undefined,
+      draftRevision: row.draft_revision ?? 0,
     },
   };
 }
@@ -386,7 +385,7 @@ export function getPublicInvitationPath(slug: string): string {
   return `/w/${slug}`;
 }
 
-export function getPublicInvitationUrl(slug: string, origin?: string): string {
+export function getPublicInvitationUrl(slug: string, origin = getSiteUrl()): string {
   const path = getPublicInvitationPath(slug);
   return origin ? `${origin}${path}` : path;
 }

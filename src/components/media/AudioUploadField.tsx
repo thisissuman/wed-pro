@@ -1,10 +1,11 @@
 "use client";
 
 import { Loader2, Music, Upload } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { uploadToCloudinary } from "@/lib/cloudinary-upload-client";
 import { isCloudinaryConfigured } from "@/lib/media-url";
+import { usePublishFieldError } from "@/features/invitations/PublishValidationContext";
 import { cn } from "@/lib/utils";
 
 const MAX_BYTES = 12 * 1024 * 1024;
@@ -24,6 +25,7 @@ interface AudioUploadFieldProps {
   onChange: (value: string) => void;
   folder?: string;
   helperText?: string;
+  validationPath?: string;
 }
 
 export function AudioUploadField({
@@ -32,7 +34,13 @@ export function AudioUploadField({
   onChange,
   folder,
   helperText,
+  validationPath,
 }: AudioUploadFieldProps) {
+  const fieldId = useId();
+  const uploadController = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; uploadController.current?.abort(); }; }, []);
+  const validationError = usePublishFieldError(validationPath);
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -50,6 +58,9 @@ export function AudioUploadField({
       return;
     }
 
+    if (uploadController.current) return;
+    const controller = new AbortController();
+    uploadController.current = controller;
     setError(null);
     setIsUploading(true);
     setUploadProgress(10);
@@ -57,17 +68,19 @@ export function AudioUploadField({
     try {
       const secureUrl = await uploadToCloudinary(file, {
         folder,
+        signal: controller.signal,
         resourceType: "video",
         fileName: file.name,
-        onProgress: setUploadProgress,
+        onProgress: percent => { if (mounted.current && !controller.signal.aborted) setUploadProgress(percent); },
       });
+      if (!mounted.current || controller.signal.aborted) return;
       setUploadProgress(100);
       onChange(secureUrl);
     } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "Upload failed");
+      if (mounted.current) setError(uploadError instanceof Error ? uploadError.message : "Upload failed");
     } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
+      uploadController.current = null;
+      if (mounted.current) { setIsUploading(false); setUploadProgress(0); }
     }
   };
 
@@ -81,7 +94,7 @@ export function AudioUploadField({
 
   return (
     <div className="space-y-2">
-      <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
+      <span id={fieldId + "-label"} className="block text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60">
         {label}
       </span>
 
@@ -93,6 +106,10 @@ export function AudioUploadField({
         <div className="flex flex-1 flex-col gap-2">
           <input
             ref={inputRef}
+            aria-labelledby={fieldId + "-label"}
+            aria-describedby={error || validationError || helperText ? fieldId + "-help" : undefined}
+            aria-invalid={Boolean(error || validationError)}
+            tabIndex={-1}
             type="file"
             accept="audio/mpeg,audio/mp4,audio/wav,audio/aac,audio/ogg,.mp3,.m4a,.wav,.aac,.ogg"
             className="sr-only"
@@ -104,6 +121,7 @@ export function AudioUploadField({
           />
           <button
             type="button"
+            aria-describedby={error || validationError || helperText ? fieldId + "-help" : undefined}
             onClick={() => inputRef.current?.click()}
             disabled={isUploading}
             className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-champagne-gold/25 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold transition hover:bg-champagne-gold/10 disabled:opacity-50"
@@ -118,11 +136,12 @@ export function AudioUploadField({
           {value && (
             <button
               type="button"
+              disabled={isUploading}
               onClick={() => {
                 setError(null);
                 onChange("");
               }}
-              className="w-fit text-[11px] font-semibold uppercase tracking-wider text-[#ffb4a8]"
+              className="min-h-11 min-w-11 w-fit text-[11px] font-semibold uppercase tracking-wider text-[#ffb4a8]"
             >
               Remove
             </button>
@@ -133,13 +152,14 @@ export function AudioUploadField({
       {isUploading && (
         <div className="space-y-2">
           <Progress value={uploadProgress} />
-          <p className="text-center text-[11px] text-on-surface-variant/60">Uploading…</p>
+          <p className="text-center text-[11px] text-on-surface-variant/60">Uploading and confirming…</p>
+          <button type="button" onClick={() => uploadController.current?.abort()} className="min-h-11 text-sm text-error">Cancel upload</button>
         </div>
       )}
 
-      {(error || helperText) && (
-        <p className={cn("text-[11px] leading-relaxed", error ? "text-[#ffb4a8]" : "text-on-surface-variant/50")}>
-          {error ?? helperText}
+      {(error || validationError || helperText) && (
+        <p id={fieldId + "-help"} role={error || validationError ? "alert" : undefined} className={cn("text-[11px] leading-relaxed", (error || validationError) ? "text-[#ffb4a8]" : "text-on-surface-variant/50")}>
+          {error ?? validationError ?? helperText}
         </p>
       )}
     </div>

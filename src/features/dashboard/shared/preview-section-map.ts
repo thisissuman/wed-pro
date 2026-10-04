@@ -1,3 +1,4 @@
+import { getPreferredScrollBehavior } from "@/lib/motion-preferences";
 import { PREVIEW_SECTION_IDS } from "@/templates/shared/sections/preview-ids";
 
 /** Maps editor accordion panel ids to shared template preview section DOM ids. */
@@ -35,5 +36,5 @@ export function scrollPreviewToSection(panelId: string) {
   const elTop = el.getBoundingClientRect().top;
   const offset = elTop - containerTop + container.scrollTop;
 
-  container.scrollTo({ top: offset, behavior: "smooth" });
+  container.scrollTo({ top: offset, behavior: getPreferredScrollBehavior() });
 }

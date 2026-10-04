@@ -56,3 +56,7 @@ Fast load from WhatsApp links; immersive but readable; guest experience is criti
 ## Priority
 
 1. usability 2. touch 3. performance 4. readability 5. smooth interaction
+
+## Current implementation contract
+
+Task 13 scopes editor/template action targets to at least 44px, compensating template zoom; progress strokes use full-sized horizontal-scroll hit areas. Shared fields use 16px mobile text. The editor action bar has a VisualViewport keyboard inset with normal viewport fallback. Source contract and final-stage scenarios: `docs/mobile-motion-theme-and-demos.md`. Device/keyboard/browser/visual verification remains deferred to roadmap task 16 under the current user workflow.

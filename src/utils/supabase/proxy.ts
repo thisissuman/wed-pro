@@ -1,15 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isProtectedApplicationPath, isPublicStaticAsset } from "@/lib/auth/session-routing";
 import { getSupabaseEnv } from "./env";
 
 /**
- * Refreshes the Supabase session on every matched request and forwards
+ * Refreshes the Supabase session on matched application requests and forwards
  * updated auth cookies to the browser. Required for Server Components and
  * long dashboard/editor sessions.
  *
  * @see https://supabase.com/docs/guides/auth/server-side/nextjs
  */
 export async function updateSession(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  // Also guard this reusable boundary if called without the Next matcher.
+  // Pass through without Supabase clients, auth cookies, redirects, or headers.
+  if (isPublicStaticAsset(pathname)) return NextResponse.next({ request });
   let supabaseResponse = NextResponse.next({ request });
 
   const { url, anonKey } = getSupabaseEnv();
@@ -36,7 +41,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
   const code = request.nextUrl.searchParams.get("code");
   const tokenHash = request.nextUrl.searchParams.get("token_hash");
   const type = request.nextUrl.searchParams.get("type");
@@ -52,7 +56,7 @@ export async function updateSession(request: NextRequest) {
     return redirectWithRefreshedCookies(confirmUrl, supabaseResponse);
   }
 
-  const isProtected = pathname.startsWith("/dashboard");
+  const isProtected = isProtectedApplicationPath(pathname);
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();

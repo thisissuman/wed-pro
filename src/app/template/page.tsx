@@ -1,5 +1,6 @@
 "use client";
 
+import { getPreferredScrollBehavior } from "@/lib/motion-preferences";
 import { Suspense, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { TemplateCard } from "@/features/dashboard/templates/TemplateCard";
@@ -25,7 +26,7 @@ function TemplatePageContent() {
     const el = document.getElementById(`template-card-${recommendedId}`);
     if (el) {
       window.setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.scrollIntoView({ behavior: getPreferredScrollBehavior(), block: "center" });
       }, 400);
     }
   }, [recommendedId]);
@@ -36,7 +37,7 @@ function TemplatePageContent() {
       <header className="w-full px-[var(--spacing-container-margin)] py-4 flex items-center justify-start absolute top-0 left-0 z-50">
         <Link
           href="/"
-          className="font-[family-name:var(--font-heading)] text-champagne-gold tracking-widest font-semibold text-lg md:text-headline-md"
+          className="inline-flex min-h-11 items-center font-[family-name:var(--font-heading)] text-champagne-gold tracking-widest font-semibold text-lg md:text-headline-md"
         >
           Vivaha Studio
         </Link>
@@ -74,8 +75,8 @@ function TemplatePageContent() {
             transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
             className="font-[family-name:var(--font-body)] text-xs md:text-sm text-on-surface-variant max-w-xl leading-relaxed"
           >
-            Each template is crafted with cinematic precision to reflect the
-            elegance and emotion of your royal celebration.
+            Preview Royal Rajputana, Floral Elegance, and Royal 3D Wedding Cinema.
+            Free Beta includes up to three total invitations per account, including published ones.
           </motion.p>
         </section>
 
@@ -111,16 +112,16 @@ function TemplatePageContent() {
 
           <div className="relative z-10 space-y-5">
             <h2 className="font-[family-name:var(--font-heading)] text-headline-lg md:text-display-lg text-ivory font-bold">
-              Looking for Something Custom?
+              Need a Hand?
             </h2>
             <p className="font-[family-name:var(--font-body)] text-body-md text-on-surface-variant max-w-lg mx-auto">
-              Want a unique color palette, custom layout, or a completely bespoke design? Get in touch with our design team.
+              Questions about choosing a design or creating your invitation? Get in touch.
             </p>
             <Link
               href="mailto:sumanmaharana222888@gmail.com"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full gold-gradient text-charcoal-black font-[family-name:var(--font-body)] text-sm font-semibold tracking-wide hover:shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
             >
-              Request Custom Template
+              Contact Us
               <ArrowRight size={16} />
             </Link>
           </div>

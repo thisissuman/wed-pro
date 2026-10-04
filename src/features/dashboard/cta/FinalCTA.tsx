@@ -1,15 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { templates } from "@/data/templates";
-import { WeddingStyleQuiz } from "./WeddingStyleQuiz";
 
 export function FinalCTA() {
-  const [quizOpen, setQuizOpen] = useState(false);
-
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -34,8 +29,8 @@ export function FinalCTA() {
           Begin Your Wedding Story Today.
         </h2>
         <p className="font-[family-name:var(--font-body)] text-body-md text-on-surface-variant max-w-xl mx-auto">
-          Choose from our curated collection of premium templates and create
-          your cinematic invitation in minutes.
+          Browse our three wedding designs, preview the details, and make one your own.
+          Free Beta includes up to three total invitations per account.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
           <Link
@@ -47,7 +42,6 @@ export function FinalCTA() {
         </div>
       </div>
 
-      <WeddingStyleQuiz open={quizOpen} onClose={() => setQuizOpen(false)} />
     </motion.section>
   );
 }

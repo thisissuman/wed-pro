@@ -38,10 +38,14 @@ Validate ownership on mutations (`user_id = auth.uid()`).
 
 Persist securely; handle expiration gracefully; avoid broken half-auth states.
 
+Session refresh excludes only explicit public asset paths in `lib/auth/session-routing.ts` and the aligned literal `src/proxy.ts` matcher. Never bypass based on arbitrary file extensions or nested media-like route names. Protect exact `/dashboard` and its slash descendants. Upload routes retain independent authentication/ownership checks; static cache/range responses stay with Next. See docs/session-routing-and-product-copy.md.
+
 ## RLS (Supabase)
 
 - Enable RLS on exposed tables
-- Policies: owners full CRUD on own invitations; public `SELECT` only when published
+- Working invitations are owner-only; direct UPDATE is revoked. Authenticated owner/revision-guarded RPCs save, publish, and unpublish. Public SELECT reads only published snapshots.
+- Publish readiness is enforced against the saved working row in the database transaction.
+- Cloudinary signing and completion recheck ownership; secrets stay server-only. See docs/editor-safety.md and docs/cloudinary-uploads.md.
 - For Supabase tasks, use the installed **supabase** plugin skill (MCP/CLI)
 
 ## UX

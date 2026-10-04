@@ -5,11 +5,16 @@ export interface CropAreaPixels {
   height: number;
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+function loadImage(src: string, signal?: AbortSignal): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
-    image.addEventListener("load", () => resolve(image));
-    image.addEventListener("error", () => reject(new Error("Failed to load image")));
+    const cleanup = () => { clearTimeout(timer); signal?.removeEventListener("abort", abort); image.onload = null; image.onerror = null; };
+    const abort = () => { cleanup(); image.src = ""; reject(new Error("Photo processing cancelled.")); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error("Photo processing timed out. Try JPG or WebP.")); }, 30_000);
+    image.onload = () => { cleanup(); resolve(image); };
+    image.onerror = () => { cleanup(); reject(new Error("Could not decode this photo. Try JPG or WebP.")); };
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) { abort(); return; }
     image.crossOrigin = "anonymous";
     image.src = src;
   });
@@ -18,6 +23,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 interface CropOutputOptions {
   /** Longest edge of the output image in pixels (preserves crop aspect ratio). */
   maxLongEdge?: number;
+  signal?: AbortSignal;
 }
 
 /** Returns a JPEG blob of the cropped region, preserving the crop aspect ratio. */
@@ -43,7 +49,7 @@ export async function getCroppedImageBlob(
   outWidth = Math.max(1, outWidth);
   outHeight = Math.max(1, outHeight);
 
-  const image = await loadImage(imageSrc);
+  const image = await loadImage(imageSrc, options.signal);
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas not supported");
@@ -64,8 +70,15 @@ export async function getCroppedImageBlob(
   );
 
   return new Promise((resolve, reject) => {
+    const cleanup = () => { clearTimeout(timer); options.signal?.removeEventListener("abort", abort); };
+    const abort = () => { cleanup(); reject(new Error("Photo processing cancelled.")); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error("Photo export timed out. Try a smaller image.")); }, 30_000);
+    options.signal?.addEventListener("abort", abort, { once: true });
+    if (options.signal?.aborted) { abort(); return; }
     canvas.toBlob(
       (blob) => {
+        cleanup();
+        if (options.signal?.aborted) return;
         if (!blob) {
           reject(new Error("Failed to create image"));
           return;

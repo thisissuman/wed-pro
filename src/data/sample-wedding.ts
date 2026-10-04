@@ -1,3 +1,4 @@
+import { getDemoDates } from "@/lib/demo-dates";
 import type { WeddingData } from "@/types/wedding.types";
 
 /**
@@ -31,7 +32,7 @@ export const sampleWeddingData: WeddingData = {
       bio: "An engineer by day, poet by night, and a hopeless romantic always.",
       heroText: "The Groom",
     },
-    weddingDate: "2026-02-13",
+    weddingDate: "",
     family: {
       bride: {
         fatherName: "Mr. Rajesh Sharma",
@@ -92,7 +93,7 @@ export const sampleWeddingData: WeddingData = {
       type: "mehendi",
       description:
         "An evening of intricate henna art, music, and celebration with close family and friends.",
-      date: "2026-02-10",
+      date: "",
       time: "4:00 PM",
       venue: "Sharma Residence",
       address: "12, Civil Lines, Jaipur, Rajasthan",
@@ -105,7 +106,7 @@ export const sampleWeddingData: WeddingData = {
       type: "sangeet",
       description:
         "A night of dance, laughter, and unforgettable performances from both families.",
-      date: "2026-02-11",
+      date: "",
       time: "7:00 PM",
       venue: "The Royal Orchid Ballroom",
       address: "MI Road, Jaipur, Rajasthan",
@@ -118,7 +119,7 @@ export const sampleWeddingData: WeddingData = {
       type: "haldi",
       description:
         "A joyful morning of turmeric, flowers, and blessings for the bride and groom.",
-      date: "2026-02-12",
+      date: "",
       time: "10:00 AM",
       venue: "Mehta Farmhouse",
       address: "Amer Road, Jaipur, Rajasthan",
@@ -131,7 +132,7 @@ export const sampleWeddingData: WeddingData = {
       type: "wedding",
       description:
         "The sacred union of two souls, under a canopy of marigolds and starlight.",
-      date: "2026-02-13",
+      date: "",
       time: "7:30 PM",
       venue: "The Oberoi Rajvilas",
       address: "Goner Road, Jaipur, Rajasthan 302031",
@@ -144,7 +145,7 @@ export const sampleWeddingData: WeddingData = {
       type: "reception",
       description:
         "An elegant evening of celebration, fine dining, and warm wishes from loved ones.",
-      date: "2026-02-14",
+      date: "",
       time: "7:00 PM",
       venue: "The Oberoi Rajvilas",
       address: "Goner Road, Jaipur, Rajasthan 302031",
@@ -217,7 +218,7 @@ export const sampleWeddingData: WeddingData = {
 
   /* ── Countdown ── */
   countdown: {
-    targetDate: "2026-02-13T19:30:00+05:30",
+    targetDate: "",
     timezone: "Asia/Kolkata",
     label: "Counting Down to Forever",
   },
@@ -271,7 +272,7 @@ export const sampleWeddingData: WeddingData = {
   seo: {
     pageTitle: "Rahul & Ananya — Wedding Invitation",
     metaDescription:
-      "You are invited to celebrate the wedding of Rahul Mehta & Ananya Sharma on February 13, 2026 at The Oberoi Rajvilas, Jaipur.",
+      "You are invited to celebrate the wedding of Rahul Mehta & Ananya Sharma at The Oberoi Rajvilas, Jaipur.",
   },
 
   /* ── Section Visibility ── */
@@ -294,3 +295,22 @@ export const sampleWeddingData: WeddingData = {
     updatedAt: "2026-01-20T14:30:00+05:30",
   },
 };
+
+
+// The static sample is a content scaffold, not a clock-dependent module export.
+// Only demo entry points opt into this calendar. Stored invitations are never
+// passed through this factory or have their real dates shifted.
+export function createDemoWeddingData(referenceIso: string): WeddingData {
+  const dates = getDemoDates(referenceIso);
+  return {
+    ...sampleWeddingData,
+    couple: { ...sampleWeddingData.couple, weddingDate: dates.weddingDate },
+    events: sampleWeddingData.events.map((event, index) => ({
+      ...event, date: dates.eventDates[index] ?? dates.weddingDate,
+    })),
+    countdown: { ...sampleWeddingData.countdown, targetDate: dates.targetDate },
+    seo: { ...sampleWeddingData.seo,
+      metaDescription: "You are invited to celebrate Rahul & Ananya on " + dates.displayDate + " at The Oberoi Rajvilas, Jaipur.",
+    },
+  };
+}
