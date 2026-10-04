@@ -1,13 +1,8 @@
 import type { WeddingData } from "@/types/wedding.types";
 import { royalCinemaThemeConfig } from "./royal-3d-cinema/theme";
 
-export const LEGACY_TEMPLATE_ID_REMAP: Readonly<Record<string, string>> = {
-  "garden-mandap": "royal-3d-cinema",
-};
-
-export function resolveRegisteredTemplateId(templateId: string): string {
-  return LEGACY_TEMPLATE_ID_REMAP[templateId] ?? templateId;
-}
+import { resolveRegisteredTemplateId } from "./template-ids";
+export { LEGACY_TEMPLATE_ID_REMAP, resolveRegisteredTemplateId } from "./template-ids";
 
 export function applyTemplateDefaults(
   data: WeddingData,

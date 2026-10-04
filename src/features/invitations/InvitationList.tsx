@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy, Edit3, Eye, Globe2, Loader2, Plus, Send, Trash2, Undo2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -11,6 +11,7 @@ import {
   getInvitationDateLabel,
   getInvitationTitle,
   getPublicInvitationPath,
+  getPublicInvitationUrl,
   normalizeInvitationRow,
   type InvitationRow,
 } from "@/lib/invitations";
@@ -24,6 +25,9 @@ interface InvitationListProps {
 
 export function InvitationList({ initialInvitations }: InvitationListProps) {
   const [rows, setRows] = useState(initialInvitations);
+  const busyRef = useRef<string | null>(null);
+  const active = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<WeddingData | null>(null);
@@ -33,65 +37,65 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
   const invitations = useMemo(() => rows.map(normalizeInvitationRow), [rows]);
 
   const updateRow = (id: string, patch: Partial<InvitationRow>) => {
+    if (!active.current) return;
     setRows((current) =>
       current.map((row) => (row.id === id ? { ...row, ...patch } : row))
     );
   };
 
   const publishRow = async (data: WeddingData) => {
+    if (busyRef.current) return;
+    busyRef.current = data.id;
     setBusyId(data.id);
-    const supabase = createClient();
-    const result = await publishInvitation(supabase, data);
-
-    if (!result.ok) {
-      toast.error("Publish failed", result.message);
-      setBusyId(null);
-      return;
+    try {
+      const result = await publishInvitation(createClient(), data);
+      if (!active.current) return;
+      if (!result.ok) { toast.error("Publish failed", result.message); return; }
+      updateRow(data.id, {
+        status: "published", slug: result.resolvedSlug,
+        published_at: result.publishedAt, updated_at: result.updatedAt,
+        draft_revision: result.revision,
+        first_published_at: result.content.meta.firstPublishedAt ?? null,
+        content: result.content,
+      });
+      toast.success(result.slugAdjusted ? "Published with adjusted link" : "Invitation published");
+      if (result.slugAdjusted) toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
+    } catch (error) {
+      if (active.current) toast.error("Publish failed", error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      busyRef.current = null;
+      if (active.current) setBusyId(null);
     }
-
-    updateRow(data.id, {
-      status: "published",
-      slug: result.resolvedSlug,
-      published_at: result.publishedAt,
-      updated_at: result.updatedAt,
-      content: result.content,
-    });
-
-    toast.success(result.slugAdjusted ? "Published with adjusted link" : "Invitation published");
-    if (result.slugAdjusted) {
-      toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
-    }
-
-    setBusyId(null);
   };
 
   const confirmUnpublish = async () => {
-    if (!unpublishTarget) return;
-
+    if (!unpublishTarget || busyRef.current) return;
+    const target = unpublishTarget;
+    busyRef.current = target.id;
+    setBusyId(target.id);
     setIsUnpublishing(true);
-    const supabase = createClient();
-    const result = await unpublishInvitation(supabase, unpublishTarget);
-
-    if (!result.ok) {
-      toast.error("Unpublish failed", result.message);
-      setIsUnpublishing(false);
-      return;
+    try {
+      const result = await unpublishInvitation(createClient(), target);
+      if (!active.current) return;
+      if (!result.ok) { toast.error("Unpublish failed", result.message); return; }
+      updateRow(target.id, {
+        status: "draft", published_at: null, updated_at: result.updatedAt,
+        draft_revision: result.revision,
+        first_published_at: result.content.meta.firstPublishedAt ?? null,
+        content: result.content,
+      });
+      toast.success("Invitation unpublished");
+      setUnpublishTarget(null);
+    } catch (error) {
+      if (active.current) toast.error("Unpublish failed", error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      busyRef.current = null;
+      if (active.current) { setBusyId(null); setIsUnpublishing(false); }
     }
-
-    updateRow(unpublishTarget.id, {
-      status: "draft",
-      published_at: null,
-      updated_at: result.updatedAt,
-      content: result.content,
-    });
-
-    toast.success("Invitation unpublished");
-    setUnpublishTarget(null);
-    setIsUnpublishing(false);
   };
 
   const copyShareLink = async (data: WeddingData) => {
-    const url = `${window.location.origin}${getPublicInvitationPath(data.slug)}`;
+    const url = getPublicInvitationUrl(data.slug);
     try {
       await navigator.clipboard.writeText(url);
       setCopiedId(data.id);
@@ -143,7 +147,7 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
         </div>
         <h2 className="font-heading text-2xl text-ivory">Create your first invitation</h2>
         <p className="mx-auto mt-3 max-w-md font-body text-sm leading-relaxed text-on-surface-variant/75">
-          Choose the Royal Rajputana template and we will open a draft editor for your wedding details.
+          Choose a template and we will open a draft editor for your wedding details.
         </p>
         <Link
           href="/template"
@@ -219,7 +223,7 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                       <button
                         type="button"
                         onClick={() => void publishRow(invitation)}
-                        disabled={isBusy}
+                        disabled={busyId !== null}
                         className="inline-flex items-center justify-center gap-2 rounded-full gold-gradient px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-charcoal-black transition active:scale-95 disabled:pointer-events-none disabled:opacity-60"
                       >
                         {isBusy ? <Loader2 size={14} className="animate-spin" /> : <Globe2 size={14} />}
@@ -231,6 +235,7 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                         <button
                           type="button"
                           onClick={() => setUnpublishTarget(invitation)}
+                          disabled={busyId !== null}
                           className="inline-flex items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15"
                         >
                           <Undo2 size={14} />
@@ -248,6 +253,7 @@ export function InvitationList({ initialInvitations }: InvitationListProps) {
                     <button
                       type="button"
                       onClick={() => setDeleteTarget(invitation)}
+                      disabled={busyId !== null}
                       aria-label={`Delete ${title}`}
                       className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#ffb4a8]/25 text-[#ffb4a8] transition hover:bg-[#ffb4a8]/10 sm:h-auto sm:w-auto sm:px-4 sm:py-2.5"
                     >

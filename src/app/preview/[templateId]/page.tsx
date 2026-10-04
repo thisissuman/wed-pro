@@ -1,8 +1,11 @@
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
-import { sampleWeddingData } from "@/data/sample-wedding";
+import { createDemoWeddingData } from "@/data/sample-wedding";
 import { getTemplate } from "@/templates/registry";
 import { applyTemplateDefaults } from "@/templates/template-defaults";
 import type { Metadata } from "next";
+
+// Keep the rolling demo calendar fresh; the server serializes one snapshot.
+export const dynamic = "force-dynamic";
 
 interface PreviewPageProps {
   params: Promise<{ templateId: string }>;
@@ -36,7 +39,7 @@ export default async function PreviewPage({ params }: PreviewPageProps) {
   // Override the sample data's templateId with the requested one
   const previewData = applyTemplateDefaults(
     {
-      ...sampleWeddingData,
+      ...createDemoWeddingData(new Date().toISOString()),
       templateId,
     },
     templateId,

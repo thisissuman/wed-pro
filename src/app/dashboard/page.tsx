@@ -18,7 +18,7 @@ export default async function DashboardPage() {
   const displayName = user.user_metadata?.full_name || displayEmail.split('@')[0];
   const { data: invitations = [] } = await supabase
     .from('invitations')
-    .select('id,user_id,slug,template_id,status,content,created_at,updated_at,published_at')
+    .select('id,user_id,slug,template_id,status,content,created_at,updated_at,published_at,draft_revision,first_published_at')
     .eq('user_id', user.id)
     .order('updated_at', { ascending: false });
 
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
           </Link>
         </section>
 
-        <InvitationList initialInvitations={(invitations ?? []) as InvitationRow[]} />
+        <InvitationList key={user.id} initialInvitations={(invitations ?? []) as InvitationRow[]} />
       </main>
     </DashboardShell>
   );

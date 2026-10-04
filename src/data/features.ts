@@ -4,20 +4,20 @@ export const features: Feature[] = [
   { 
     id: "f1", 
     icon: "Users", 
-    label: "Unlimited Guests",
-    description: "One link, infinite reach, no per-guest charges."
+    label: "Shareable Link",
+    description: "Send your published invitation link to your guests."
   },
   { 
     id: "f2", 
     icon: "Edit3", 
-    label: "Unlimited Edits",
-    description: "Refine every detail right up to your big day."
+    label: "Private Editing",
+    description: "Edit privately, then republish when you are ready."
   },
   { 
     id: "f3", 
     icon: "MousePointer2", 
     label: "Scratch to Reveal",
-    description: "Delightful surprise reveals for your date.",
+    description: "Reveal a date or blessing in selected designs.",
     badge: "Interactive"
   },
   { 
@@ -30,13 +30,13 @@ export const features: Feature[] = [
     id: "f5", 
     icon: "Mail", 
     label: "WhatsApp RSVP",
-    description: "Guests confirm attendance in one tap via WhatsApp."
+    description: "Use WhatsApp messages or an external RSVP link."
   },
   { 
     id: "f6", 
     icon: "Music", 
     label: "Romantic Music",
-    description: "Instrumental themes with elegant controls."
+    description: "Add music your guests can choose to play."
   },
   { 
     id: "f7", 
@@ -54,6 +54,6 @@ export const features: Feature[] = [
     id: "f9", 
     icon: "ImagePlus", 
     label: "Custom Media",
-    description: "Upload high-res photos and background art."
+    description: "Crop photos and add optional background audio."
   },
 ];

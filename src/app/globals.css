@@ -284,40 +284,40 @@ html.light {
   --editor-card-bg: color-mix(in srgb, var(--color-surface-container-high) 65%, transparent);
 }
 
-.light .text-on-surface-variant\/50,
-.light .text-on-surface-variant\/55,
-.light .text-on-surface-variant\/60,
-.light .text-on-surface-variant\/65,
-.light .text-on-surface-variant\/70,
-.light .text-on-surface-variant\/75 {
+.light .text-on-surface-variant\/50:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .text-on-surface-variant\/55:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .text-on-surface-variant\/60:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .text-on-surface-variant\/65:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .text-on-surface-variant\/70:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .text-on-surface-variant\/75:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   color: color-mix(in srgb, var(--color-on-surface-variant) 88%, transparent);
 }
 
-.light .border-champagne-gold\/10 {
+.light .border-champagne-gold\/10:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   border-color: color-mix(in srgb, var(--color-champagne-gold) 22%, transparent);
 }
 
-.light .border-champagne-gold\/15 {
+.light .border-champagne-gold\/15:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   border-color: color-mix(in srgb, var(--color-champagne-gold) 28%, transparent);
 }
 
 /* Ensure semantic text tracks theme on mobile browsers (some ignore @theme token swaps). */
-.light .text-ivory {
+.light .text-ivory:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   color: var(--color-on-surface);
 }
 
-.light .hover\:text-ivory:hover {
+.light .hover\:text-ivory:hover:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   color: var(--color-on-surface);
 }
 
-.light .bg-charcoal-black\/30,
-.light .bg-charcoal-black\/40,
-.light .bg-charcoal-black\/50 {
+.light .bg-charcoal-black\/30:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .bg-charcoal-black\/40:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .bg-charcoal-black\/50:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   background-color: var(--editor-card-bg);
 }
 
-.light .text-on-surface-variant\/50,
-.light .text-on-surface-variant\/40 {
+.light .text-on-surface-variant\/50:not(.template-theme, .template-theme *, .on-image, .on-image *) ,
+.light .text-on-surface-variant\/40:not(.template-theme, .template-theme *, .on-image, .on-image *) {
   color: color-mix(in srgb, var(--color-on-surface-variant) 82%, transparent);
 }
 
@@ -485,4 +485,42 @@ html.love-pointer-active :is(.cursor-pointer, .cursor-grab, .cursor-default, .cu
   html {
     @apply font-sans;
   }
+}
+/* Invitation surfaces own their palette; studio mode affects only app chrome. */
+.template-theme { isolation: isolate; min-width: 0; max-width: 100%; }
+.template-theme :is(h1, h2, h3, p, a, li) { overflow-wrap: anywhere; }
+.template-theme .text-ivory { color: var(--template-text); }
+.template-theme .text-on-surface { color: var(--template-text); }
+.template-theme .text-on-surface-variant { color: var(--template-text-muted); }
+.template-theme .template-media-slot { background-color: var(--template-surface); }
+.editor-workspace :is(input, textarea, select) { scroll-margin-block: 7rem; }
+.editor-workspace [role="alert"] { overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  .animate-ping, .animate-bounce { animation: none !important; }
+  .invitation-examples-track { transform: none !important; width: 100%; flex-wrap: wrap; justify-content: center; }
+  .invitation-examples-duplicate, .invitation-examples-fade, .invitation-examples-pause { display: none; }
+}
+
+/* Minimum action hit areas do not enlarge decorative glyphs. */
+.editor-workspace button,
+.template-theme button,
+.template-theme a.inline-flex { min-height: 44px; min-width: 44px; }
+/* Small progress strokes retain their look inside a full-sized scrollable hit area. */
+.editor-workspace .editor-progress-hitbox { background: transparent; }
+.editor-progress-hitbox::after { content: ""; display: block; position: absolute; inset-inline: 2px; top: calc(50% - 3px); height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--color-champagne-gold) 15%, transparent); }
+.editor-progress-hitbox[data-complete="true"]::after { background: var(--color-champagne-gold); }
+.editor-progress-hitbox:focus-visible { outline: 2px solid var(--color-champagne-gold); outline-offset: -2px; }
+
+.template-theme button, .template-theme a.inline-flex {
+  min-height: calc(44px / var(--template-content-scale, 1));
+  min-width: calc(44px / var(--template-content-scale, 1));
+}
+.on-image .text-ivory { color: #fffdf9; }
+.on-image .text-on-surface-variant { color: #e8e3dc; }
+@media (prefers-reduced-motion: reduce) {
+  .gold-aura, .gemini-glow-btn::before { animation: none !important; }
+  .on-image .group-hover\:scale-105 { transform: none; scale: 1; }
 }

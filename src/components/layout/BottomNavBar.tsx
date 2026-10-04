@@ -1,5 +1,6 @@
 "use client";
 
+import { getPreferredScrollBehavior } from "@/lib/motion-preferences";
 import { cn } from "@/lib/utils";
 import { Sparkles, Lightbulb, MessageSquare, User, LogOut, LayoutDashboard } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
@@ -39,7 +40,7 @@ export function BottomNavBar() {
       if (isHomepage) {
         const el = document.getElementById(sectionId);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
+          el.scrollIntoView({ behavior: getPreferredScrollBehavior() });
         }
       } else {
         router.push(`/#${sectionId}`);
@@ -82,7 +83,7 @@ export function BottomNavBar() {
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center justify-center w-16 transition-all active:scale-90 duration-300",
+                "flex min-h-11 min-w-11 flex-col items-center justify-center w-16 transition-all active:scale-90 duration-300",
                 isActive
                   ? "text-champagne-gold"
                   : "text-on-surface-variant/60 hover:text-champagne-gold/80"
@@ -114,7 +115,7 @@ export function BottomNavBar() {
             aria-label={isAuthenticated ? "Studio menu" : "Login"}
             aria-expanded={isStudioMenuOpen}
             className={cn(
-              "flex flex-col items-center justify-center w-16 transition-all active:scale-90 duration-300 relative",
+              "flex min-h-11 min-w-11 flex-col items-center justify-center w-16 transition-all active:scale-90 duration-300 relative",
               pathname === "/dashboard" || pathname === "/login" || isStudioMenuOpen
                 ? "text-champagne-gold"
                 : "text-on-surface-variant/60 hover:text-champagne-gold/80"

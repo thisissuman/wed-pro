@@ -1,3 +1,6 @@
+// v1 is an immutable public archive. Entries not selected by today's runtime
+// can still belong to older deployments/saved URLs. Keep film array positions
+// and validator requirements intact; see docs/cleanup-decisions.md before pruning.
 const MEDIA_ROOT = "/media/royal-3d-cinema/v1";
 
 export interface FrameSequenceManifest {

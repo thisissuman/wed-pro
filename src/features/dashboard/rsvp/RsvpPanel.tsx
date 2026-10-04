@@ -61,7 +61,7 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
       {rsvp.type === "whatsapp" && (
         <>
           <TextInput
-            label="WhatsApp Number"
+            label="WhatsApp Number" validationPath="rsvp.whatsappNumber"
             value={rsvp.whatsappNumber ?? ""}
             inputMode="tel"
             placeholder="+919876543210"
@@ -90,11 +90,11 @@ export function RsvpPanel({ draft, update, bare }: PanelProps) {
 
       {rsvp.type === "link" && (
         <TextInput
-          label="External Link"
+          label="External Link" validationPath="rsvp.formUrl"
           value={rsvp.formUrl ?? ""}
           inputMode="url"
           placeholder="https://"
-          helperText="Optional — Google Form, Typeform, or any HTTPS RSVP page."
+          helperText="Required when RSVP is shown — use a Google Form, Typeform, or hosted RSVP page."
           error={linkError}
           onChange={(value) =>
             update((current) => ({

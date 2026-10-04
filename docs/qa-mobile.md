@@ -1,80 +1,44 @@
-# Mobile QA & Performance Baseline
+# Mobile QA runbook: task 16 in progress
 
-Use this checklist before shipping a template, editor polish pass, or public
-invitation change. Mobile is the primary experience.
+Task 16 has started. [Local evidence](task-16-verification.md) records public template/keyboard/browser checks and their limits. Authenticated editor/navigation and generated-media browser coverage pass across desktop/mobile Chrome/WebKit. Real devices, enlarged typography and broader provider/device formats remain manual checks. Broad checklist items are not passed by public-demo emulation alone. Use [pending verification](pending-verification.md), [polish contract](mobile-motion-theme-and-demos.md), [overlays](accessible-overlays.md) and [environment/CI](environment-and-ci.md) during verification and subsequent changes.
 
-## Devices / Viewports
+## Environments and routes
 
-- [ ] 360 × 800 Android-sized viewport in browser devtools.
-- [ ] Real low-end or mid-range Android device.
-- [ ] iPhone Safari.
-- [ ] Desktop at 1440px after mobile passes.
+- [ ] 320/360/390px mobile widths, Android hardware/slow network, iPhone Safari, portrait/landscape, enlarged text/200% zoom, then desktop. Browser emulation does not confirm real keyboard/audio behavior.
+- [ ] `/` and `/template`: one main h1, sensible sections, factual Free Beta/cap/three-template copy, labelled examples, preview/create/contact paths and reachable 44px controls.
+- [ ] `/dashboard`: narrow owner cards, long couple names, stable copy/open actions and quota dialog; only owner working data.
+- [ ] `/dashboard/invitations/[id]/edit`: all panels, errors/status wrapping, horizontal progress targets, desktop/mobile consistent action availability, preview containers and template typography scales.
+- [ ] `/preview/royal`, `/preview/floral-elegance`, `/preview/royal-3d-cinema`: all three bespoke designs/legacy mapping, selected runtime/server content and request-supplied future demo calendar.
+- [ ] `/w/[slug]`: frozen public content/metadata, owner private edits hidden, stable suffix, unpublish 404, opener/skip/reveal alternatives and tap-first music.
+- [ ] Login/signup/OAuth/recovery: keyboard/errors/redirects and production allowlists, without inspecting personal live sessions.
 
-## Routes To Check
+## Keyboard, navigation and overlays
 
-| Route | What to verify |
-|-------|----------------|
-| `/` | No horizontal scroll; CTA buttons are at least 44px tall; Free Beta copy is visible. |
-| `/template` | Template card preview/select buttons are easy to tap; draft-limit dialog does not clip. |
-| `/dashboard` | Invitation cards fit one column; publish/copy actions remain reachable. |
-| `/dashboard/invitations/[id]/edit` | Step navigation is thumb-friendly; keyboard does not hide active inputs; autosave badge remains visible. |
-| `/preview/<template-id>` | Demo loads quickly; no editor chrome; motion does not block scroll (default: `royal`). |
-| `/w/[slug]` | Hero LCP is acceptable; curtain intro can be dismissed; tap-to-reveal date works; WhatsApp CTA opens. |
-| `/login`, `/signup` | No extra top gap; duplicate-email message is clear; Google sign-in works on production. |
+- [ ] 16px mobile fields avoid focus zoom; VisualViewport inset, toolbar movement, safe areas, keyboard opening/closing, rotation/pinch and unavailable API preserve active input/action visibility. Tune threshold if needed.
+- [ ] Typing immediately followed by Dashboard/other invitation/Back/Forward/reload, save failure and discard/cancel; save acknowledgement before leave, no prompt when clean, explicit stale/expired/disabled recovery paths.
+- [ ] Publish summary/field errors open relevant step/accordion, with real-vs-starter guidance/demo acknowledgement and optional content remaining optional.
+- [ ] Radix initial/return focus, Tab loops, nested topmost Escape, labels/helper/errors/native selects and background/scroll isolation across crop/share/delete/unpublish/quota/navigation/gallery/mobile preview/openers.
+- [ ] Gallery touch drag/buttons/keyboard, crop focus/zoom/arrows/cancel, all target sizes including scaled templates, removed triggers and rapid close/reopen.
 
-## Public Invitation Performance
+## Media, motion and themes
 
-- [ ] Hero image uses `next/image` with `priority` only for the LCP image.
-- [ ] Gallery images use lazy loading with accurate `sizes`.
-- [ ] Music does not autoplay silently on mobile; player is tap-first.
-- [ ] Animations use `transform` and `opacity` only.
-- [ ] `prefers-reduced-motion` disables cinematic intro/scratch where appropriate.
-- [ ] No layout shift when couple photos, gallery, or venue images load.
+- [ ] Direct signed image/audio flow uses disposable fixtures after provider authorization: hero 9:16, portraits 1:1, gallery 4:5/reorder, progress, size/format/HEIC/M4A cases, old URLs/replacement/cancellation/timeouts/late replies. See [upload configuration](cloudinary-uploads.md).
+- [ ] Marquee actual pause/resume, hover/focus/explicit pause, resize seam/cleanup and live OS reduced-motion changes; static first-paint cards and native cursor under reduced motion.
+- [ ] Static decorations/parallax/blur alternatives, opener/skip/reveal/poster/frame alternatives, tap-first audible music and actual pause; busy indicators still communicate work.
+- [ ] Studio light/dark labels/input/card tokens; guest/editor template colors and photo-overlay text stay independent. Check image contrast, long Indic names/content, template zoom and portal/inline overlay inheritance on devices.
+- [ ] Shared +90-day demo date at controlled reference/timezone/midnight/leap/year boundaries; SSR/hydration/freshness, starter dates saved once and user/past dates unchanged after editing/publication.
 
-## Image Upload Guidance
+## Loading and public sharing
 
-All editor uploads use the in-app crop dialog + progress bar (`CroppedImageUploadField` / `AudioUploadField`), not the Cloudinary widget.
+- [ ] Server content and selected chunks/CSS for every template, slow/error/reload behavior without lost edits, hero/gallery image sizing/lazy loading/layout shift and constrained-network media/frame behavior.
+- [ ] Full immutable v1 archive validator, active/dynamic frames/posters/decor/default music/cache/range plus retained legacy media URLs. No historical asset deletion based on current imports.
+- [ ] Shared OG → WhatsApp → hero → none resolver, existing crops/final share transform, explicit canonical staging/production origin, working/public difference and honest cache copy.
+- [ ] Later authorized public HTTPS WhatsApp test uses a disposable invitation; local preview is insufficient and caches need not refresh immediately. Never share personal links without authorization.
 
-- [ ] Hero background: crop **9:16** (not squashed); fills hero with `object-cover`; under 8 MB; progress bar completes.
-- [ ] Re-upload hero if an older build saved a square-distorted file — crop now preserves aspect ratio.
-- [ ] WhatsApp preview mock uses landscape OG crop (`1200×630`) from hero via Cloudinary transform.
-- [ ] Couple portraits: **1:1** crop; under 8 MB.
-- [ ] Gallery: **4:5** crop; max 12 photos; reorder arrows animate like Events.
-- [ ] Music: MP3/M4A via upload field; under 12 MB; progress bar completes.
-- [ ] On mobile: tap Upload → **Photos** or **Files** (system picker).
+Record real devices/browser versions/network/origin, evidence and blocked/skipped cases. Existing Playwright smoke projects are documented in environment-and-ci; there is no guarantee of regression-free behavior from running them alone. Consolidated test authoring, checks and any performance/visual tooling happen in task 16, not this runbook refresh.
 
-## Light theme (real device)
+## Device handoff after preview release
 
-- [ ] Toggle light theme on **physical Android** (not only devtools): dashboard + editor labels, inputs, and step titles are readable on white surfaces.
-- [ ] Editor cards use `--editor-card-bg` / `--editor-field-*` tokens (no invisible ivory-on-white text).
+Use the latest PR #20 Preview URL recorded in task-16-verification.md, with a test account/disposable invitation. On an actual Android and iPhone: select/edit/save/reload each template; open keyboard and ensure fields/action bar stay reachable; publish then make a private edit and compare the guest link; republish/unpublish/re-publish without link changes. Cancel/retry photo and music replacement, then check crop, modal focus/close, gallery, scratch reveal/skip and tap-first music. Try enlarged text, rotation and both studio themes. The human may share the disposable link in WhatsApp and observe image/title/cache behavior. Record device/browser and failures; browser emulation is not a hardware pass. Real-user OAuth/recovery is also the user's manual gate.
 
-## Editor polish
-
-- [ ] Typography scale (Small / Default / Large) changes **all** invite text in live preview (hero names, RSVP, thank you, events).
-- [ ] Live Preview music button: first open may autoplay muted once; **tap unmutes** or pauses correctly.
-- [ ] Events, Love Story, and Gallery reorder use up/down arrows with layout animation.
-- [ ] Sonner toasts: gold/royal pill style (`rounded-full`), not default green/white.
-
-## Production share test
-
-After publish, share `https://wed-pro.vercel.app/w/your-slug` in WhatsApp (not localhost).
-Set `NEXT_PUBLIC_SITE_URL=https://wed-pro.vercel.app` on Vercel.
-
-## Commands
-
-```bash
-npm run lint
-npm run build
-npm run test:e2e -- --project=mobile-chrome
-```
-
-*(Note: Run the existing E2E suite to guarantee no regressions are introduced in existing templates or flows. You do not need to add any new visual screenshot baseline tests for new templates; writing new visual tests is deferred.)*
-
-Optional local Lighthouse check after running `npm run build && npm run start`:
-
-```bash
-npx lighthouse http://127.0.0.1:3000/preview/<template-id> --preset=desktop
-```
-
-For real public invite testing, use a published `/w/[slug]` URL and share it into
-WhatsApp to inspect the link preview.
+Task 16 fixed a mobile grid min-content expansion from 320px to 486px that displaced fixed controls, restored mobile Unpublish availability and added stable field labels/descriptions and media remove/retry touch targets. No template was redesigned.

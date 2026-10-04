@@ -6,10 +6,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import type { User } from "@supabase/supabase-js";
+import { clearRecoveryCopies, setRecoveryOwner } from "@/lib/invitation-recovery";
 import { createClient } from "@/utils/supabase/client";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
@@ -27,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window === "undefined") return null;
     return createClient();
   }, []);
+  const previousOwner = useRef<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
 
@@ -39,6 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!active) return;
 
       const sessionUser = sessionData.session?.user ?? null;
+      if (previousOwner.current && previousOwner.current !== sessionUser?.id) clearRecoveryCopies();
+      previousOwner.current = sessionUser?.id ?? null;
+      setRecoveryOwner(sessionUser?.id ?? null);
       setUser(sessionUser);
       setStatus(sessionUser ? "authenticated" : "unauthenticated");
     };
@@ -52,8 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       const nextUser = session?.user ?? null;
+      if (event === "SIGNED_OUT" || (previousOwner.current && previousOwner.current !== nextUser?.id)) clearRecoveryCopies();
+      previousOwner.current = nextUser?.id ?? null;
+      setRecoveryOwner(nextUser?.id ?? null);
       setUser(nextUser);
       setStatus(nextUser ? "authenticated" : "unauthenticated");
     });
@@ -67,7 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    setRecoveryOwner(null);
+    clearRecoveryCopies();
     setUser(null);
     setStatus("unauthenticated");
   }, [supabase]);

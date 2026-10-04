@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { safeInvitationForRendering } from "@/lib/publish-readiness";
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
 import { buildInvitationShareMetadata } from "@/lib/seo";
 import {
@@ -16,7 +17,7 @@ interface PublicInvitationPageProps {
 const getPublishedInvitation = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("invitations")
+    .from("published_invitations")
     .select("id,user_id,slug,template_id,status,content,created_at,updated_at,published_at")
     .eq("slug", slug)
     .eq("status", "published")
@@ -26,7 +27,7 @@ const getPublishedInvitation = cache(async (slug: string) => {
     return null;
   }
 
-  return normalizeInvitationRow(data as InvitationRow);
+  return safeInvitationForRendering(normalizeInvitationRow(data as InvitationRow));
 });
 
 export async function generateMetadata({

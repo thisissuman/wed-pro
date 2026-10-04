@@ -41,12 +41,13 @@ export function PremiumFeatures() {
           Free Beta Features
         </h2>
         <p className="font-[family-name:var(--font-body)] text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-8">
-          Enjoy unrestricted access to our entire premium invitation suite during our free beta phase. Perfect your announcement with absolutely no limitations or hidden fees.
+          Create up to three total invitations during Free Beta, including published ones.
+          Choose Royal Rajputana, Floral Elegance, or Royal 3D Wedding Cinema, with no checkout.
         </p>
         <div className="h-[1px] w-24 bg-champagne-gold/30 mx-auto mb-8"></div>
         <p className="font-[family-name:var(--font-body)] text-body-md text-on-surface-variant/70 max-w-3xl mx-auto italic">
-          Publish, update, unpublish, and share your invitation freely while we
-          polish the studio for real couples.
+          Edit privately and republish when your details are ready. RSVP opens WhatsApp
+          or your external link; the studio does not track replies or guest analytics.
         </p>
       </div>
 

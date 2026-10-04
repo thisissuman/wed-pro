@@ -18,7 +18,7 @@ export function HeroSection() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <span className="inline-block font-[family-name:var(--font-body)] text-[10px] md:text-xs text-champagne-gold uppercase tracking-[0.3em] font-semibold bg-champagne-gold/5 border border-champagne-gold/15 px-4 py-1.5 rounded-full">
-          Open Beta · Free Digital Wedding Invitations
+          Free Beta · Digital Wedding Invitations
         </span>
       </motion.div>
 
@@ -38,8 +38,8 @@ export function HeroSection() {
         className="font-[family-name:var(--font-body)] text-body-md md:text-body-lg text-on-surface-variant max-w-xl mx-auto leading-relaxed"
       >
         Create cinematic digital invitations that capture the elegance and
-        emotion of your royal celebration. Free during beta, with instant
-        sharing through WhatsApp and Instagram.
+        emotion of your celebration. Create up to three invitations during Free Beta
+        and share your published link with the people you love.
       </BlurFade>
 
       {/* CTA Buttons */}

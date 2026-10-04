@@ -14,13 +14,13 @@ export function CinematicFooter() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-[family-name:var(--font-heading)] text-ivory text-lg border-b border-champagne-gold/20 pb-2 inline-block font-medium">
+          <h2 className="font-[family-name:var(--font-heading)] text-ivory text-lg border-b border-champagne-gold/20 pb-2 inline-block font-medium">
             Explore
-          </h4>
+          </h2>
           <ul className="space-y-2 font-[family-name:var(--font-body)] text-sm font-medium tracking-wide">
             <li>
               <Link
-                className="text-on-surface-variant hover:text-champagne-gold transition-colors"
+                className="inline-flex min-h-11 min-w-11 items-center text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="/template"
               >
                 Templates
@@ -28,7 +28,7 @@ export function CinematicFooter() {
             </li>
             <li>
               <Link
-                className="text-on-surface-variant hover:text-champagne-gold transition-colors"
+                className="inline-flex min-h-11 min-w-11 items-center text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="/#features"
               >
                 Features
@@ -36,7 +36,7 @@ export function CinematicFooter() {
             </li>
             <li>
               <Link
-                className="text-on-surface-variant hover:text-champagne-gold transition-colors"
+                className="inline-flex min-h-11 min-w-11 items-center text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="/#testimonials"
               >
                 Stories
@@ -46,13 +46,13 @@ export function CinematicFooter() {
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-[family-name:var(--font-heading)] text-ivory text-lg border-b border-champagne-gold/20 pb-2 inline-block font-medium">
+          <h2 className="font-[family-name:var(--font-heading)] text-ivory text-lg border-b border-champagne-gold/20 pb-2 inline-block font-medium">
             Support
-          </h4>
+          </h2>
           <ul className="space-y-2 font-[family-name:var(--font-body)] text-sm font-medium tracking-wide">
             <li>
               <a
-                className="text-on-surface-variant hover:text-champagne-gold transition-colors"
+                className="inline-flex min-h-11 min-w-11 items-center text-on-surface-variant hover:text-champagne-gold transition-colors"
                 href="mailto:sumanmaharana222888@gmail.com"
               >
                 Contact us

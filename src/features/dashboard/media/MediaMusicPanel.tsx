@@ -13,7 +13,7 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
   const content = (
     <>
       <CroppedImageUploadField
-        label="Hero Background Image"
+        label="Hero Background Image" validationPath="hero.backgroundMedia"
         value={draft.hero.backgroundMedia ?? ""}
         folder={`wed-pro/${draft.id}/hero`}
         aspect={9 / 16}
@@ -22,17 +22,13 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
           update((current) => ({
             ...current,
             hero: { ...current.hero, backgroundMedia: value },
-            seo: {
-              ...current.seo,
-              ogImage: value || current.seo.ogImage,
-            },
           }))
         }
       />
 
       {configured ? (
         <AudioUploadField
-          label="Background Music"
+          label="Background Music" validationPath="music.url"
           value={draft.music.url ?? ""}
           folder={`wed-pro/${draft.id}/music`}
           helperText="MP3 or M4A under 12 MB. If upload fails, export as MP3 from your music app."
@@ -45,7 +41,7 @@ export function MediaMusicPanel({ draft, update, bare }: PanelProps) {
         />
       ) : (
         <TextInput
-          label="Music URL"
+          label="Music URL" validationPath="music.url"
           value={draft.music.url ?? ""}
           inputMode="url"
           placeholder="https://res.cloudinary.com/.../song.mp3"

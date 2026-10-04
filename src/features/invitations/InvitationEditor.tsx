@@ -1,11 +1,16 @@
 "use client";
 
+import { getPreferredScrollBehavior } from "@/lib/motion-preferences";
+import { ModalSurface } from "@/components/ui/ModalSurface";
+
+import { useEditorKeyboardInset } from "@/hooks/useEditorKeyboardInset";
 import Link from "next/link";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "@/lib/toast";
 import {
   ArrowLeft,
+  CircleAlert,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -29,19 +34,18 @@ import { WhatsAppShareDialog } from "@/features/invitations/WhatsAppShareDialog"
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
 import { createClient } from "@/utils/supabase/client";
 import {
-  buildInvitationSlug,
   getInvitationTitle,
   getPublicInvitationUrl,
-  resolveInvitationSlug,
-  withEssentialSections,
 } from "@/lib/invitations";
 import { PublishShareDialog } from "@/features/invitations/PublishShareDialog";
 import { ConfirmUnpublishDialog } from "@/features/invitations/ConfirmUnpublishDialog";
 import {
   describeSlugAdjustment,
-  publishInvitation,
-  unpublishInvitation,
 } from "@/lib/publish";
+import { PublishValidationContext } from "./PublishValidationContext";
+import { hasDemoContent, safeInvitationForRendering, validatePublishReadiness, type PublishIssue } from "@/lib/publish-readiness";
+import { EditorNavigationGuard } from "./EditorNavigationGuard";
+import { useInvitationPersistence } from "./useInvitationPersistence";
 import { useInvitationEditorStore } from "@/stores/invitation-editor-store";
 import { WeddingDetailsPanel } from "@/features/dashboard/wedding-details/WeddingDetailsPanel";
 import { EventsPanel } from "@/features/dashboard/events/EventsPanel";
@@ -91,6 +95,7 @@ const editorSteps = [
 type EditorStepId = (typeof editorSteps)[number]["id"];
 
 export function InvitationEditor({ initialData }: InvitationEditorProps) {
+  const keyboardInset = useEditorKeyboardInset();
   const supabase = useMemo(() => {
     if (typeof window === "undefined") return null;
     return createClient();
@@ -99,140 +104,30 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   const saveState = useInvitationEditorStore((state) => state.saveState);
   const saveMessage = useInvitationEditorStore((state) => state.saveMessage);
   const lastSavedAt = useInvitationEditorStore((state) => state.lastSavedAt);
-  const initialize = useInvitationEditorStore((state) => state.initialize);
   const updateDraft = useInvitationEditorStore((state) => state.updateDraft);
-  const replaceDraft = useInvitationEditorStore((state) => state.replaceDraft);
-  const setSaveState = useInvitationEditorStore((state) => state.setSaveState);
-  const setLastSavedAt = useInvitationEditorStore((state) => state.setLastSavedAt);
-  const previewData = useDeferredValue(draft);
+  const safePreview = useMemo(() => draft ? safeInvitationForRendering(draft) : null, [draft]);
+  const previewData = useDeferredValue(safePreview);
+  const [validationAttempted, setValidationAttempted] = useState(false);
+  const [serverValidation, setServerValidation] = useState<{ draft: WeddingData | null; issues: PublishIssue[] } | null>(null);
+  const serverIssues = serverValidation?.draft === draft ? serverValidation.issues : [];
+  const readiness = useMemo(() => draft ? validatePublishReadiness(draft) : [], [draft]);
+  const validationIssues = validationAttempted ? readiness.length ? readiness : serverIssues : [];
+  const [desktopStep, setDesktopStep] = useState<string | null>("wedding-details");
   const [copied, setCopied] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const persistence = useInvitationPersistence(initialData, supabase);
+  const { isPublishing, isUnpublishing, isRetryingSave } = persistence;
+  const publicationBusy = isPublishing || isUnpublishing || isRetryingSave;
+  const editorActive = useRef(false);
+  useEffect(() => { editorActive.current = true; return () => { editorActive.current = false; }; }, []);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showPublishShareDialog, setShowPublishShareDialog] = useState(false);
   const [publishSlugAdjusted, setPublishSlugAdjusted] = useState(false);
   const [publishRequestedSlug, setPublishRequestedSlug] = useState<string | undefined>();
   const [showUnpublishDialog, setShowUnpublishDialog] = useState(false);
-  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [previewMode, setPreviewMode] = useState<"mobile" | "desktop">("mobile");
   const [mobileStepIndex, setMobileStepIndex] = useState(0);
-  const didInitialize = useRef(false);
-  const skipAutosave = useRef(true);
   const mobileEditorTopRef = useRef<HTMLDivElement | null>(null);
-  // Autosave queue: only ever one write in flight; coalesce intervening edits
-  // into `pendingDraft` and apply after the active save resolves. A monotonic
-  // generation token guards against out-of-order responses overwriting newer
-  // state when network latency reorders requests.
-  const saveGeneration = useRef(0);
-  const inFlight = useRef(false);
-  const pendingDraft = useRef<WeddingData | null>(null);
-
-  useEffect(() => {
-    initialize(initialData);
-    didInitialize.current = true;
-  }, [initialData, initialize]);
-
-  const saveDraft = useCallback(
-    async (nextDraft: WeddingData) => {
-      if (!supabase) return;
-      if (inFlight.current) {
-        // Save in progress — queue the latest snapshot and let the active save
-        // flush it when done. Newer edits overwrite older queued snapshots.
-        pendingDraft.current = nextDraft;
-        return;
-      }
-
-      let queued: WeddingData | null = nextDraft;
-      while (queued) {
-        const current: WeddingData = queued;
-        queued = null;
-
-        const normalizedSlug = resolveInvitationSlug(current);
-        if (!normalizedSlug) {
-          setSaveState("error", "Add bride and groom names before saving.");
-          return;
-        }
-
-        saveGeneration.current += 1;
-        const generation = saveGeneration.current;
-        inFlight.current = true;
-        setSaveState("saving", "Saving changes");
-
-        const updatedAt = new Date().toISOString();
-        const content: WeddingData = {
-          ...current,
-          slug: normalizedSlug,
-          sections: withEssentialSections(current.sections),
-          meta: {
-            ...current.meta,
-            updatedAt,
-          },
-        };
-
-        const { data, error } = await supabase
-          .from("invitations")
-          .update({
-            slug: normalizedSlug,
-            template_id: content.templateId,
-            status: content.status,
-            content,
-          })
-          .eq("id", content.id)
-          .select("updated_at")
-          .single();
-
-        inFlight.current = false;
-
-        // Stale response from a save that has already been superseded — drop it.
-        if (generation !== saveGeneration.current) {
-          continue;
-        }
-
-        if (error) {
-          setSaveState("error", error.message);
-          // Drop queued snapshots so the error message isn't masked.
-          pendingDraft.current = null;
-          return;
-        }
-
-        setLastSavedAt(data?.updated_at ?? updatedAt);
-        setSaveState("saved", "Saved");
-
-        // Flush any draft that arrived while this save was in flight.
-        if (pendingDraft.current) {
-          queued = pendingDraft.current;
-          pendingDraft.current = null;
-        }
-      }
-    },
-    [setLastSavedAt, setSaveState, supabase]
-  );
-
-  useEffect(() => {
-    if (!draft || !didInitialize.current) return;
-
-    if (skipAutosave.current) {
-      skipAutosave.current = false;
-      return;
-    }
-
-    const timeout = window.setTimeout(() => {
-      void saveDraft(draft);
-    }, 900);
-
-    return () => window.clearTimeout(timeout);
-  }, [draft, saveDraft]);
-
-  // Warn before leaving the page while there are unsaved or in-flight edits.
-  useEffect(() => {
-    const handler = (event: BeforeUnloadEvent) => {
-      if (saveState === "saving" || saveState === "idle") {
-        event.preventDefault();
-      }
-    };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
-  }, [saveState]);
 
   const update: DraftUpdater = useCallback(
     (updater) => updateDraft((current) => updater(current)),
@@ -246,87 +141,42 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     if (typeof top === "number") {
       window.scrollTo({
         top: window.scrollY + top - parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--editor-sticky-offset") || "80"),
-        behavior: "smooth",
+        behavior: getPreferredScrollBehavior(),
       });
     }
     scrollPreviewToSection(editorSteps[clamped].id);
   }, []);
 
   const publish = async () => {
-    if (!draft || !supabase) return;
-
-    setIsPublishing(true);
-    setPublishSlugAdjusted(false);
-    setPublishRequestedSlug(undefined);
-
-    const result = await publishInvitation(supabase, draft);
-
-    if (!result.ok) {
-      setSaveState("error", result.message);
-      toast.error("Publish failed", result.message);
-      setIsPublishing(false);
-      return;
-    }
-
-    const wasPublished = draft.status === "published";
-    toast.success(
-      result.slugAdjusted
-        ? "Published with adjusted link"
-        : wasPublished
-          ? "Invitation republished"
-          : "Invitation published"
-    );
-
-    if (result.slugAdjusted) {
-      toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
-    }
-
-    skipAutosave.current = true;
-    replaceDraft({
-      ...result.content,
-      meta: {
-        ...result.content.meta,
-        updatedAt: result.updatedAt,
-        publishedAt: result.publishedAt,
-      },
-    });
+    if (publicationBusy) return;
+    setValidationAttempted(true);
+    if (readiness.length) { toast.error("Review the publish checklist", "Open an item below to finish your invitation."); return; }
+    const invitationId = draft?.id;
+    const wasPublished = draft?.status === "published";
+    const result = await persistence.publish();
+    if (!editorActive.current || useInvitationEditorStore.getState().draft?.id !== invitationId) return;
+    if (!result.ok) { if (result.issues) setServerValidation({ draft: useInvitationEditorStore.getState().draft, issues: result.issues }); toast.error("Publish failed", result.message); return; }
+    toast.success(result.slugAdjusted ? "Published with adjusted link" : wasPublished ? "Invitation republished" : "Invitation published");
+    if (result.slugAdjusted) toast.info("Link updated", describeSlugAdjustment(result.requestedSlug, result.resolvedSlug));
     setPublishSlugAdjusted(result.slugAdjusted);
     setPublishRequestedSlug(result.requestedSlug);
     setShowPublishShareDialog(true);
-    setIsPublishing(false);
   };
 
   const unpublish = async () => {
-    if (!draft || !supabase) return;
-
-    setIsUnpublishing(true);
-    const result = await unpublishInvitation(supabase, draft);
-
-    if (!result.ok) {
-      toast.error("Unpublish failed", result.message);
-      setIsUnpublishing(false);
-      return;
-    }
-
-    skipAutosave.current = true;
-    replaceDraft({
-      ...result.content,
-      meta: {
-        ...result.content.meta,
-        updatedAt: result.updatedAt,
-      },
-    });
+    if (publicationBusy) return;
+    const invitationId = draft?.id;
+    const result = await persistence.unpublish();
+    if (!editorActive.current || useInvitationEditorStore.getState().draft?.id !== invitationId) return;
+    if (!result.ok) { toast.error("Unpublish failed", result.message); return; }
     setShowUnpublishDialog(false);
     toast.success("Invitation unpublished");
-    setIsUnpublishing(false);
   };
 
   const updateCoupleNamesFromShare = (groomName: string, brideName: string) => {
     updateDraft((current) => {
-      const slug = buildInvitationSlug(groomName, brideName) || current.slug;
       return {
         ...current,
-        slug,
         couple: {
           ...current.couple,
           groom: { ...current.couple.groom, name: groomName },
@@ -345,7 +195,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
     try {
       await navigator.clipboard.writeText(
-        getPublicInvitationUrl(draft.slug, window.location.origin)
+        getPublicInvitationUrl(draft.slug)
       );
       setCopied(true);
       toast.success("Share link copied");
@@ -355,7 +205,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
     }
   };
 
-  if (!draft) {
+  if (!draft || draft.id !== initialData.id) {
     return (
       <div className="min-h-screen px-[var(--spacing-container-margin)] py-16 text-center text-on-surface-variant">
         Loading editor...
@@ -391,21 +241,69 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
   };
 
   return (
-    <main className="mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pt-4 pb-[calc(var(--editor-bottom-bar-h)+env(safe-area-inset-bottom)+2rem)] md:pt-8 md:pb-28 lg:pb-28">
+    <PublishValidationContext.Provider value={validationIssues}>
+    <main style={{ paddingBottom: keyboardInset ? keyboardInset + 112 : undefined }} className="editor-workspace min-w-0 mx-auto max-w-[1440px] px-[var(--spacing-container-margin)] pt-4 pb-[calc(var(--editor-bottom-bar-h)+env(safe-area-inset-bottom)+2rem)] md:pt-8 md:pb-28 lg:pb-28">
+      <EditorNavigationGuard initialData={initialData} flush={persistence.flushForNavigation} discard={persistence.discardPending} busy={publicationBusy} />
+      {validationIssues.length > 0 && <section className="mb-4 overflow-hidden rounded-2xl border border-champagne-gold/20 bg-surface-container" aria-label="Publish checklist">
+        <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+          <CircleAlert size={20} className="mt-0.5 shrink-0 text-champagne-gold" aria-hidden="true" />
+          <div className="min-w-0">
+            <h2 className="font-body text-base font-semibold leading-6 text-on-surface">A few details before you publish</h2>
+            <p className="mt-1 text-sm leading-5 text-on-surface-variant">Complete these details to get your invitation ready to share. Select an item to edit it.</p>
+          </div>
+        </div>
+        <ul className="divide-y divide-champagne-gold/10 px-4 pb-1">
+          {validationIssues.map((issue, index) => <li key={`${issue.path}-${index}`}>
+            <button type="button" className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg py-3 text-left text-sm leading-5 text-on-surface transition-colors hover:bg-champagne-gold/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-champagne-gold" onClick={() => {
+              const stepIndex = editorSteps.findIndex(step => step.id === issue.step);
+              if (stepIndex < 0) return;
+              setDesktopStep(issue.step);
+              goToMobileStep(stepIndex);
+              if (window.matchMedia("(min-width: 1024px)").matches) setTimeout(() => document.getElementById(`editor-desktop-${issue.step}`)?.scrollIntoView({ block: "start", behavior: getPreferredScrollBehavior() }), 300);
+            }}>
+              <span className="min-w-0">
+                <span className="mb-0.5 block text-xs font-medium text-champagne-gold">{editorSteps.find(step => step.id === issue.step)?.title ?? "Invitation details"}</span>
+                {issue.path === "venue.name" ? "Add your venue name." : issue.path === "venue.address" ? "Add an address, map link, or location coordinates." : issue.path === "rsvp.whatsappNumber" ? "Add your RSVP WhatsApp number, including the country code." : issue.path.endsWith(".venue") ? `Add a venue for event ${Number(issue.path.split(".")[1]) + 1}.` : issue.message}
+              </span>
+              <ChevronRight size={16} className="shrink-0 text-on-surface-variant" aria-hidden="true" />
+            </button>
+            {issue.message.startsWith("Use a hosted") && <button type="button" className="ml-3 min-h-11 text-sm text-on-surface underline" onClick={() => update(current => {
+              const next = structuredClone(current);
+              const segments = issue.path.split(".");
+              let parent: Record<string, unknown> = next as unknown as Record<string, unknown>;
+              for (const segment of segments.slice(0, -1)) {
+                if (["__proto__", "constructor", "prototype"].includes(segment) || !Object.prototype.hasOwnProperty.call(parent, segment)) return current;
+                const child = parent[segment];
+                if (!child || typeof child !== "object") return current;
+                parent = child as Record<string, unknown>;
+              }
+              const last = segments[segments.length - 1];
+              if (["__proto__", "constructor", "prototype"].includes(last) || !Object.prototype.hasOwnProperty.call(parent, last)) return current;
+              parent[last] = "";
+              return next;
+            })}>Clear unsupported URL</button>}
+          </li>)}
+        </ul>
+      </section>}
+      {hasDemoContent(draft) && <label className="mb-4 flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-champagne-gold/15 bg-surface-container p-4 text-sm leading-5 text-on-surface">
+        <input className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--color-champagne-gold)]" type="checkbox" checked={draft.demoContentAcknowledged === true} onChange={event => update(current => ({ ...current, demoContentAcknowledged: event.target.checked }))} />
+        <span><span className="block font-medium">Keep the sample story and stock photos</span><span className="mt-1 block text-xs leading-5 text-on-surface-variant">I’ve reviewed this sample content and choose to include it. You can also replace the photos, remove them, or hide the story.</span></span>
+      </label>}
       <header className="mb-6 flex flex-col gap-4 border-b border-champagne-gold/10 pb-4 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-3">
+        <div className="min-w-0 flex-1 space-y-3">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold/80 transition hover:text-champagne-gold"
+            className="inline-flex min-h-11 min-w-11 items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-champagne-gold/80 transition hover:text-champagne-gold"
           >
             <ArrowLeft size={14} />
             Dashboard
           </Link>
           <div>
-            <h1 className="font-heading text-2xl text-on-surface md:text-3xl">{getInvitationTitle(draft)}</h1>
+            <h1 className="font-heading break-words text-2xl text-on-surface md:text-3xl">{getInvitationTitle(draft)}</h1>
             <p className="mt-1 font-body text-sm text-on-surface-variant/70">
-              Autosaved draft · {lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Not saved yet"}
+              Private working draft · {lastSavedAt ? new Date(lastSavedAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Not saved yet"}
             </p>
+            <p className="mt-1 text-xs text-on-surface-variant/60">Guests see your last published version. Publish to share these edits.</p>
           </div>
         </div>
 
@@ -420,17 +318,25 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             }
           />
           <AppThemeToggler />
-          <span className="inline-flex items-center gap-2 rounded-full border border-champagne-gold/15 px-4 py-2 text-xs text-on-surface-variant">
+          <span role="status" aria-live="polite" className="inline-flex max-w-full min-w-0 break-words items-center gap-2 rounded-full border border-champagne-gold/15 px-4 py-2 text-xs text-on-surface-variant">
             {saveState === "saving" && <Loader2 size={14} className="animate-spin text-champagne-gold" />}
             {saveState === "saved" && <Check size={14} className="text-champagne-gold" />}
             {saveState === "idle" && <Save size={14} className="text-champagne-gold" />}
             {saveState === "error" ? saveMessage : saveMessage || "Ready"}
           </span>
 
+          {saveState === "error" && (
+            <button type="button" disabled={publicationBusy}
+              onClick={() => void persistence.retrySave()}
+              className="min-h-11 rounded-full border border-champagne-gold/30 px-4 py-2 text-xs text-ivory disabled:opacity-50">
+              Retry private save
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => void publish()}
-            disabled={isPublishing}
+            disabled={publicationBusy}
             className="hidden items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 font-heading text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_0_24px_rgba(16,185,129,0.35)] transition hover:bg-emerald-500 active:scale-95 disabled:pointer-events-none disabled:opacity-60 lg:inline-flex"
           >
             {isPublishing ? (
@@ -467,7 +373,8 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => setShowUnpublishDialog(true)}
-              className="hidden items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15 lg:inline-flex"
+              disabled={publicationBusy}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-[#ffb4a8]/25 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#ffb4a8] transition hover:bg-[#8f0f07]/15 disabled:opacity-60"
             >
               <Undo2 size={15} />
               Unpublish
@@ -477,11 +384,11 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)]">
-        <section ref={mobileEditorTopRef} className="lg:hidden">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)]">
+        <section ref={mobileEditorTopRef} className="min-w-0 lg:hidden">
           <div className="mb-4 rounded-2xl border border-champagne-gold/10 bg-surface-container/70 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold/70">
                   Step {mobileStepIndex + 1} of {editorSteps.length}
                 </p>
@@ -502,7 +409,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               </button>
             </div>
 
-            <div className="mt-4 grid grid-cols-9 gap-1" aria-label="Editor progress">
+            <div className="mt-2 flex gap-1 overflow-x-auto" aria-label="Editor progress">
               {editorSteps.map((step, index) => (
                 <button
                   key={step.id}
@@ -510,8 +417,9 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                   onClick={() => goToMobileStep(index)}
                   aria-label={`Go to ${step.title}`}
                   aria-current={index === mobileStepIndex ? "step" : undefined}
+                  data-complete={index <= mobileStepIndex ? "true" : undefined}
                   className={cn(
-                    "h-1.5 rounded-full transition",
+                    "editor-progress-hitbox relative min-h-11 min-w-11 shrink-0 rounded-full transition",
                     index <= mobileStepIndex ? "bg-champagne-gold" : "bg-champagne-gold/15"
                   )}
                 />
@@ -536,6 +444,8 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         <div className="hidden lg:block">
           <EditorAccordion
             defaultOpenId="wedding-details"
+            openId={desktopStep}
+            onOpenChange={setDesktopStep}
             onActivate={scrollPreviewToSection}
           >
             {editorSteps.map((step) => (
@@ -545,7 +455,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                 title={step.title}
                 description={step.id === "page-setup" ? "Show or hide extra sections. Events, gallery, and venue always stay on." : step.description}
               >
-                {renderStepPanel(step.id)}
+                <div id={`editor-desktop-${step.id}`} className="scroll-mt-24">{renderStepPanel(step.id)}</div>
               </EditorAccordion.Item>
             ))}
           </EditorAccordion>
@@ -572,7 +482,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                   type="button"
                   onClick={() => setPreviewMode("mobile")}
                   className={cn(
-                    "inline-flex size-10 items-center justify-center rounded-full transition",
+                    "inline-flex size-11 items-center justify-center rounded-full transition",
                     previewMode === "mobile"
                       ? "bg-champagne-gold/20 text-champagne-gold"
                       : "text-on-surface-variant/60 hover:text-champagne-gold"
@@ -586,7 +496,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                   type="button"
                   onClick={() => setPreviewMode("desktop")}
                   className={cn(
-                    "inline-flex size-10 items-center justify-center rounded-full transition",
+                    "inline-flex size-11 items-center justify-center rounded-full transition",
                     previewMode === "desktop"
                       ? "bg-champagne-gold/20 text-champagne-gold"
                       : "text-on-surface-variant/60 hover:text-champagne-gold"
@@ -628,7 +538,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         </section>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-champagne-gold/10 bg-surface/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur lg:hidden">
+      <div style={{ bottom: keyboardInset }} className="fixed inset-x-0 bottom-0 z-40 border-t border-champagne-gold/10 bg-surface/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-18px_50px_rgba(0,0,0,0.45)] backdrop-blur lg:hidden">
         <div className="mx-auto flex max-w-[520px] items-center gap-2">
           <button
             type="button"
@@ -651,7 +561,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
             <button
               type="button"
               onClick={() => void publish()}
-              disabled={isPublishing}
+              disabled={publicationBusy}
               className="inline-flex min-h-11 flex-[1.4] items-center justify-center gap-2 rounded-full bg-emerald-600 px-4 text-xs font-semibold uppercase tracking-[0.14em] text-white shadow-[0_0_20px_rgba(16,185,129,0.35)] transition hover:bg-emerald-500 active:scale-95 disabled:pointer-events-none disabled:opacity-60"
             >
               {isPublishing ? (
@@ -676,9 +586,11 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
 
       <AnimatePresence>
         {showMobilePreview && (
-          <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-preview-title">
+          <ModalSurface open={true} title="Live invitation preview" onOpenChange={(next) => { if (!next) setShowMobilePreview(false); }}>
+          <div className="fixed inset-0 z-50 lg:hidden">
             <motion.button
               type="button"
+              tabIndex={-1}
               aria-label="Close preview"
               className="absolute inset-0 bg-charcoal-black/75"
               initial={{ opacity: 0 }}
@@ -697,7 +609,6 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               <div className="flex items-center justify-between gap-3 border-b border-champagne-gold/10 px-4 py-3">
                 <div>
                   <h2
-                    id="mobile-preview-title"
                     className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold"
                   >
                     <span className="relative flex size-2" aria-hidden="true">
@@ -713,7 +624,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
                 <button
                   type="button"
                   onClick={() => setShowMobilePreview(false)}
-                  className="inline-flex size-10 items-center justify-center rounded-full border border-champagne-gold/20 text-champagne-gold transition active:scale-95"
+                  className="inline-flex size-11 items-center justify-center rounded-full border border-champagne-gold/20 text-champagne-gold transition active:scale-95"
                   aria-label="Close preview"
                 >
                   <X size={16} />
@@ -736,6 +647,7 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
               </div>
             </motion.section>
           </div>
+          </ModalSurface>
         )}
       </AnimatePresence>
 
@@ -758,10 +670,11 @@ export function InvitationEditor({ initialData }: InvitationEditorProps) {
         open={showUnpublishDialog}
         title={getInvitationTitle(draft)}
         slug={draft.slug}
-        onClose={() => !isUnpublishing && setShowUnpublishDialog(false)}
+        onClose={() => !publicationBusy && setShowUnpublishDialog(false)}
         onConfirm={() => void unpublish()}
-        isUnpublishing={isUnpublishing}
+        isUnpublishing={publicationBusy}
       />
     </main>
+    </PublishValidationContext.Provider>
   );
 }

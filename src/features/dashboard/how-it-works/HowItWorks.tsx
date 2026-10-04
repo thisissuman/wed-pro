@@ -1,10 +1,12 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+import { usePrefersReducedMotion } from "@/templates/royal/hooks/usePrefersReducedMotion";
 import { Sparkles, Heart } from "lucide-react";
 import { useRef, useState } from "react";
 
-export function HowItWorks() {
+export function HowItWorks({ demoDate }: { demoDate: string }) {
+  const reducedMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
@@ -25,8 +27,8 @@ export function HowItWorks() {
     setMousePosition({ x, y });
   };
 
-  const cardRotateX = isHovering ? -(mousePosition.y / 20) : 0;
-  const cardRotateY = isHovering ? (mousePosition.x / 20) : 0;
+  const cardRotateX = isHovering && !reducedMotion ? -(mousePosition.y / 20) : 0;
+  const cardRotateY = isHovering && !reducedMotion ? (mousePosition.x / 20) : 0;
 
   return (
     <section className="relative z-10 space-y-12">
@@ -35,12 +37,12 @@ export function HowItWorks() {
         <span className="font-label-md text-label-md text-champagne-gold uppercase tracking-[0.2em] mb-4 block">
           Simple Process
         </span>
-        <h1 className="font-display-lg text-display-lg text-on-surface mb-6">
+        <h2 className="font-display-lg text-display-lg text-on-surface mb-6">
           How It Works
-        </h1>
+        </h2>
         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
-          Fill in your details — we transform them into a stunning invitation
-          webpage.
+          Choose a template, add your details, then publish your invitation link.
+          The illustration below uses sample wedding details.
         </p>
       </header>
 
@@ -59,8 +61,8 @@ export function HowItWorks() {
           style={{
             backgroundImage:
               "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDWbgVcT8ziF2lbzVXOmz0xOEbMzfO9uZ0roU7k5NbXF8s3eL3XC0dm4pCo738v7TnCMLQdu67QlPALZzlZU-dLlsfDQ3GGpbKprBBaLgZvmEhrMQRTPDJzvTT69gbCPY0Er4EAqpz9LgawEjA_5HlarAJbGWbU1WOLnK6UKEfTY3rBqxDcLbNaEKAHPMPTW-W4SGlVWQb4Lh9N1EvwgBAG2fjfnC9TL_HI1mzjG9yLyMMjCN4ldq9fpAhca0nmunG9M-6fie8D7fM')",
-            scale: bgScale,
-            opacity: bgOpacity,
+            scale: reducedMotion ? 1 : bgScale,
+            opacity: reducedMotion ? 0.3 : bgOpacity,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal-black via-transparent to-charcoal-black pointer-events-none"></div>
@@ -103,7 +105,7 @@ export function HowItWorks() {
                     Wedding Date
                   </label>
                   <div className="font-body-md text-body-md text-on-surface">
-                    14 Feb 2026
+                    {demoDate}
                   </div>
                 </div>
                 <div className="p-4 rounded-lg bg-surface-container-lowest/50 border border-surface-container-high">
@@ -162,7 +164,7 @@ export function HowItWorks() {
               animate={{
                 rotateX: cardRotateX,
                 rotateY: cardRotateY,
-                scale: isHovering ? 1.02 : 1,
+                scale: isHovering && !reducedMotion ? 1.02 : 1,
               }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
               className="bg-surface-container/90 backdrop-blur-xl rounded-2xl border border-champagne-gold/20 p-2 flex-1 shadow-2xl relative overflow-hidden transform-style-3d cursor-pointer gold-aura-hover"
@@ -185,7 +187,7 @@ export function HowItWorks() {
                   Rohan
                 </h3>
                 <p className="font-label-sm text-label-sm text-on-surface tracking-[0.2em] mb-2 uppercase">
-                  14 · FEBRUARY · 2026
+                  {demoDate}
                 </p>
                 <p className="font-body-md text-sm text-on-surface-variant italic">
                   The Leela Palace · Udaipur

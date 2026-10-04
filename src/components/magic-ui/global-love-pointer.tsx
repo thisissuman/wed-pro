@@ -32,20 +32,23 @@ function useDesktopFinePointer() {
     if (!mounted) return;
 
     const mqFine = window.matchMedia("(pointer: fine)");
+    const mqReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const mqDesktop = window.matchMedia("(min-width: 768px)");
 
     const sync = () => {
-      const active = mqFine.matches && mqDesktop.matches;
+      const active = mqFine.matches && mqDesktop.matches && !mqReduced.matches;
       setEnabled(active);
       applyLovePointerCursor(active);
     };
 
     sync();
     mqFine.addEventListener("change", sync);
+    mqReduced.addEventListener("change", sync);
     mqDesktop.addEventListener("change", sync);
 
     return () => {
       mqFine.removeEventListener("change", sync);
+      mqReduced.removeEventListener("change", sync);
       mqDesktop.removeEventListener("change", sync);
       applyLovePointerCursor(false);
     };

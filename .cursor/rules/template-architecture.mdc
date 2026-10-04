@@ -19,6 +19,8 @@ Templates are **presentation only**. They render UI from `WeddingData`; they nev
 ## Scalability (many templates)
 
 - Register each template **once** in `src/templates/registry.ts`.
+- This registry is metadata only and must not import template components. Add the SSR-enabled dynamic loader in `runtime-registry.tsx`; its keys are checked against TemplateId derived from metadata. Only TemplateRenderer imports runtime loaders. Legacy IDs resolve through `template-ids.ts`.
+- Preserve template CSS in the existing runtime modules. Use the shared ModalSurface inline for template lightboxes/openers so their theme variables and zoom remain inherited; avoid independent body locks/global Escape listeners.
 - Same `WeddingData` for editor, preview, DB `content` JSONB, and `/w/[slug]`.
 - Bespoke `sections/` per template is expected; shared **contracts** + **preview ids** keep the editor stable.
 - Do not duplicate marketing cards in `src/data/templates.ts`.
@@ -29,6 +31,8 @@ Templates are **presentation only**. They render UI from `WeddingData`; they nev
 src/templates/
   TemplateRenderer.tsx
   registry.ts
+  runtime-registry.tsx
+  template-ids.ts
   shared/ { components, motion, sections, theme }
   /<template-id>/
     <Name>Template.tsx
@@ -62,7 +66,9 @@ Indian events (Mehendi, Haldi, Wedding, Reception, Sangeet): title, icon, descri
 
 `TemplateThemeProvider` + per-template `theme.ts` defaults. `WeddingData.theme` overrides. Pass `typographyScale` from `data.typography` for editor zoom.
 
-Use `var(--template-primary)`, `var(--template-text)`, etc.
+Use `var(--template-primary)`, `var(--template-text)`, etc. The provider's `.template-theme` boundary isolates these colors and legacy semantic variables from studio light/dark overrides. Photo-overlay text uses separate `--template-on-image`/muted tokens. Keep overlays inline and compensate 44px action hit areas for typography zoom.
+
+Demo previews receive server-created `createDemoWeddingData(referenceIso)` using the shared demo-date calculator; the static sample is a date-free scaffold. Do not recompute the demo calendar inside client render or advance saved user dates. Use explicit timezone date labels. Motion, keyboard and theme contract/deferred cases: `docs/mobile-motion-theme-and-demos.md`.
 
 ## Section contracts
 

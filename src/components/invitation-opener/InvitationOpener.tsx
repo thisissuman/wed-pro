@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePrefersReducedMotion } from "@/templates/royal/hooks/usePrefersReducedMotion";
+import { ModalSurface } from "@/components/ui/ModalSurface";
 import { VariantRenderer, type OpenerVariant } from "./variants";
 
 const STORAGE_KEY_PREFIX = "wed-pro-opener-seen-";
@@ -31,6 +33,9 @@ export function InvitationOpener({
   sealType = "wax-seal",
   monogram = "❦",
 }: InvitationOpenerProps) {
+  const reducedMotion = usePrefersReducedMotion();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const instanceId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
   const [isOpening, setIsOpening] = useState(false);
@@ -77,7 +82,11 @@ export function InvitationOpener({
     } catch {
       // ignore
     }
-  }, [isOpening, storageKey, isPreviewMode]);
+    if (reducedMotion) {
+      setVisible(false);
+      onComplete?.();
+    }
+  }, [isOpening, storageKey, isPreviewMode, reducedMotion, onComplete]);
 
   // 3. Animation complete callback
   const handleAnimationComplete = useCallback(() => {
@@ -89,16 +98,16 @@ export function InvitationOpener({
 
   // If we are bypassing the opener entirely, render children directly
   if (bypassOpener) {
-    return <>{children}</>;
+    return <div ref={contentRef} tabIndex={-1} data-invitation-content>{children}</div>;
   }
 
   // Once mounted and visible is false, clean up and render children directly
   if (mounted && !visible) {
-    return <>{children}</>;
+    return <div ref={contentRef} tabIndex={-1} data-invitation-content>{children}</div>;
   }
 
-  const coverId = `opener-cover-${slug}`;
-  const contentId = `opener-content-${slug}`;
+  const coverId = `opener-cover-${instanceId}`;
+  const contentId = `opener-content-${instanceId}`;
 
   return (
     <div className="relative min-h-screen w-full">
@@ -122,6 +131,10 @@ export function InvitationOpener({
 
       {/* Underlying content is rendered but kept invisible/inert until open to allow SEO indexation */}
       <div 
+        ref={contentRef}
+        tabIndex={-1}
+        inert={visible}
+        data-invitation-content
         id={contentId}
         aria-hidden={visible} 
         className={`w-full ${visible ? "pointer-events-none select-none max-h-screen overflow-hidden opacity-0" : ""}`}
@@ -131,17 +144,22 @@ export function InvitationOpener({
 
       <AnimatePresence>
         {visible && (
+          <ModalSurface open={true} onOpenChange={(next) => { if (!next) handleOpen(); }}
+            title="Open wedding invitation" portalled={false}
+            onAfterCloseFocus={() => contentRef.current?.focus()}>
           <motion.div
             id={coverId}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Wedding Invitation Opener Cover"
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
             onClick={handleOpen}
             className="fixed inset-0 w-full h-full z-50 flex items-center justify-center select-none overflow-hidden touch-manipulation cursor-pointer"
             style={{ backgroundColor: secondaryColor }}
           >
+            <button type="button" data-dialog-initial-focus onClick={handleOpen}
+              aria-busy={isOpening}
+              className="absolute bottom-20 z-40 rounded-full border border-white/40 bg-black/20 px-6 py-3 text-sm text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">
+              {isOpening ? "Opening invitation…" : "Open invitation"}
+            </button>
             {/* 1. Variant Background and Panels */}
             <VariantRenderer
               variant={variant}
@@ -157,8 +175,8 @@ export function InvitationOpener({
             {!isOpening && (
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.45, 0] }}
-                transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+                animate={{ opacity: reducedMotion ? 0.45 : [0, 0.45, 0] }}
+                transition={{ repeat: reducedMotion ? 0 : Infinity, duration: reducedMotion ? 0 : 2.2, ease: "easeInOut" }}
                 className="absolute bottom-12 inset-x-0 text-center pointer-events-none z-30"
               >
                 <span className="text-[10px] tracking-[0.3em] uppercase text-white/50">
@@ -167,6 +185,7 @@ export function InvitationOpener({
               </motion.div>
             )}
           </motion.div>
+          </ModalSurface>
         )}
       </AnimatePresence>
     </div>

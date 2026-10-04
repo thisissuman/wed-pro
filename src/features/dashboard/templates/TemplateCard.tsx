@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { createStarterWeddingData, makeDraftSlug } from "@/lib/invitations";
 import { buildLoginUrl } from "@/lib/auth/redirects";
 import { DraftLimitDialog } from "@/features/dashboard/templates/DraftLimitDialog";
@@ -25,67 +26,50 @@ export function TemplateCard({ template, index = 0, recommended = false }: Templ
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
 
-  const handleSelect = async () => {
-    if (isCreating) return;
+  const creatingRef = useRef(false);
+  const pendingIdRef = useRef<string | null>(null);
 
+  const handleSelect = async () => {
+    if (creatingRef.current) return;
+    creatingRef.current = true;
     setErrorMessage(null);
     setIsCreating(true);
-
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      router.push(buildLoginUrl("/template"));
+    try {
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError && !isAuthSessionMissingError(authError)) throw authError;
+      if (!user) {
+        router.push(buildLoginUrl("/template"));
+        return;
+      }
+      const id = pendingIdRef.current ?? crypto.randomUUID();
+      pendingIdRef.current = id;
+      let creationError: { message: string; code?: string; details?: string } | null = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const slug = makeDraftSlug(template.id);
+        const content = createStarterWeddingData({ id, slug, templateId: template.id, userId: user.id });
+        const { error } = await supabase.rpc("create_invitation_draft", {
+          p_id: id, p_slug: slug, p_template_id: template.id, p_content: content,
+        }).abortSignal(AbortSignal.timeout(20000));
+        creationError = error;
+        if (!error || error.code !== "23505") break;
+      }
+      if (creationError?.details === "invitation_limit_reached") {
+        setShowLimitModal(true);
+        return;
+      }
+      if (creationError) throw creationError;
+      pendingIdRef.current = null;
+      router.push(`/dashboard/invitations/${id}/edit`);
+    } catch (error) {
+      const message = error && typeof error === "object" && "message" in error
+        ? String(error.message) : "Please try again.";
+      setErrorMessage(message);
+      toast.error("Could not create invitation", message);
+    } finally {
+      creatingRef.current = false;
       setIsCreating(false);
-      return;
     }
-
-    const { count, error: countError } = await supabase
-      .from("invitations")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id);
-
-    if (countError) {
-      setErrorMessage(countError.message);
-      toast.error("Could not verify draft limit");
-      setIsCreating(false);
-      return;
-    }
-
-    if ((count ?? 0) >= 3) {
-      setShowLimitModal(true);
-      setIsCreating(false);
-      return;
-    }
-
-    const id = crypto.randomUUID();
-    const slug = makeDraftSlug(template.id);
-    const content = createStarterWeddingData({
-      id,
-      slug,
-      templateId: template.id,
-      userId: user.id,
-    });
-
-    const { error } = await supabase.from("invitations").insert({
-      id,
-      user_id: user.id,
-      slug,
-      template_id: template.id,
-      status: "draft",
-      content,
-    });
-
-    if (error) {
-      setErrorMessage(error.message);
-      toast.error("Could not create invitation", error.message);
-      setIsCreating(false);
-      return;
-    }
-
-    router.push(`/dashboard/invitations/${id}/edit`);
   };
 
   return (
@@ -102,7 +86,7 @@ export function TemplateCard({ template, index = 0, recommended = false }: Templ
       }`}
     >
       {/* Image Container */}
-      <div className="relative h-[400px] w-full overflow-hidden bg-surface-container">
+      <div className="on-image relative h-[400px] w-full overflow-hidden bg-surface-container">
         {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"

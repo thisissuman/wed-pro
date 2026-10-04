@@ -18,6 +18,8 @@ const EditorAccordionContext = createContext<EditorAccordionContextValue | null>
 interface EditorAccordionProps {
   children: ReactNode;
   defaultOpenId?: string;
+  openId?: string | null;
+  onOpenChange?: (id: string | null) => void;
   onActivate?: (id: string) => void;
 }
 
@@ -25,11 +27,15 @@ export function EditorAccordion({
   children,
   defaultOpenId = "page-setup",
   onActivate,
+  openId: controlledOpenId,
+  onOpenChange,
 }: EditorAccordionProps) {
-  const [openId, setOpenId] = useState<string | null>(defaultOpenId);
+  const [localOpenId, setOpenId] = useState<string | null>(defaultOpenId);
 
+  const openId = controlledOpenId === undefined ? localOpenId : controlledOpenId;
   const handleSetOpen = (id: string | null) => {
     setOpenId(id);
+    onOpenChange?.(id);
     if (id) onActivate?.(id);
   };
 

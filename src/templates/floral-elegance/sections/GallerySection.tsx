@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { ModalSurface } from "@/components/ui/ModalSurface";
+
+import { useCallback, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -39,17 +41,6 @@ export function GallerySection({ gallery }: GallerySectionProps) {
       return i === images.length - 1 ? 0 : i + 1;
     });
   }, [images.length]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowLeft") goPrev();
-      if (e.key === "ArrowRight") goNext();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen, close, goPrev, goNext]);
 
   if (images.length === 0) return null;
 
@@ -119,6 +110,8 @@ export function GallerySection({ gallery }: GallerySectionProps) {
       {/* Lightbox Modal */}
       <AnimatePresence>
         {isOpen && activeImage && activeIndex !== null && (
+          <ModalSurface open={true} onOpenChange={(next) => { if (!next) close(); }}
+            title="Wedding photo gallery" portalled={false}>
           <motion.div
             key="lightbox"
             initial={{ opacity: 0 }}
@@ -126,12 +119,17 @@ export function GallerySection({ gallery }: GallerySectionProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-[color-mix(in_srgb,var(--template-text)_95%,transparent)] backdrop-blur-md"
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft") { event.preventDefault(); goPrev(); }
+              if (event.key === "ArrowRight") { event.preventDefault(); goNext(); }
+            }}
             onClick={close}
           >
             {/* Close Button */}
             <button
               type="button"
               onClick={close}
+              data-dialog-initial-focus
               aria-label="Close gallery"
               className="absolute right-4 top-4 z-10 rounded-full border border-[var(--template-primary)]/30 p-3 text-[var(--template-background)] transition duration-200 hover:bg-[var(--template-primary)]/20 cursor-pointer"
             >
@@ -167,6 +165,7 @@ export function GallerySection({ gallery }: GallerySectionProps) {
             )}
 
             {/* Image Viewer */}
+            <p className="sr-only" aria-live="polite">Photo {activeIndex + 1} of {images.length}: {activeImage.alt || activeImage.caption || "Wedding photo"}</p>
             <motion.div
               key={activeImage.id}
               initial={reduceMotion ? false : { scale: 0.94, opacity: 0 }}
@@ -197,6 +196,7 @@ export function GallerySection({ gallery }: GallerySectionProps) {
               )}
             </motion.div>
           </motion.div>
+          </ModalSurface>
         )}
       </AnimatePresence>
     </>

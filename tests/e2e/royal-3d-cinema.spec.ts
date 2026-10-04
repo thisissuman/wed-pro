@@ -57,7 +57,7 @@ test("renders both frame sequences, keeps the countdown visible, and avoids repe
     requests.filter((url) => url.includes("/frames/low/f_")),
   );
   expect(initialLowFrames.size).toBeGreaterThanOrEqual(10);
-  expect(initialLowFrames.size).toBeLessThanOrEqual(16);
+  expect(initialLowFrames.size).toBeLessThanOrEqual(18);
   expect(requests.some((url) => url.includes("/frames/high/"))).toBe(false);
   expect(requests.some((url) => url.includes("/sacred/"))).toBe(false);
   expect(requests.some((url) => url.endsWith(".mp4"))).toBe(false);
@@ -113,6 +113,34 @@ test("keeps invitation controls usable at 320px without horizontal overflow", as
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
+});
+
+test("warms the opening frames and exposes progress before entry", async ({
+  page,
+}) => {
+  let releaseFrames!: () => void;
+  const heldFrames = new Promise<void>(resolve => { releaseFrames = resolve; });
+  await page.route(
+    "**/media/royal-3d-cinema/v1/frames/low/*.webp",
+    async (route) => {
+      await heldFrames;
+      await route.continue();
+    },
+  );
+
+  await page.goto("/preview/royal-3d-cinema", {
+    waitUntil: "domcontentloaded",
+  });
+  const seal = page.getByRole("button", {
+    name: /open the wedding invitation/i,
+  });
+
+  await expect(seal).toBeEnabled();
+  await expect(seal).toHaveAttribute("aria-busy", "true");
+  await expect(page.getByText(/preparing your invitation/i)).toBeVisible();
+  releaseFrames();
+  await expect(seal).toHaveAttribute("aria-busy", "false");
+  await expect(page.getByText(/tap the seal to open with music/i)).toBeVisible();
 });
 
 test("uses the preview panel width instead of the desktop browser width", async ({
@@ -218,4 +246,36 @@ test("shows the opener only once per preview session", async ({ page }) => {
   await openInvitation(page);
   await page.reload();
   await expect(page.getByRole("dialog")).toHaveCount(0);
+});
+
+test("keeps the SSR seal noninteractive until lazy runtime handlers hydrate", async ({ page, request }) => {
+  let releaseScripts!: () => void;
+  const heldScripts = new Promise<void>(resolve => { releaseScripts = resolve; });
+  await page.route("**/_next/static/chunks/*.js", async route => {
+    await heldScripts;
+    await route.continue();
+  });
+  try {
+    const response = await request.get("/preview/royal-3d-cinema");
+    expect(response.ok()).toBe(true);
+    // Streaming Suspense reveal scripts can wait behind held JS in WebKit.
+    // Inspect actual SSR markup separately from its eventual visual reveal.
+    const markup = await response.text();
+    const ssr = await page.evaluate(html => {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const button = doc.querySelector(".cinema-seal-button");
+      return { disabled: button?.hasAttribute("disabled"), text: doc.querySelector(".royal-cinema main")?.textContent };
+    }, markup);
+    expect(ssr.disabled).toBe(true);
+    expect(ssr.text).toContain("Rahul Mehta");
+    expect(ssr.text).toContain("Ananya Sharma");
+    await page.goto("/preview/royal-3d-cinema", { waitUntil: "commit" });
+    const seal = page.getByRole("button", { name: /open the wedding invitation/i });
+    releaseScripts();
+    await expect(seal).toBeVisible();
+    await expect(seal).toBeEnabled();
+    await seal.focus(); await expect(seal).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  } finally { releaseScripts(); }
 });

@@ -1,134 +1,55 @@
-# Supabase Database Documentation
+# Supabase database reference
 
-This document describes the database schema, RLS policies, indexing, and triggers designed and implemented in Supabase for **Vivaha Studio** (`wed-pro`).
+The checked-in schema uses WeddingData JSONB with private working documents and independent public copies. Versioned SQL in `supabase/migrations` is the source. Task 16 inspected live history/grants and applied the five October migrations to the explicitly authorized shared target. New environments must reconcile their own history first.
 
-## Architectural Strategy: JSONB Document Store
+## Tables and access
 
-Instead of breaking the complex, highly-nested wedding invitation data into 15+ relational tables (e.g., `events`, `milestones`, `gallery_images`, `rsvp_answers`), the database uses a **JSONB Document Store Strategy**. All dynamic, nested content is housed in the `content` column of the `invitations` table, which maps 1:1 to the frontend `WeddingData` TypeScript interface.
+| Table | Access after the five October migrations |
+| --- | --- |
+| profiles | Auth-linked owner identity; owner SELECT/UPDATE under earlier security migration |
+| invitations | Private working JSONB, including published status; owner SELECT/DELETE; no direct client INSERT/UPDATE |
+| published_invitations | Frozen public JSONB; anonymous/authenticated SELECT only; no direct client writes |
 
-### Benefits
-1. **Frictionless Real-time Autosave:** Saving is a simple, single-row `UPDATE` statement that persists the entire state instantly, avoiding complex, multi-table transactions.
-2. **Maximum Render Performance:** When a guest opens a public invitation link, a single database read with an index lookup retrieves all data required to render the entire cinematic experience in one network round trip.
-3. **Template Agnostic:** Adding new sections (e.g., live stream links, guestbooks) to templates only requires expanding the JSONB payload structure and does not require complex database migrations.
+Working rows retain id, user_id, globally unique slug, template_id, draft/published status, content, timestamps and nullable published_at; add draft_revision and persistent first_published_at. Public snapshot id references its working invitation with cascading deletion and published-only status. Existing profile/timestamp triggers remain part of prerequisite history; owner indexes/slug constraints support queries and collision arbitration. No RSVP table/guest analytics/payment flag is part of Free Beta; the earlier drop_rsvps migration must be reconciled with actual history.
 
----
+Do not place private columns on anonymously selectable rows or expose them through permissive views/functions. Policies and table/column/function grants work together; React hiding is not authorization. Service-role/database administrators are privileged and must stay outside client code.
 
-## SQL Schema Definition
+## Trusted writes
 
-Below is the exact SQL script executed on Supabase to set up the tables, Row Level Security (RLS) policies, indexes, and triggers.
+| RPC | Contract |
+| --- | --- |
+| create_invitation_draft | Infers owner, locks existing owner profile, counts all working rows and enforces three total; same owner/request ID retry is idempotent |
+| save_invitation_draft | Locks owner row, requires expected revision, saves private content/template; cannot alter slug/public status/history |
+| publish_invitation_snapshot | Checks owner/revision and saved-row readiness, allocates first-publication slug and atomically promotes saved content |
+| unpublish_invitation_snapshot | Checks owner/revision, removes public snapshot, retains working edits/slug/first-publication history |
 
-```sql
--- 1. Create Profiles Table (Linked to Supabase Auth)
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT UNIQUE NOT NULL,
-    full_name TEXT,
-    created_at TIMESTAMPTZ DEFAULT now() NOT NULL
-);
+Save/publish/unpublish increment the working revision; stale-revision conflicts require reconciliation, never guessed retries. Internal document/readiness helpers are not client-executable. Keep explicit SECURITY DEFINER search_path/grants from migrations and audit actual dependent views/functions/roles in task 16. The queue drain/intended publication contract is in [persistence](docs/invitation-persistence.md); validation parity in [editor safety](docs/editor-safety.md); serialized quota/isolation in [quota](docs/invitation-quota.md).
 
--- 2. Create Invitations Table
-CREATE TABLE IF NOT EXISTS public.invitations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    slug TEXT UNIQUE NOT NULL,
-    template_id TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
-    content JSONB NOT NULL DEFAULT '{}'::jsonb,
-    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-    published_at TIMESTAMPTZ
-);
+Creation reserves a unique generated slug with bounded retries. First publish uses database constraints to allocate a readable base or suffix through -25, even when other owners' drafts are hidden. Existing first-published slugs/suffixes are stable through names/edits/unpublish/re-publish. Quota counts published working rows once, not their public copies; existing above-cap rows are retained.
 
--- 3. Row-Level Security (RLS)
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
+## Required migration order and rollout
 
--- 4. RLS Policies for Profiles
-CREATE POLICY "Allow public read of profiles"
-    ON public.profiles FOR SELECT
-    USING (true);
+Reconcile the actual environment with every earlier checked-in migration first, including initial schema, profile creation/search_path hardening, working-table security, duplicate-index removal and the historical RSVP create/drop migrations. Never assume their presence from file dates or replay applied history.
 
-CREATE POLICY "Allow users to update own profile"
-    ON public.profiles FOR UPDATE
-    USING (auth.uid() = id);
+These migrations were applied on 4 October 2026 to the shared production project under explicit user authorization. For a new target, reconcile history and apply in this order:
 
--- 5. RLS Policies for Invitations
-CREATE POLICY "Allow public read of published invitations"
-    ON public.invitations FOR SELECT
-    USING (status = 'published');
+1. `20261004060250_private_drafts_and_published_snapshots.sql`: owner/public split, revision RPCs, snapshot backfill and first-publication history.
+2. `20261004060252_publish_readiness.sql`: authoritative saved-row validation inside publication.
+3. `20261004060253_atomic_invitation_quota.sql`: sole creation RPC, owner serialization and revoked direct INSERT.
+4. `20261004060822_harden_timestamp_and_snapshot_index.sql`: restricted timestamp-trigger search path, snapshot owner FK index and profile-policy initplans.
+5. `20261004061209_nonretryable_revision_conflicts.sql`: expected-revision conflicts use PT409/HTTP 409 instead of PostgREST-retryable 40001.
 
-CREATE POLICY "Allow owners full access to invitations"
-    ON public.invitations FOR ALL
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
+MCP assigned the recorded timestamps. Source files were renamed to match live history; applied SQL contents were not rewritten. Do not replay the earlier local draft versions as additional migrations.
 
--- 6. Performance Indexes
-CREATE UNIQUE INDEX IF NOT EXISTS invitations_slug_idx ON public.invitations(slug);
-CREATE INDEX IF NOT EXISTS invitations_user_id_idx ON public.invitations(user_id);
+Before application establish target authorization, actual schema/history/grants/triggers/views, backup/restore and legacy publication-marker inventory. Currently published rows are copied with existing JSONB/id/slug/template/timestamps intact. Historical publications with all markers erased cannot be automatically reconstructed; identify/preserve their links deliberately. Old autosave's previously exposed edits cannot be retroactively separated from what guests saw.
 
--- 7. Trigger to Sync updated_at Timestamp
-CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+After nonproduction application, task 16 must verify backfill/schema-cache exposure and direct REST/RPC isolation, revision/lifecycle/readiness/collision/quota cases before any production rollout proposal. New clients require the new schema/RPCs; old direct-write clients must be drained during a coordinated rollout. Do not deploy either side independently or restore old public policies/direct writes as a workaround.
 
-CREATE OR REPLACE TRIGGER trigger_invitations_updated_at
-    BEFORE UPDATE ON public.invitations
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_updated_at();
+Production schema application was explicitly authorized and completed; Vercel Preview deployment is authorized; main/production release remains pending. Recovery/rollback must preserve both working/public documents and their privacy; code rollback must support the new schema. Do not downgrade to public working content or drop new tables to restore compatibility. Any deployed old client that reads working rows publicly or writes tables directly is incompatible and needs the matching app release. Detailed gates: [pending verification](docs/pending-verification.md), [environment/CI](docs/environment-and-ci.md).
 
--- 8. Automatic Profile Creation on User Signup
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO public.profiles (id, email, full_name)
-    VALUES (
-        new.id,
-        new.email,
-        coalesce(new.raw_user_meta_data->>'full_name', '')
-    );
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-```
+## Task 16 target status
 
----
+History and grants were inspected through Supabase MCP; all five new migrations applied successfully. A private pre-migration preservation export is at `/private/tmp/wed-supabase-preservation-oVWAiP/pre-migration.json` (local permissions 0600; not a complete Auth/disaster-recovery backup). Each migration is transactional. Recovery must keep the private/public boundary and use additive corrections/compatible code; the export preserves original invitation documents and prior schema metadata for comparison, not permission to restore insecure policies.
 
-## Schema Details
-
-### 1. `profiles` Table
-| Column Name | Data Type | Constraints / Defaults | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | `PRIMARY KEY`, `REFERENCES auth.users(id)` | Identifies the profile. Cascade deletes when user account is deleted. |
-| `email` | `text` | `UNIQUE`, `NOT NULL` | User email address. |
-| `full_name` | `text` | Nullable | User display name. |
-| `created_at` | `timestamptz` | `DEFAULT now()`, `NOT NULL` | Time profile was created. |
-
-### 2. `invitations` Table
-| Column Name | Data Type | Constraints / Defaults | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | `uuid` | `PRIMARY KEY`, `DEFAULT gen_random_uuid()` | Unique invitation ID. |
-| `user_id` | `uuid` | `NOT NULL`, `REFERENCES profiles(id)` | Invitation owner. |
-| `slug` | `text` | `UNIQUE`, `NOT NULL` | Dynamic URL path for invitation sharing (e.g., `/w/rahul-weds-ananya`). |
-| `template_id` | `text` | `NOT NULL` | Template stylesheet / rendering variant. |
-| `status` | `text` | `NOT NULL`, `DEFAULT 'draft'`, `CHECK (draft, published)` | Publication status. |
-| `content` | `jsonb` | `NOT NULL`, `DEFAULT '{}'::jsonb` | Nested Document matching the `WeddingData` type definition. |
-| `created_at` | `timestamptz` | `DEFAULT now()`, `NOT NULL` | Creation timestamp. |
-| `updated_at` | `timestamptz` | `DEFAULT now()`, `NOT NULL` | Auto-updating modification timestamp. |
-| `published_at` | `timestamptz` | Nullable | Time the invitation was published. |
-
----
-
-## Verification & Administration
-
-You can visually view and query these tables, RLS policies, and triggers via the Supabase Dashboard:
-1. **Tables & Rows:** [Supabase Dashboard > Table Editor](https://supabase.com/dashboard/project/kbwkvbwdxstwsfgkpwbp/editor)
-2. **RLS Policies:** [Supabase Dashboard > Authentication > Policies](https://supabase.com/dashboard/project/kbwkvbwdxstwsfgkpwbp/auth/policies)
-3. **Triggers:** [Supabase Dashboard > Database > Triggers](https://supabase.com/dashboard/project/kbwkvbwdxstwsfgkpwbp/database/triggers)
+The original 5 rows and 3 published snapshots match the pre-migration content/link digest after fixture cleanup. Dedicated-account direct REST probes passed creation, private/public separation, invalid publish refusal, concurrent stale writes returning 409, republish/unpublish/stable links, concurrent quota and idempotency. The guarded two-owner suite passed all five cases, including cross-owner/anonymous reads and writes, frozen publication/revision races, RLS-hidden collisions and concurrent quota. Extended legacy/edge cases remain documented, not implied passes. Table-list estimates are not evidence of emptiness. Leaked-password protection remains disabled; authenticated SECURITY DEFINER RPC warnings are intentional and require continued owner/revision/grant review. No Auth setting was changed.

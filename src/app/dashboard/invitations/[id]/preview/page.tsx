@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Edit3 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
+import { safeInvitationForRendering } from "@/lib/publish-readiness";
 import { TemplateRenderer } from "@/templates/TemplateRenderer";
 import { normalizeInvitationRow, type InvitationRow } from "@/lib/invitations";
 import { createClient } from "@/utils/supabase/server";
@@ -22,7 +23,7 @@ export default async function InvitationPreviewPage({ params }: InvitationPrevie
 
   const { data, error } = await supabase
     .from("invitations")
-    .select("id,user_id,slug,template_id,status,content,created_at,updated_at,published_at")
+    .select("id,user_id,slug,template_id,status,content,created_at,updated_at,published_at,draft_revision,first_published_at")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -31,7 +32,7 @@ export default async function InvitationPreviewPage({ params }: InvitationPrevie
     notFound();
   }
 
-  const invitation = normalizeInvitationRow(data as InvitationRow);
+  const invitation = safeInvitationForRendering(normalizeInvitationRow(data as InvitationRow));
 
   return (
     <main className="-mt-16 min-h-screen bg-background md:-mt-[72px]">

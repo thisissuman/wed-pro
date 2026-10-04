@@ -71,12 +71,10 @@ export function getCloudName(): string | undefined {
   return process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 }
 
-export function getUploadPreset(): string | undefined {
-  return process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
-}
-
 export function isCloudinaryConfigured(): boolean {
-  return Boolean(getCloudName() && getUploadPreset());
+  // Public cloud name enables controls; the authorization endpoint reports
+  // missing server secrets/presets without exposing them to the browser.
+  return Boolean(getCloudName());
 }
 
 const UPLOAD_SEGMENT = "/upload/";
@@ -99,5 +97,20 @@ export function getOgShareImageUrl(url: string | undefined | null): string {
   const value = url?.trim() ?? "";
   if (!value || !isValidDisplayUrl(value)) return "";
   if (!isCloudinaryUrl(value)) return value;
-  return withCloudinaryTransform(value, "c_fill,w_1200,h_630,g_auto,f_auto,q_auto");
+  const parsed = new URL(value);
+  const index = parsed.pathname.indexOf(UPLOAD_SEGMENT);
+  if (index === -1) return value;
+  const prefix = parsed.pathname.slice(0, index + UPLOAD_SEGMENT.length);
+  const segments = parsed.pathname.slice(index + UPLOAD_SEGMENT.length).split("/");
+  // Delivery transformations precede v<version>/public-id. Apply the social
+  // crop AFTER existing transformations so a saved portrait crop stays intact
+  // and the final delivered aspect remains 1200×630.
+  const transform = "c_fill,w_1200,h_630,g_auto,f_auto,q_auto";
+  const isTransform = (segment: string) =>
+    /^(?:(?:a|ar|b|bo|c|co|d|dl|dn|dpr|e|f|fl|fn|g|h|if|l|o|q|r|t|u|w|x|y|z)_|if_end$)/.test(segment);
+  let boundary = 0;
+  while (boundary < segments.length - 1 && isTransform(segments[boundary])) boundary++;
+  if (segments[boundary - 1] !== transform) segments.splice(boundary, 0, transform);
+  parsed.pathname = prefix + segments.join("/");
+  return parsed.href;
 }

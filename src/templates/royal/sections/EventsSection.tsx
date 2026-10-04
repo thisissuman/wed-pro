@@ -1,5 +1,6 @@
 "use client";
 
+import { formatWeddingDate } from "@/lib/format-wedding-date";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Clock, Navigation } from "lucide-react";
 import { appleMapsUrl, googleMapsUrl } from "@/lib/maps";
@@ -82,11 +83,7 @@ export function EventsSection({ events }: EventsSectionProps) {
                   <div className="flex items-center gap-1.5">
                     <Calendar size={13} />
                     <span className="font-[family-name:var(--font-body)]">
-                      {new Date(event.date).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {formatWeddingDate(event.date, "UTC")}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">

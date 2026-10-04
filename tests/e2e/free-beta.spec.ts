@@ -7,7 +7,7 @@ test("homepage presents free beta and opens the Royal demo", async ({ page }) =>
   await expect(liveDemo).toBeVisible({ timeout: 15_000 });
 
   await expect(
-    page.getByText(/open beta · free digital wedding invitations/i)
+    page.getByText(/free beta · digital wedding invitations/i)
   ).toBeVisible();
 
   await liveDemo.click();
@@ -35,4 +35,12 @@ test("template picker can preview the registered Royal template", async ({ page 
   await expect(page.getByText(/wedding invitation/i).first()).toBeVisible({
     timeout: 15_000,
   });
+});
+
+test("anonymous template selection opens login and retains the selection destination", async ({ page }) => {
+  await page.goto("/template");
+  const royalCard = page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Royal Rajputana", exact: true }) });
+  await royalCard.getByRole("button", { name: "Select", exact: true }).click();
+  await expect(page).toHaveURL(/\/login\?next=%2Ftemplate$/);
+  await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
 });

@@ -1,5 +1,7 @@
 "use client";
 
+import { ModalSurface } from "@/components/ui/ModalSurface";
+
 import Link from "next/link";
 import { X } from "lucide-react";
 
@@ -12,12 +14,11 @@ export function DraftLimitDialog({ open, onClose }: DraftLimitDialogProps) {
   if (!open) return null;
 
   return (
+    <ModalSurface open={true} onOpenChange={(next) => { if (!next) onClose(); }} title="Three stories at a time">
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-charcoal-black/70 px-4 py-6 backdrop-blur-sm sm:items-center"
-      role="alertdialog"
-      aria-modal="true"
     >
-      <div className="relative w-full max-w-md rounded-2xl border border-champagne-gold/20 bg-surface-container p-6 shadow-[0_30px_100px_rgba(0,0,0,0.5)]">
+      <div className="relative max-h-[92dvh] overflow-y-auto w-full max-w-md rounded-2xl border border-champagne-gold/20 bg-surface-container p-6 shadow-[0_30px_100px_rgba(0,0,0,0.5)]">
         <button
           type="button"
           onClick={onClose}
@@ -27,12 +28,12 @@ export function DraftLimitDialog({ open, onClose }: DraftLimitDialogProps) {
           <X size={16} />
         </button>
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-gold/70">
-          Draft Limit Reached
+          Invitation Limit Reached
         </p>
         <h2 className="mt-2 font-heading text-xl text-ivory">Three stories at a time</h2>
         <p className="mt-3 text-sm leading-relaxed text-on-surface-variant/80">
-          You have reached the limit of 3 wedding invitations. Please delete an old draft
-          from your dashboard before starting a new story.
+          The beta limit is 3 total wedding invitations, including published invitations.
+          Remove an invitation you no longer need from your dashboard before creating another.
         </p>
         <Link
           href="/dashboard"
@@ -43,5 +44,6 @@ export function DraftLimitDialog({ open, onClose }: DraftLimitDialogProps) {
         </Link>
       </div>
     </div>
+    </ModalSurface>
   );
 }

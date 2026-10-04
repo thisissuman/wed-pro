@@ -46,6 +46,7 @@ export function EventsPanel({ draft, update, bare }: PanelProps) {
           >
             <EventEditor
               event={event}
+              validationPrefix={`events.${index}`}
               canRemove={draft.events.length > 1}
               canMoveUp={index > 0}
               canMoveDown={index < draft.events.length - 1}
@@ -102,6 +103,7 @@ export function EventsPanel({ draft, update, bare }: PanelProps) {
 
 interface EventEditorProps {
   event: WeddingEvent;
+  validationPrefix: string;
   canRemove: boolean;
   canMoveUp: boolean;
   canMoveDown: boolean;
@@ -113,6 +115,7 @@ interface EventEditorProps {
 
 function EventEditor({
   event,
+  validationPrefix,
   canRemove,
   canMoveUp,
   canMoveDown,
@@ -158,21 +161,21 @@ function EventEditor({
         )}
       </div>
       <div className="space-y-3">
-        <TextInput label="Title" value={event.title} onChange={(value) => onChange({ title: value })} />
+        <TextInput label="Title" validationPath={`${validationPrefix}.title`} value={event.title} onChange={(value) => onChange({ title: value })} />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <TextInput
-            label="Date"
+            label="Date" validationPath={`${validationPrefix}.date`}
             type="date"
             value={event.date}
             onChange={(value) => onChange({ date: value })}
           />
           <TextInput
-            label="Time"
+            label="Time" validationPath={`${validationPrefix}.time`}
             value={event.time}
             onChange={(value) => onChange({ time: value })}
           />
         </div>
-        <TextInput label="Venue" value={event.venue} onChange={(value) => onChange({ venue: value })} />
+        <TextInput label="Venue" validationPath={`${validationPrefix}.venue`} value={event.venue} onChange={(value) => onChange({ venue: value })} />
         <TextArea
           label="Address"
           value={event.address ?? ""}
@@ -185,7 +188,7 @@ function EventEditor({
           onChange={(value) => onChange({ description: value })}
         />
         <TextInput
-          label="Google Map Link"
+          label="Google Map Link" validationPath={`${validationPrefix}.googleMapLink`}
           value={event.googleMapLink ?? ""}
           onChange={(value) => onChange({ googleMapLink: value })}
           inputMode="url"

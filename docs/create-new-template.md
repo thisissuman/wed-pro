@@ -1,72 +1,24 @@
-# Create a New Template (Start Here)
+# Future template development
 
-Use this page when adding template #2 and beyond. The platform is built so you can ship **many templates without rewriting** editor, auth, publish, or `/w/[slug]` — only `src/templates/<template-id>/` changes.
+The current product has three supported designs: Royal Rajputana, Floral Elegance and Royal 3D Wedding Cinema. Adding another template is outside tasks 01–16. This guide describes future authorized work, not a request to create a new template or execute checks during the current implementation-only phase.
 
-## Can I build 10 templates without a rewrite?
+## Architecture
 
-**Yes.** Register each template once in [`src/templates/registry.ts`](../src/templates/registry.ts). The same `WeddingData` schema powers the editor, preview, DB `content` JSONB, and public pages. Bespoke layout, fonts, colors, and motion per template are expected; shared **contracts** and **preview section ids** keep the editor stable.
+Every design presents WeddingData without database/auth/store access. Share section contracts, preview IDs, theme/typography tokens and safe URL helpers while retaining bespoke layouts. Register metadata once in src/templates/registry.ts and add a selected SSR-enabled loader in runtime-registry.tsx; marketing derives from metadata and must not import runtimes. Coordinate any trusted creation/publish template allowlist migration deliberately. Preserve legacy IDs centrally.
 
-Do **not** refactor the core app for each template. Optional later wins (not blockers for template #2): lazy-load registry entries, guest-side Cloudinary width transforms.
+Do not rewrite editor/publication/auth per template. Templates receive private working data for owner previews and frozen published data for guests, with the same share metadata resolver. Explicit OG/WhatsApp image choices remain independent of hero replacement. Do not restore hero-to-OG overwriting or public working-content reads.
 
-## Which file do I use?
+Use TemplateThemeProvider's isolated palette/on-image tokens and compensate action hit areas for typography zoom. Use shared ModalSurface inline for template overlays, expected focus/keyboard behavior and native/accessibly managed selects. Keep reduced-motion/skip/reveal alternatives and tap-first music. Preview examples come from server-supplied createDemoWeddingData; do not calculate a fresh demo calendar during client render or change saved user dates.
 
-| File | Role |
-|------|------|
-| [`master-prompt.html`](../master-prompt.html) | Short copy-paste prompt for a **new Cursor chat** |
-| [`docs/create-template-prompt.md`](./create-template-prompt.md) | Design intake fields + full prompt text (markdown) |
-| [`docs/add-template.md`](./add-template.md) | Implementation checklist (scaffold → registry → QA) |
-| [`.cursor/skills/create-template/SKILL.md`](../.cursor/skills/create-template/SKILL.md) | Agent step-by-step procedure |
-| [`.cursor/rules/template-architecture.mdc`](../.cursor/rules/template-architecture.mdc) | Presentation-only rules (auto-applies under `src/templates/`) |
-| [`.cursor/rules/animations.mdc`](../.cursor/rules/animations.mdc) | Motion limits + Royal cinematic kit reference |
-| [`.cursor/rules/performance.mdc`](../.cursor/rules/performance.mdc) | Images, bundles, hydration |
-| [`docs/qa-mobile.md`](./qa-mobile.md) | Manual mobile checklist before shipping |
+## Documentation map
 
-## Workflow (human or Cursor)
+| Reference | Purpose |
+| --- | --- |
+| [Template architecture](../.cursor/rules/template-architecture.mdc) | Presentation/schema/registry boundaries |
+| [Add-template steps](add-template.md) | Scaffold, metadata/runtime and later verification |
+| [Design intake](create-template-prompt.md) | Future design brief |
+| [Sharing/loading](sharing-and-template-loading.md) | Selected SSR runtime and image metadata |
+| [Overlays](accessible-overlays.md), [polish](mobile-motion-theme-and-demos.md) | Focus, motion, theme, mobile and demos |
+| [Environment/CI](environment-and-ci.md), [pending verification](pending-verification.md) | Commands, prerequisites and coverage gaps |
 
-1. Open **`master-prompt.html`** (or copy from `create-template-prompt.md`).
-2. Fill the design spec: `template-id`, colors, fonts, section order, signature motion.
-3. Point Cursor at the files in the table above (the master prompt does this for you).
-4. Follow **`add-template.md`** while implementing.
-5. Run verification commands (below) + **`qa-mobile.md`** on `/preview/<id>` and a published `/w/[slug]`.
-
-## Reference implementation
-
-Copy **patterns** from [`src/templates/royal/`](../src/templates/royal/), not every file:
-
-| Pattern | Royal example | Required for every template? |
-|---------|---------------|------------------------------|
-| Orchestrator + visibility | `RoyalTemplate.tsx` | Yes |
-| Theme tokens + provider | `theme.ts`, `typographyScale` on `TemplateThemeProvider` | Yes |
-| Section contracts + preview ids | `sections/*`, `PREVIEW_SECTION_IDS` | Yes (mapped sections) |
-| Safe media URLs | `isValidDisplayUrl()` in hero/gallery/couple | Yes for user images |
-| Countdown hydration | `CountdownSection` — `mounted` before live numbers | Yes if you show countdown |
-| Default music fallback | `resolveMusicPlayback()` from `@/lib/default-music` | Optional |
-| Invitation opener / scratch date / sparkles | `InvitationOpener` from `src/components/invitation-opener` | **Only if in your design spec** |
-| Love-shower ambient background | `LoveShowerBackground` | **Royal-only unless you want it** |
-
-## What changed after the template docs (May 2026 polish)
-
-Commits after the original template-doc pass (`feat/mobile-qa`, `feat/polish`, auth/audio fixes) — **no architecture rewrite**, but docs and Royal behavior updated:
-
-- **Editor uploads:** `CroppedImageUploadField` / `AudioUploadField` (crop aspects 9:16 hero, 1:1 couple, 4:5 gallery) — editor only; templates just render URLs.
-- **Typography scale:** `data.typography.scale` → `TemplateThemeProvider` zoom — works for any template using the shared provider.
-- **Music:** `resolveMusicPlayback()` + muted autoplay with tap-to-unmute; honor `isPreview` and `suppressMusicPlayer` on `TemplateProps`.
-- **Share / OG:** Hero upload syncs `seo.ogImage`; public metadata via `buildInvitationShareMetadata` — unchanged per template.
-- **E2E:** Functional smoke in `tests/e2e/free-beta.spec.ts` (homepage, gallery, `/preview/royal`). **No** per-template visual screenshot baselines (removed — flaky across OS). **Do not add** new visual regression tests for new templates; run existing `npm run test:e2e`.
-
-## Verification
-
-```bash
-npm run lint
-npm run build
-npm run test:e2e -- --project=mobile-chrome
-```
-
-Manual: [`docs/qa-mobile.md`](./qa-mobile.md) — replace `royal` with your `template-id` where routes are listed.
-
-## Done when
-
-- `/preview/<template-id>` and `/template` card work.
-- Editor live preview scrolls via `PREVIEW_SECTION_IDS`.
-- No Supabase/auth/Zustand inside `src/templates/`.
-- Existing E2E suite passes (no new snapshot tests required).
+Existing designs supply patterns, not proof a new template is already validated. Current specs are free-beta, editor-validation and royal-3d-cinema; there is no full authenticated lifecycle/new-template suite. Do not rely on an existing smoke pass to cover a new design. Appropriate test authoring/execution, mobile/accessibility/SSR/bundle and published share verification belong to an authorized verification stage. During the current roadmap, all of those remain deferred to task 16.
