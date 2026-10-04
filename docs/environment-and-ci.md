@@ -48,7 +48,7 @@ Run `npm run test:contracts` for pure contracts and the actual React write pipel
 
 The workflow reads GitHub Actions Supabase/site secrets; obsolete unused test-user variables were removed. Missing Supabase secrets use harmless placeholders for the existing build/anonymous smoke paths; missing site URL defaults to http://127.0.0.1:3000. These defaults do not exercise authenticated access or confirm backend/provider configuration. Public browser tests are free-beta.spec.ts, editor-validation.spec.ts, royal-3d-cinema.spec.ts and ui-contracts.spec.ts. tests/live/editor-provider.spec.ts uses real dedicated-user session cookies for editor lifecycle, failure/recovery, delayed publication and cropped-image/audio cancellation/retry. It is an explicit live gate, separate from anonymous CI. Never delete personal invitations to make room.
 
-The user authorized commit/push to the existing PR #20 branch and Preview configuration, with merge kept pending. Production Cloudinary/site settings and the matching main release need separate authorization. Do not expose private test credentials in CI/provider settings.
+The user accepted the Preview and authorized Production Cloudinary/site settings, merging PR #20 and the matching main release on 4 October 2026. Do not expose private test credentials in CI/provider settings.
 
 
 ## Disposable database suite
